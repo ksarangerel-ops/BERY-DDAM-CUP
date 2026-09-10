@@ -1,7 +1,7 @@
 # DDAM CUP — DOTA 2 Tournament Board
 
 Real-time DOTA 2 tournament scoreboard for six teams. The board uses a
-black-and-red esports theme and can run locally or sync through Supabase Realtime.
+black-and-red esports theme and syncs through Supabase Realtime.
 
 ## Tournament format
 

@@ -93,8 +93,8 @@ export function createStore({ onState, onMode }) {
 
   /* Write-through: cache immediately so the organiser's own screen never
    appears to lose an edit, then push to Supabase. Returns the `updated`
-     stamp that was written so a caller can recognise its own echo coming
-     back through the subscription and not mistake it for another organiser. */
+   stamp that was written so a caller can recognise its own echo coming
+   back through the subscription and not mistake it for another organiser. */
   async function publish(next) {
     state = { ...next, updated: new Date().toISOString() };
     const updated = state.updated;
