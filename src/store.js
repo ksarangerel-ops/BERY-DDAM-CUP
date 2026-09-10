@@ -1,8 +1,8 @@
 /* ============================================================
    STORE
-   Firebase Realtime Database is the source of truth. localStorage is
+   Supabase is the source of truth. localStorage is
    kept only as (a) a warm cache so the board paints instantly on load
-   and (b) an offline fallback when Firebase is unconfigured/unreachable,
+   and (b) an offline fallback when Supabase is unconfigured/unreachable,
    so an organiser is never locked out mid-tournament.
 
    state = {
@@ -13,7 +13,7 @@
    A match key that is absent = that match has not been played.
 ============================================================ */
 import { TEAM_SEED, SQUAD_SIZE, NUM_TEAMS, ZONES, CACHE_KEY } from './config.js';
-import * as fb from './firebase.js';
+import * as realtime from './supabase.js';
 
 export function blankState() {
   return {
@@ -53,14 +53,14 @@ export function writeCache(state) {
 }
 
 /* Mode reported to the UI badge:
-   'live'    – connected to Firebase
+   'live'    – connected to Supabase
    'syncing' – configured, waiting for the socket
-   'local'   – no Firebase config, or the connection failed: local-only        */
+   'local'   – no Supabase config, or the connection failed: local-only        */
 export const MODE = { LIVE: 'live', SYNCING: 'syncing', LOCAL: 'local' };
 
 export function createStore({ onState, onMode }) {
   let state = readCache() || blankState();
-  let mode = fb.isLive() ? MODE.SYNCING : MODE.LOCAL;
+  let mode = realtime.isLive() ? MODE.SYNCING : MODE.LOCAL;
   let unsubData = () => {};
   let unsubConn = () => {};
 
@@ -69,13 +69,13 @@ export function createStore({ onState, onMode }) {
   function start() {
     onState(state, { fromRemote: false });
     onMode(mode);
-    if (!fb.isLive()) return;
+    if (!realtime.isLive()) return;
 
-    unsubConn = fb.subscribeConnection(connected => {
+    unsubConn = realtime.subscribeConnection(connected => {
       setMode(connected ? MODE.LIVE : MODE.SYNCING);
     });
 
-    unsubData = fb.subscribe(
+    unsubData = realtime.subscribe(
       remote => {
         // Board has never been written: seed it from whatever we have locally.
         if (!remote) { publish(state).catch(() => {}); return; }
@@ -92,7 +92,7 @@ export function createStore({ onState, onMode }) {
   }
 
   /* Write-through: cache immediately so the organiser's own screen never
-     appears to lose an edit, then push to Firebase. Returns the `updated`
+   appears to lose an edit, then push to Supabase. Returns the `updated`
      stamp that was written so a caller can recognise its own echo coming
      back through the subscription and not mistake it for another organiser. */
   async function publish(next) {
@@ -100,9 +100,9 @@ export function createStore({ onState, onMode }) {
     const updated = state.updated;
     writeCache(state);
     onState(state, { fromRemote: false });
-    if (!fb.isLive()) return { ok: true, local: true, updated };
+    if (!realtime.isLive()) return { ok: true, local: true, updated };
     try {
-      await fb.publish(state);
+      await realtime.publish(state);
       return { ok: true, local: false, updated };
     } catch (err) {
       console.error('[store] publish failed:', err);

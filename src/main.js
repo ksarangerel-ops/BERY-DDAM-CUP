@@ -14,7 +14,7 @@ import {
 } from './scoring.js';
 import { ICONS } from './icons.js';
 import { enhanceSelects, setSelectState } from './select.js';
-import { isConfigured, missingKeys, isLive } from './firebase.js';
+import { isConfigured, missingKeys, isLive } from './supabase.js';
 
 let state = blankState();
 let currentMatch = 1;
@@ -97,11 +97,11 @@ function renderSyncBadge() {
   if (!el) return;
   const mode = store.getMode();
   const cfg = {
-    [MODE.LIVE]: ['LIVE', 'text-emerald-300 border-emerald-400/50 bg-emerald-400/10', 'bg-emerald-400 animate-pulse', `Live — synced to Firebase (${TOURNAMENT_ID})`],
-    [MODE.SYNCING]: ['SYNC', 'text-gold border-gold/50 bg-gold/10', 'bg-gold animate-pulse', 'Connecting to Firebase…'],
+    [MODE.LIVE]: ['LIVE', 'text-emerald-300 border-emerald-400/50 bg-emerald-400/10', 'bg-emerald-400 animate-pulse', `Live — synced to Supabase (${TOURNAMENT_ID})`],
+    [MODE.SYNCING]: ['SYNC', 'text-gold border-gold/50 bg-gold/10', 'bg-gold animate-pulse', 'Connecting to Supabase…'],
     [MODE.LOCAL]: ['LOCAL', 'text-slate-400 border-line bg-ink/60', 'bg-slate-500', isConfigured
-      ? 'Firebase unreachable — changes are saved on this device only'
-      : `Firebase not configured (missing: ${missingKeys.join(', ') || 'all keys'}) — this device only`],
+      ? 'Supabase unreachable — changes are saved on this device only'
+      : `Supabase not configured (missing: ${missingKeys.join(', ') || 'all keys'}) — this device only`],
   }[mode];
   el.className = `inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-[9px] font-display font-black uppercase tracking-[.15em] ${cfg[1]}`;
   el.title = cfg[3];
@@ -334,7 +334,7 @@ async function saveRoster(mutate, okMsg) {
   try { result = await store.publish(next); } finally { rosterSaving = false; }
   lastSelfPublish = result.updated || null;
   renderTeamEditorValues();
-  if (!result.ok) toast('⚠ Saved on this device only — Firebase write failed', true);
+  if (!result.ok) toast('⚠ Saved on this device only — Supabase write failed', true);
   else if (result.local) toast(`${okMsg} — saved on this device only`);
   else toast(`✓ ${okMsg}`);
   return result;
@@ -540,5 +540,5 @@ function toast(message, bad) {
 
 currentMatch = firstUnplayedMatch();
 store.start();
-if (!isConfigured) console.warn('[ddam-cup] Firebase not configured — running local-only. Missing:', missingKeys.join(', '));
-else if (!isLive()) console.warn('[ddam-cup] Firebase failed to initialise — running local-only.');
+if (!isConfigured) console.warn('[ddam-cup] Supabase not configured — running local-only. Missing:', missingKeys.join(', '));
+else if (!isLive()) console.warn('[ddam-cup] Supabase failed to initialise — running local-only.');

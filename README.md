@@ -1,7 +1,7 @@
 # DDAM CUP — DOTA 2 Tournament Board
 
 Real-time DOTA 2 tournament scoreboard for six teams. The board uses a
-black-and-red esports theme and can run locally or sync through Firebase.
+black-and-red esports theme and can run locally or sync through Supabase Realtime.
 
 ## Tournament format
 
@@ -41,7 +41,7 @@ When two or more teams have the same points:
 - Five-player roster editing per team.
 - Editable A/B zone assignment with a three-team limit per zone.
 - Zone standings, four-team final round-robin schedule and overall standings.
-- Firebase live sync with localStorage fallback.
+- Supabase live sync with localStorage fallback.
 
 ## Run locally
 
@@ -58,25 +58,27 @@ The board opens at `http://localhost:5173`.
 
 Import the repository into Vercel. The project is already configured with
 `vercel.json`; Vercel will run `npm run build` and publish `dist/`.
-For shared live scores, add the `VITE_FIREBASE_*` variables from `.env` in
-Vercel Project Settings → Environment Variables, then redeploy.
+For shared live scores, add `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_ANON_KEY` in Vercel Project Settings → Environment Variables,
+then redeploy.
 
 ```bash
 npm run build
 npm run preview
 ```
 
-## Firebase
+## Supabase setup
 
-Copy `.env.example` to `.env` and fill in the Firebase Realtime Database values.
-The default board id is `ddam-cup-dota2-ab-roundrobin`; set
-`VITE_TOURNAMENT_ID` to use a different board. The Firebase rules are in
-`database.rules.json`.
+1. Create a Supabase project.
+2. Open **SQL Editor** and run [`supabase/schema.sql`](supabase/schema.sql).
+3. Copy `.env.example` to `.env` and fill in the project URL and anon key from
+   **Project Settings → API**.
+4. For Vercel, add the same `VITE_SUPABASE_URL` and
+   `VITE_SUPABASE_ANON_KEY` variables to the project and redeploy.
 
-The browser-visible Firebase API key is not an authorisation secret. Database
-Rules are the actual access control. The included rules are suitable for an
-internal board and allow public read/write, so use authenticated rules if the
-board is public.
+The starter SQL allows anonymous read/write so the existing Admin screen works
+without a login. That is suitable for a small internal cup; add Supabase Auth
+and tighten the RLS policies before using it as a public production system.
 
 ## Main configuration
 
