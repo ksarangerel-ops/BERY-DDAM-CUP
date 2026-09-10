@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "tournaments": {
+      "$tournamentId": {
+        ".read": true,
+        ".write": "auth != null && auth.token.email_verified == true",
+        ".validate": "newData.hasChildren(['teams'])"
+      }
+    }
+  }
+}

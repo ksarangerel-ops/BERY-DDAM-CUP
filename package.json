@@ -1,0 +1,19 @@
+{
+  "name": "ddam-cup-dota2",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Real-time DDAM CUP DOTA 2 tournament scoreboard backed by Firebase Realtime Database",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "firebase": "^12.4.0",
+    "html2canvas": "^1.4.1"
+  },
+  "devDependencies": {
+    "vite": "^7.1.14"
+  }
+}
