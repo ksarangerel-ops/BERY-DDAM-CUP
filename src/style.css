@@ -14,6 +14,8 @@
      ========================================================== */
   :root{
     --bg-photo: url('https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=2400&q=80');
+    --spectrum: linear-gradient(105deg,#f43f5e 0%,#f97316 18%,#facc15 34%,#22c55e 50%,#06b6d4 66%,#3b82f6 82%,#a855f7 100%);
+    --spectrum-soft: linear-gradient(105deg,rgba(244,63,94,.28),rgba(250,204,21,.22),rgba(34,197,94,.24),rgba(6,182,212,.24),rgba(168,85,247,.28));
   }
   /* Only <html> may carry an opaque background here. An opaque background on
      <body> paints AFTER negative-z-index children in the root stacking context,
@@ -31,12 +33,14 @@
   body::after{
     content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
     background-image:
-      radial-gradient(1200px 520px at 50% -10%, rgba(37,99,235,.28), transparent 62%),
-      radial-gradient(900px 440px at 92% 4%,  rgba(30,64,175,.24), transparent 62%),
-      radial-gradient(700px 400px at 4% 96%,  rgba(37,99,235,.15), transparent 60%),
-      linear-gradient(rgba(45,78,140,.25) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(45,78,140,.25) 1px, transparent 1px);
-    background-size: auto, auto, auto, 46px 46px, 46px 46px;
+      radial-gradient(900px 520px at 8% 8%, rgba(244,63,94,.18), transparent 62%),
+      radial-gradient(900px 480px at 92% 4%, rgba(168,85,247,.20), transparent 62%),
+      radial-gradient(800px 460px at 50% 45%, rgba(6,182,212,.13), transparent 64%),
+      radial-gradient(700px 420px at 6% 96%, rgba(34,197,94,.14), transparent 60%),
+      radial-gradient(700px 420px at 96% 92%, rgba(250,204,21,.10), transparent 60%),
+      linear-gradient(rgba(68,86,140,.22) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(68,86,140,.22) 1px, transparent 1px);
+    background-size: auto, auto, auto, auto, auto, 46px 46px, 46px 46px;
   }
 
   ::-webkit-scrollbar{height:8px;width:8px}
@@ -58,6 +62,10 @@
   .glass-2{ background:rgba(17,28,50,.76); }   /* table headers / inner strips */
   .glow-gold{ border-color:rgba(37,99,235,.55); box-shadow:0 0 0 1px rgba(37,99,235,.18), 0 0 34px -12px rgba(37,99,235,.62), 0 22px 48px -26px rgba(0,0,0,.95); }
   .glow-cyan{ border-color:rgba(147,197,253,.40); box-shadow:0 0 0 1px rgba(147,197,253,.12), 0 0 30px -12px rgba(147,197,253,.45), 0 22px 48px -26px rgba(0,0,0,.95); }
+  .rainbow-fill{background-image:var(--spectrum) !important;background-size:240% 100%;animation:spectrumShift 9s linear infinite;}
+  .rainbow-border{border:1px solid transparent !important;background:linear-gradient(rgba(13,20,36,.88),rgba(13,20,36,.88)) padding-box,var(--spectrum) border-box;}
+  .spectrum-text{background:var(--spectrum);background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:spectrumShift 9s linear infinite;}
+  @keyframes spectrumShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
   .clip-tag{clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
   .row-champ{background:linear-gradient(90deg, rgba(37,99,235,.28), rgba(37,99,235,.08) 45%, transparent);box-shadow:inset 3px 0 0 0 #2563eb;}
@@ -215,7 +223,7 @@
   }
   input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   input[type=number]{-moz-appearance:textfield}
-  .tabbtn.active{background:#2563eb;color:#080808;box-shadow:0 0 24px -6px rgba(37,99,235,.8)}
+  .tabbtn.active{background-image:var(--spectrum);background-size:240% 100%;color:#080808;box-shadow:0 0 24px -6px rgba(59,130,246,.8);animation:spectrumShift 9s linear infinite}
   .toast-in{animation:tin .25s ease-out}
   @keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
@@ -242,7 +250,7 @@
   @media(max-width:800px){.bracket{grid-template-columns:1fr;gap:.7rem}.bracket-arrow{transform:rotate(90deg);justify-self:center}.bracket-round-title{font-size:.55rem}}
 
   @media (prefers-reduced-motion: reduce){
-    .champ-name,.mvp-card,.toast-in{animation:none}
+    .champ-name,.mvp-card,.toast-in,.rainbow-fill,.spectrum-text,.tabbtn.active{animation:none}
   }
 
   /* ---------- rules page ---------- */

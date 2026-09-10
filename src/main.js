@@ -245,7 +245,7 @@ function renderRosters() {
     ? computeStandings(state).find(row => row.rank === 1 && row.qualified)
     : null;
   $('mvpCard').innerHTML = champion
-    ? `<div class="mvp-card h-full rounded-2xl border border-gold/60 bg-gradient-to-br from-gold/20 via-panel/85 to-ink/90 backdrop-blur-md p-5 flex flex-col justify-center text-center">
+    ? `<div class="mvp-card rainbow-border h-full rounded-2xl border border-gold/60 bg-gradient-to-br from-gold/20 via-panel/85 to-ink/90 backdrop-blur-md p-5 flex flex-col justify-center text-center">
         <img src="/ddam-logo.svg" alt="DDAM CUP" class="champion-logo mx-auto mb-3">
         <div class="text-[10px] uppercase tracking-[.35em] font-display font-black text-gold">CHAMPION · 1ST PLACE</div>
         <div class="font-display font-black text-2xl sm:text-3xl mt-2 text-white champ-name">${esc(champion.team.name)}</div>
