@@ -271,6 +271,21 @@ function renderRosters() {
   $('btnMore').textContent = showAllPlayers ? 'Show top 10' : `Show all ${rows.length}`;
 }
 
+function renderPerformanceBlock(match, teams) {
+  const rows = teams.flatMap(team => team.players.map(player => ({
+    team,
+    player,
+    stats: state.results[match.id]?.[team.id]?.players?.[player.id] || {},
+  })));
+  const hasStats = rows.some(row => Object.values(row.stats).some(value => value !== '' && value != null));
+  if (!hasStats) return `<div class="mt-3 rounded-xl glass overflow-hidden border border-cyan/20"><div class="px-4 py-3 glass-2 border-b border-cyan/20 flex items-center justify-between gap-3"><span class="font-display font-black text-[10px] uppercase tracking-[.2em] text-white">Player Performance</span><span class="text-[9px] uppercase tracking-widest text-slate-500">Awaiting admin input</span></div><div class="px-4 py-3 text-xs text-slate-500">K/D/A, damage, net worth, level and items can be added from Admin after this series.</div></div>`;
+  return `<div class="mt-3 rounded-xl glass overflow-hidden border border-cyan/25"><div class="px-4 py-3 glass-2 border-b border-cyan/20 flex items-center justify-between gap-3"><div class="flex items-center gap-2"><span class="text-cyan">${ICONS.crown('ico w-4 h-4')}</span><span class="font-display font-black text-[10px] uppercase tracking-[.2em] text-white">Player Performance</span></div><span class="text-[9px] uppercase tracking-widest text-cyan">${match.format} series stats</span></div><div class="overflow-x-auto"><div class="min-w-[720px] grid grid-cols-[minmax(150px,1.4fr)_minmax(70px,.65fr)_minmax(90px,.8fr)_minmax(100px,.9fr)_minmax(55px,.45fr)_minmax(180px,1.5fr)] gap-2 px-4 py-2 text-[9px] uppercase tracking-widest font-display font-bold text-slate-500 border-b border-line/70"><span>Player / Team</span><span class="text-center">K / D / A</span><span class="text-center">Damage</span><span class="text-center">Net worth</span><span class="text-center">Level</span><span>Items</span>${rows.map(row => {
+    const stats = row.stats;
+    const kda = [stats.kills, stats.deaths, stats.assists].every(value => value !== '' && value != null) ? `${stats.kills}/${stats.deaths}/${stats.assists}` : '—';
+    return `<span class="truncate py-2 text-slate-200"><b class="text-white">${esc(row.player.name)}</b><small class="block mt-0.5 text-cyan">${esc(row.team.tag)}</small></span><span class="py-2 text-center font-mono font-bold text-white">${esc(kda)}</span><span class="py-2 text-center font-mono font-bold text-cyan">${esc(stats.damage ?? '—')}</span><span class="py-2 text-center font-mono font-bold text-gold">${esc(stats.netWorth ?? '—')}</span><span class="py-2 text-center font-mono font-bold text-white">${esc(stats.level ?? '—')}</span><span class="truncate py-2 text-slate-400">${esc(stats.items || '—')}</span>`;
+  }).join('')}</div></div></div>`;
+}
+
 function renderMatchCards() {
   $('matchCards').innerHTML = MATCHES.map(match => {
     const teams = activeTeamsForMatch(match.id);
@@ -284,7 +299,7 @@ function renderMatchCards() {
       return `<div class="rounded-xl border border-dashed border-line bg-ink/40 p-5 text-center"><div class="font-display font-bold text-xs uppercase tracking-[.2em] text-slate-500">${match.label}</div><div class="text-xs text-slate-600 mt-1 font-semibold">${teams.length} teams · waiting for result</div></div>`;
     }
     const list = teams.map(team => ({ team, stats: seriesStats(state, match.id, team.id) })).filter(row => row.stats).sort((a, b) => b.stats.points - a.stats.points || b.stats.wins - a.stats.wins);
-    return `<div class="rounded-xl glass overflow-hidden"><div class="px-4 py-3 glass-2 border-b border-gold/20 flex items-center justify-between"><span class="font-display font-bold text-xs uppercase tracking-[.2em] text-white">${match.label}</span><span class="font-display font-bold text-xs uppercase tracking-[.2em] text-gold">${match.format}</span></div><div class="divide-y divide-line/50">${list.map(row => `<div class="flex items-center gap-2 px-4 py-2.5 text-sm"><span class="w-6 font-mono font-extrabold text-slate-500">${row.stats.series}</span><span class="flex-1 font-semibold truncate text-slate-200">${esc(row.team.name)}</span><span class="font-mono text-xs font-extrabold text-cyan">${row.stats.points}P</span></div>`).join('')}</div></div>`;
+    return `<div><div class="rounded-xl glass overflow-hidden"><div class="px-4 py-3 glass-2 border-b border-gold/20 flex items-center justify-between"><span class="font-display font-bold text-xs uppercase tracking-[.2em] text-white">${match.label}</span><span class="font-display font-bold text-xs uppercase tracking-[.2em] text-gold">${match.format}</span></div><div class="divide-y divide-line/50">${list.map(row => `<div class="flex items-center gap-2 px-4 py-2.5 text-sm"><span class="w-6 font-mono font-extrabold text-slate-500">${row.stats.series}</span><span class="flex-1 font-semibold truncate text-slate-200">${esc(row.team.name)}</span><span class="font-mono text-xs font-extrabold text-cyan">${row.stats.points}P</span></div>`).join('')}</div></div>${renderPerformanceBlock(match, teams)}</div>`;
   }).join('');
 }
 
@@ -313,6 +328,24 @@ function renderMatchTab(match) {
   return `<button type="button" data-match="${match.id}" class="mtab clip-tag px-4 py-3 border text-left transition ${on ? 'bg-gold text-ink border-gold shadow-gold' : 'bg-ink/50 border-line hover:border-cyan'}"><div class="font-display font-black text-xs uppercase tracking-[.15em] ${on ? 'text-ink' : 'text-white'}">Match ${gameNumber(match)}</div><div class="text-[11px] font-bold ${on ? 'text-ink/70' : 'text-slate-400'}">${match.format}${matchComplete(state, match) ? ' · ✓ saved' : ''}</div></button>`;
 }
 
+const PERFORMANCE_FIELDS = [
+  { key: 'kills', label: 'K', placeholder: '0' },
+  { key: 'deaths', label: 'D', placeholder: '0' },
+  { key: 'assists', label: 'A', placeholder: '0' },
+  { key: 'damage', label: 'Damage', placeholder: '0' },
+  { key: 'netWorth', label: 'Net worth', placeholder: '0' },
+  { key: 'level', label: 'Level', placeholder: '0' },
+  { key: 'items', label: 'Items', placeholder: 'Blink, BKB…', text: true },
+];
+
+function renderPerformanceInputs(team, result) {
+  const playerStats = result[team.id]?.players || {};
+  return `<details class="mt-3 rounded-xl border border-cyan/20 bg-ink/40 overflow-hidden"><summary class="cursor-pointer px-3 py-2.5 text-[10px] uppercase tracking-[.2em] font-display font-black text-cyan hover:bg-cyan/5">Player Performance · optional</summary><div class="overflow-x-auto p-3"><div class="min-w-[640px] grid grid-cols-[minmax(130px,1.1fr)_repeat(6,minmax(62px,.55fr))_minmax(150px,1.2fr)] gap-2 items-center text-[9px] uppercase tracking-widest font-display font-bold text-slate-500"><span>Player</span>${PERFORMANCE_FIELDS.slice(0, 6).map(field => `<span class="text-center">${field.label}</span>`).join('')}<span>Items</span>${team.players.map(player => {
+    const saved = playerStats[player.id] || {};
+    return `<span class="truncate text-slate-300">${esc(player.name)}</span>${PERFORMANCE_FIELDS.map(field => `<input data-performance-player="${player.id}" data-performance-key="${field.key}" type="${field.text ? 'text' : 'number'}" min="0" value="${esc(saved[field.key] ?? '')}" placeholder="${field.placeholder}" class="performance-input min-w-0 rounded-md bg-ink/60 border border-line px-2 py-1.5 text-[11px] font-bold text-white focus:outline-none focus:border-cyan">`).join('')}`;
+  }).join('')}</div></div></details>`;
+}
+
 function renderTeamCards() {
   const match = matchConfig(currentMatch);
   const teams = activeTeamsForMatch();
@@ -330,7 +363,7 @@ function renderTeamCards() {
   $('teamCards').innerHTML = teams.map(team => {
     const current = result[team.id]?.series || '';
     const players = team.players.map(player => `<div class="grid grid-cols-[1fr] gap-2 items-center" data-player="${player.id}"><input type="text" value="${esc(player.name)}" maxlength="24" placeholder="Player name" class="p-name bg-ink/60 border border-line rounded-lg px-2.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold min-w-0"></div>`).join('');
-    return `<div class="team-card rounded-2xl glass overflow-hidden" data-team="${team.id}"><div class="px-4 py-3 glass-2 border-b border-gold/20 flex items-center gap-2.5 flex-wrap"><span class="tc-tag font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-ink/70 border border-line text-cyan">${esc(team.tag)}</span><span class="tc-name font-display font-bold text-sm text-white">${esc(team.name)}</span><span class="tc-zone text-[9px] uppercase tracking-widest font-bold text-gold">Zone ${esc(team.zoneId)}</span><div class="sel ml-auto"><select class="t-series select-esports" aria-label="BO result for ${esc(team.name)}"><option value="">Result —</option>${resultOptions(match)}</select></div></div><div class="px-4 pt-3 pb-2 text-[9px] uppercase tracking-[.18em] font-display font-bold text-slate-500">Roster · 5 players</div><div class="px-4 pb-3 space-y-2">${players}</div><div class="px-4 py-2.5 bg-ink/60 border-t border-line/70 flex items-center gap-4 text-xs"><span class="uppercase tracking-[.15em] font-display font-bold text-slate-500">Series result</span><span class="t-series-label font-mono font-extrabold text-cyan text-base">${current || '—'}</span><span class="uppercase tracking-[.15em] font-display font-bold text-slate-500 ml-auto">Points</span><span class="t-pts font-display font-black text-white text-base">${current ? `${previewResult(match, current).points}` : '—'}</span></div></div>`;
+    return `<div class="team-card rounded-2xl glass overflow-hidden" data-team="${team.id}"><div class="px-4 py-3 glass-2 border-b border-gold/20 flex items-center gap-2.5 flex-wrap"><span class="tc-tag font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-ink/70 border border-line text-cyan">${esc(team.tag)}</span><span class="tc-name font-display font-bold text-sm text-white">${esc(team.name)}</span><span class="tc-zone text-[9px] uppercase tracking-widest font-bold text-gold">Zone ${esc(team.zoneId)}</span><div class="sel ml-auto"><select class="t-series select-esports" aria-label="BO result for ${esc(team.name)}"><option value="">Result —</option>${resultOptions(match)}</select></div></div><div class="px-4 pt-3 pb-2 text-[9px] uppercase tracking-[.18em] font-display font-bold text-slate-500">Roster · 5 players</div><div class="px-4 pb-3 space-y-2">${players}</div><div class="px-4 pb-3">${renderPerformanceInputs(team, result)}</div><div class="px-4 py-2.5 bg-ink/60 border-t border-line/70 flex items-center gap-4 text-xs"><span class="uppercase tracking-[.15em] font-display font-bold text-slate-500">Series result</span><span class="t-series-label font-mono font-extrabold text-cyan text-base">${current || '—'}</span><span class="uppercase tracking-[.15em] font-display font-bold text-slate-500 ml-auto">Points</span><span class="t-pts font-display font-black text-white text-base">${current ? `${previewResult(match, current).points}` : '—'}</span></div></div>`;
   }).join('');
 
   document.querySelectorAll('#teamCards .t-series').forEach(select => {
@@ -527,7 +560,16 @@ $('resultForm').addEventListener('submit', async event => {
       const name = row.querySelector('.p-name').value.trim();
       if (name) nameEdits.push([row.dataset.player, name]);
     });
-    entry[card.dataset.team] = { series };
+    const players = {};
+    card.querySelectorAll('[data-performance-player]').forEach(input => {
+      const value = input.value.trim();
+      if (!value) return;
+      const playerId = input.dataset.performancePlayer;
+      const key = input.dataset.performanceKey;
+      if (!players[playerId]) players[playerId] = {};
+      players[playerId][key] = input.type === 'number' ? Number(value) : value;
+    });
+    entry[card.dataset.team] = { series, players };
   });
   if (missing) return toast('⚠ Select a BO result for every team', true);
 
