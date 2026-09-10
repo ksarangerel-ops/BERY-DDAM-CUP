@@ -13,7 +13,7 @@ import {
   qualifiedTeams, seriesStats, matchTeams,
 } from './scoring.js';
 import { ICONS } from './icons.js';
-import { enhanceSelects, setSelectState } from './select.js';
+import { enhanceSelects, setSelectState, syncSelect } from './select.js';
 import { isConfigured, missingKeys, isLive } from './supabase.js';
 
 let state = blankState();
@@ -58,6 +58,10 @@ function previewResult(match, series) {
     draws: wins === losses ? 1 : 0,
     points: SERIES_POINTS[series],
   };
+}
+
+function oppositeSeries(series) {
+  return { '2-0': '0-2', '0-2': '2-0', '1-1': '1-1', '': '' }[series] || '';
 }
 
 /* ---------- store wiring ---------- */
@@ -304,7 +308,17 @@ function renderTeamCards() {
   document.querySelectorAll('#teamCards .t-series').forEach(select => {
     const saved = result[select.closest('.team-card').dataset.team]?.series || '';
     select.value = saved;
-    select.addEventListener('change', () => { formDirty = true; updateLive(); });
+    select.addEventListener('change', () => {
+      const currentCard = select.closest('.team-card');
+      const otherSelect = [...document.querySelectorAll('#teamCards .team-card')]
+        .find(card => card !== currentCard)?.querySelector('.t-series');
+      if (otherSelect) {
+        otherSelect.value = oppositeSeries(select.value);
+        syncSelect(otherSelect);
+      }
+      formDirty = true;
+      updateLive();
+    });
   });
   document.querySelectorAll('#teamCards .p-name').forEach(input => {
     const pid = input.closest('[data-player]').dataset.player;
@@ -364,7 +378,7 @@ function updateLive() {
     card.querySelector('.t-pts').textContent = preview ? preview.points : '—';
     setSelectState(select, { error: false, empty: !value });
   });
-  $('rankWarn').textContent = missing ? `⚠ ${missing} team result${missing > 1 ? 's' : ''} missing` : '';
+  $('rankWarn').textContent = missing ? '⚠ Select the BO2 result' : '';
 }
 
 function renderTeamEditor() {
