@@ -10,7 +10,7 @@ import {
 import { createStore, blankState, MODE } from './store.js';
 import {
   computeStandings, computePlayers, computeZoneStandings, completedZone,
-  qualifiedTeams, seriesStats, matchTeams,
+  qualifiedTeams, seriesStats, matchTeams, matchComplete,
 } from './scoring.js';
 import { ICONS } from './icons.js';
 import { enhanceSelects, setSelectState, syncSelect } from './select.js';
@@ -35,7 +35,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
 const num = n => (n || 0).toLocaleString('en-US');
 const teamOf = pid => state.teams.find(team => team.players.some(player => player.id === pid));
 const matchConfig = matchNo => MATCHES.find(match => match.id === Number(matchNo));
-const firstUnplayedMatch = () => MATCHES.find(match => !state.results[match.id])?.id || 1;
+const firstUnplayedMatch = () => MATCHES.find(match => !matchComplete(state, match))?.id || 1;
 const activeTeamsForMatch = (matchNo = currentMatch) => matchTeams(state, matchNo);
 const matchTitle = (matchNo = currentMatch) => {
   const match = matchConfig(matchNo);
@@ -126,7 +126,7 @@ function renderRemoteNotice() {
 
 function renderMapChips() {
   $('mapChips').innerHTML = MATCHES.map(match => {
-    const played = !!state.results[match.id];
+    const played = matchComplete(state, match);
     const group = match.stage === 'final' ? 'FINAL BO3' : `ZONE ${match.zoneId}`;
     return `<div class="clip-tag px-3 sm:px-4 py-2 border ${played ? 'border-gold/60 bg-gold/15' : 'border-line bg-ink/40'}">
       <div class="text-[9px] uppercase tracking-[.2em] font-display font-bold ${played ? 'text-gold' : 'text-slate-500'}">${group} · M${gameNumber(match)}</div>
@@ -144,14 +144,14 @@ function renderFormatRules() {
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div class="text-[10px] uppercase tracking-[.3em] font-display font-black text-cyan">DOTA 2 TOURNAMENT FORMAT</div>
-          <h3 class="font-display font-black text-lg sm:text-xl text-white mt-1">DDAM CUP — 6 Team Round Robin</h3>
+          <h3 class="font-display font-black text-lg sm:text-xl text-white mt-1">DDAM CUP — 6 Team BO3 Bracket</h3>
         </div>
         <span class="text-[10px] uppercase tracking-widest font-display font-black px-2 py-1 rounded border ${assigned === 6 ? 'text-emerald-300 border-emerald-400/40 bg-emerald-400/10' : 'text-gold border-gold/40 bg-gold/10'}">${assigned}/6 teams assigned</span>
       </div>
       <div class="grid gap-3 md:grid-cols-3 mt-4 text-sm">
         <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-gold">1. Zone stage</b><br><span class="text-slate-400">6 teams are divided into Zone ${zoneA} and Zone ${zoneB}, three teams per zone. Each zone plays a BO2 round robin.</span></div>
         <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-cyan">2. Qualification</b><br><span class="text-slate-400">The bottom team from each zone is eliminated. The top 2 from each zone advance.</span></div>
-        <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-white">3. Final BO3 round robin</b><br><span class="text-slate-400">The qualified 4 teams play one BO3 against each other. Six final matches decide places 1–4.</span></div>
+        <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-white">3. Final BO3 bracket</b><br><span class="text-slate-400">The qualified 4 teams play two semifinals. Winners play for 1st/2nd; losers play for 3rd/4th.</span></div>
       </div>
       <p class="text-xs text-slate-500 mt-4">Current status: ${finalists.length ? `${finalists.length} finalists qualified.` : 'Zone assignment or zone results are not complete yet.'} Zone assignment can be changed from Admin → Team Setup.</p>
     </div>`;
@@ -184,21 +184,26 @@ function renderBracket() {
   const finalists = qualifiedTeams(state);
   const ready = finalists.length === 4;
   const finalMatches = MATCHES.filter(match => match.stage === 'final');
+  const matchCard = match => {
+    const teams = matchTeams(state, match);
+    const fallback = match.bracket === 'semi'
+      ? (match.id === 7 ? ['Zone A #1', 'Zone B #2'] : ['Zone B #1', 'Zone A #2'])
+      : match.bracket === 'grand' ? ['Semi 1 winner', 'Semi 2 winner'] : ['Semi 1 loser', 'Semi 2 loser'];
+    const names = teams.length === 2 ? teams.map(team => esc(team.name)) : fallback;
+    const complete = matchComplete(state, match);
+    const status = complete ? 'Saved' : (teams.length === 2 ? 'Open' : 'Locked');
+    return `<div class="bracket-match ${complete ? 'is-saved' : ''}"><div class="px-3 py-2 border-b border-gold/20 flex items-center justify-between"><span class="bracket-round-title">M${match.id} · ${esc(match.label.split(' · ')[0])}</span><span class="text-[9px] uppercase tracking-widest ${complete ? 'text-gold' : 'text-slate-500'}">${status}</span></div><span>${names[0]}</span><span>${names[1]}</span><div class="px-3 py-2 text-[9px] uppercase tracking-widest text-slate-500">${match.bracket === 'grand' ? '1st / 2nd place' : match.bracket === 'third' ? '3rd / 4th place' : 'BO3 semifinal'}</div></div>`;
+  };
   $('bracket').innerHTML = `<div class="rounded-2xl glass overflow-hidden border border-gold/25">
     <div class="px-4 sm:px-5 py-3 glass-2 border-b border-gold/20 flex items-center justify-between gap-3">
-      <div class="flex items-center gap-2.5"><span class="w-1.5 h-5 rounded-full bg-gold"></span><h3 class="font-display font-black text-xs sm:text-sm uppercase tracking-[.2em] text-white">Final BO3 Round Robin · 4 Teams</h3></div>
+      <div class="flex items-center gap-2.5"><span class="w-1.5 h-5 rounded-full bg-gold"></span><h3 class="font-display font-black text-xs sm:text-sm uppercase tracking-[.2em] text-white">Final BO3 Elimination · 4 Teams</h3></div>
       <span class="text-[9px] uppercase tracking-widest font-display font-black ${ready ? 'text-gold' : 'text-slate-500'}">${ready ? '4 finalists ready' : 'Awaiting zone results'}</span>
     </div>
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 p-4 sm:p-5">
-      ${finalMatches.map((match, index) => {
-        const teams = matchTeams(state, match);
-        const result = state.results[match.id];
-        const names = teams.length === 2 ? teams.map(team => esc(team.name)) : ['Finalist slot', 'Finalist slot'];
-        const status = result ? 'Saved' : (ready ? 'Open' : 'Locked');
-        return `<div class="bracket-match"><div class="px-3 py-2 border-b border-gold/20 flex items-center justify-between"><span class="bracket-round-title">M${match.id} · Final ${index + 1}</span><span class="text-[9px] uppercase tracking-widest ${result ? 'text-gold' : 'text-slate-500'}">${status}</span></div><span>${names[0]}</span><span>${names[1]}</span></div>`;
-      }).join('')}
+    <div class="grid gap-4 lg:grid-cols-2 p-4 sm:p-5">
+      <div class="rounded-xl border border-line bg-ink/30 p-3"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-cyan mb-3">Semifinals · BO3</div><div class="grid gap-3 sm:grid-cols-2">${finalMatches.filter(match => match.bracket === 'semi').map(matchCard).join('')}</div></div>
+      <div class="rounded-xl border border-gold/30 bg-gold/5 p-3"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-gold mb-3">Placement Finals · BO3</div><div class="grid gap-3">${finalMatches.filter(match => match.bracket !== 'semi').map(matchCard).join('')}</div></div>
     </div>
-    <p class="px-4 pb-4 text-[11px] text-slate-500">Zone ${ZONES[0]} #1, #2 and Zone ${ZONES[1]} #1, #2 form one group. Every finalist plays the other three teams once in BO3. Final BO3 points decide places 1–4.</p>
+    <p class="px-4 pb-4 text-[11px] text-slate-500">Zone A #1 plays Zone B #2. Zone B #1 plays Zone A #2. Semifinal winners play for 1st/2nd; semifinal losers play for 3rd/4th.</p>
   </div>`;
 }
 
@@ -234,16 +239,27 @@ function renderRosters() {
   const rows = computePlayers(state);
   const list = showAllPlayers ? rows : rows.slice(0, 10);
   const assigned = state.teams.filter(team => team.zoneId).length;
-  $('mvpCard').innerHTML = `<div class="h-full rounded-2xl border border-cyan/40 bg-gradient-to-br from-cyan/10 via-panel/80 to-ink/90 backdrop-blur-md p-5 flex flex-col justify-center text-center">
-    <div class="text-cyan mx-auto mb-2">${ICONS.crown('ico w-10 h-10')}</div>
-    <div class="text-[10px] uppercase tracking-[.3em] font-display font-black text-cyan">DOTA 2 CUP STATUS</div>
-    <div class="font-display font-black text-xl sm:text-2xl mt-2 text-white">${state.teams.length} Teams</div>
-    <div class="text-sm text-slate-400 mt-1">${assigned}/6 zone assignments complete</div>
-      <div class="grid grid-cols-2 gap-2 mt-4">
-       <div class="rounded-xl bg-ink/70 border border-line py-2.5"><div class="font-display font-black text-2xl text-gold">3×2</div><div class="text-[9px] uppercase tracking-[.2em] font-bold text-slate-500">Each zone</div></div>
-       <div class="rounded-xl bg-ink/70 border border-line py-2.5"><div class="font-display font-black text-2xl text-cyan">6</div><div class="text-[9px] uppercase tracking-[.2em] font-bold text-slate-500">Final matches</div></div>
-    </div>
-  </div>`;
+  const champion = matchComplete(state, 9)
+    ? computeStandings(state).find(row => row.rank === 1 && row.qualified)
+    : null;
+  $('mvpCard').innerHTML = champion
+    ? `<div class="mvp-card h-full rounded-2xl border border-gold/60 bg-gradient-to-br from-gold/20 via-panel/85 to-ink/90 backdrop-blur-md p-5 flex flex-col justify-center text-center">
+        <img src="/ddam-logo.svg" alt="DDAM CUP" class="champion-logo mx-auto mb-3">
+        <div class="text-[10px] uppercase tracking-[.35em] font-display font-black text-gold">CHAMPION · 1ST PLACE</div>
+        <div class="font-display font-black text-2xl sm:text-3xl mt-2 text-white champ-name">${esc(champion.team.name)}</div>
+        <div class="text-sm text-slate-300 mt-1"><span class="font-mono text-cyan">${esc(champion.team.tag)}</span> · Grand Final winner</div>
+        <div class="mt-4 inline-flex self-center items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-[10px] uppercase tracking-[.2em] font-display font-black text-gold">${champion.finalPoints} final points</div>
+      </div>`
+    : `<div class="h-full rounded-2xl border border-cyan/40 bg-gradient-to-br from-cyan/10 via-panel/80 to-ink/90 backdrop-blur-md p-5 flex flex-col justify-center text-center">
+        <img src="/ddam-logo.svg" alt="DDAM CUP" class="champion-logo mx-auto mb-2 opacity-80">
+        <div class="text-[10px] uppercase tracking-[.3em] font-display font-black text-cyan">DOTA 2 CUP STATUS</div>
+        <div class="font-display font-black text-xl sm:text-2xl mt-2 text-white">${state.teams.length} Teams</div>
+        <div class="text-sm text-slate-400 mt-1">${assigned}/6 zone assignments complete</div>
+        <div class="grid grid-cols-2 gap-2 mt-4">
+          <div class="rounded-xl bg-ink/70 border border-line py-2.5"><div class="font-display font-black text-2xl text-gold">3×2</div><div class="text-[9px] uppercase tracking-[.2em] font-bold text-slate-500">Each zone</div></div>
+          <div class="rounded-xl bg-ink/70 border border-line py-2.5"><div class="font-display font-black text-2xl text-cyan">4</div><div class="text-[9px] uppercase tracking-[.2em] font-bold text-slate-500">Final matches</div></div>
+        </div>
+      </div>`;
   $('mvpTable').innerHTML = list.map(row => `<tr class="hover:bg-white/[.04] transition">
     <td class="py-2.5 pl-4 pr-2"><span class="font-display font-black text-xs text-slate-500">${row.rank}</span></td>
     <td class="py-2.5 px-2"><span class="font-display font-bold text-sm text-white">${esc(row.player.name)}</span></td>
@@ -256,12 +272,13 @@ function renderRosters() {
 function renderMatchCards() {
   $('matchCards').innerHTML = MATCHES.map(match => {
     const teams = activeTeamsForMatch(match.id);
-    const result = state.results[match.id];
     if (!teams.length) {
-      const text = match.stage === 'final' ? 'Finish both zone round robins first' : `Assign 3 teams to Zone ${match.zoneId}`;
+      const text = match.stage === 'final'
+        ? (match.bracket === 'semi' ? 'Finish both zone round robins first' : 'Finish both semifinals first')
+        : `Assign 3 teams to Zone ${match.zoneId}`;
       return `<div class="rounded-xl border border-dashed border-line bg-ink/40 p-5 text-center"><div class="font-display font-bold text-xs uppercase tracking-[.2em] text-slate-500">${match.label}</div><div class="text-sm text-slate-600 mt-2 font-semibold">${text}</div></div>`;
     }
-    if (!result) {
+    if (!matchComplete(state, match)) {
       return `<div class="rounded-xl border border-dashed border-line bg-ink/40 p-5 text-center"><div class="font-display font-bold text-xs uppercase tracking-[.2em] text-slate-500">${match.label}</div><div class="text-xs text-slate-600 mt-1 font-semibold">${teams.length} teams · waiting for result</div></div>`;
     }
     const list = teams.map(team => ({ team, stats: seriesStats(state, match.id, team.id) })).filter(row => row.stats).sort((a, b) => b.stats.points - a.stats.points || b.stats.wins - a.stats.wins);
@@ -276,7 +293,7 @@ function renderSavedAt() {
 /* ---------- admin ---------- */
 function renderMatchTabs() {
   const zoneTabs = ZONES.map(zoneId => `<div class="w-full mt-1 first:mt-0"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-cyan mb-2">Zone ${zoneId} · Round Robin</div><div class="flex flex-wrap gap-2">${MATCHES.filter(match => match.stage === 'zone' && match.zoneId === zoneId).map(renderMatchTab).join('')}</div></div>`).join('');
-  const finalTabs = `<div class="w-full mt-3 pt-3 border-t border-line/70"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-gold mb-2">Final Round Robin · BO3 · 4 teams · 6 matches</div><div class="flex flex-wrap gap-2">${MATCHES.filter(match => match.stage === 'final').map(renderMatchTab).join('')}</div></div>`;
+  const finalTabs = `<div class="w-full mt-3 pt-3 border-t border-line/70"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-gold mb-2">Final BO3 Bracket · 4 teams · 4 matches</div><div class="flex flex-wrap gap-2">${MATCHES.filter(match => match.stage === 'final').map(renderMatchTab).join('')}</div></div>`;
   $('matchTabs').innerHTML = zoneTabs + finalTabs;
   document.querySelectorAll('.mtab').forEach(button => {
     button.onclick = () => {
@@ -291,7 +308,7 @@ function renderMatchTabs() {
 
 function renderMatchTab(match) {
   const on = match.id === currentMatch;
-  return `<button type="button" data-match="${match.id}" class="mtab clip-tag px-4 py-3 border text-left transition ${on ? 'bg-gold text-ink border-gold shadow-gold' : 'bg-ink/50 border-line hover:border-cyan'}"><div class="font-display font-black text-xs uppercase tracking-[.15em] ${on ? 'text-ink' : 'text-white'}">Match ${gameNumber(match)}</div><div class="text-[11px] font-bold ${on ? 'text-ink/70' : 'text-slate-400'}">${match.format}${state.results[match.id] ? ' · ✓ saved' : ''}</div></button>`;
+  return `<button type="button" data-match="${match.id}" class="mtab clip-tag px-4 py-3 border text-left transition ${on ? 'bg-gold text-ink border-gold shadow-gold' : 'bg-ink/50 border-line hover:border-cyan'}"><div class="font-display font-black text-xs uppercase tracking-[.15em] ${on ? 'text-ink' : 'text-white'}">Match ${gameNumber(match)}</div><div class="text-[11px] font-bold ${on ? 'text-ink/70' : 'text-slate-400'}">${match.format}${matchComplete(state, match) ? ' · ✓ saved' : ''}</div></button>`;
 }
 
 function renderTeamCards() {
@@ -300,7 +317,9 @@ function renderTeamCards() {
   const result = state.results[currentMatch] || {};
   if (!teams.length) {
     const message = match.stage === 'final'
-      ? 'Complete both zone round robins first. The top 2 from each zone will appear here.'
+      ? (match.bracket === 'semi'
+        ? 'Complete both zone round robins first. The top 2 from each zone will appear here.'
+        : 'Complete both semifinals first. Their winners/losers will appear here.')
       : `Assign exactly 3 teams to Zone ${match.zoneId} from the Team Setup panel first.`;
     $('teamCards').innerHTML = `<div class="xl:col-span-2 rounded-2xl border border-dashed border-gold/40 bg-gold/5 p-6 text-center"><div class="font-display font-black text-sm uppercase tracking-[.2em] text-gold">${match.stage === 'final' ? 'Final round is locked' : `Zone ${match.zoneId} is not ready`}</div><div class="text-sm text-slate-300 mt-2 font-semibold">${message}</div></div>`;
     $('rankWarn').textContent = '';
@@ -435,7 +454,7 @@ function renderTeamEditorValues() {
 }
 
 function renderRulesLegend() {
-  $('ptsLegend').innerHTML = `<li class="flex justify-between items-center"><span class="text-gold font-bold">Zone BO2 2–0 Win</span><span class="font-mono font-extrabold text-white">3 pts</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Zone BO2 1–1 Draw</span><span class="font-mono font-extrabold text-white">1 pt</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Zone BO2 0–2 Loss</span><span class="font-mono font-extrabold text-white">0 pts</span></li><li class="flex justify-between items-center pt-2 mt-2 border-t border-line text-cyan"><span>Zone stage</span><span class="font-mono font-extrabold">3 matches</span></li><li class="flex justify-between items-center text-gold"><span>Final BO3 win</span><span class="font-mono font-extrabold">3 pts</span></li><li class="flex justify-between items-center text-gold"><span>Final BO3 round robin</span><span class="font-mono font-extrabold">6 matches</span></li>`;
+  $('ptsLegend').innerHTML = `<li class="flex justify-between items-center"><span class="text-gold font-bold">Zone BO2 2–0 Win</span><span class="font-mono font-extrabold text-white">3 pts</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Zone BO2 1–1 Draw</span><span class="font-mono font-extrabold text-white">1 pt</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Zone BO2 0–2 Loss</span><span class="font-mono font-extrabold text-white">0 pts</span></li><li class="flex justify-between items-center pt-2 mt-2 border-t border-line text-cyan"><span>Zone stage</span><span class="font-mono font-extrabold">6 matches</span></li><li class="flex justify-between items-center text-gold"><span>Final BO3 bracket</span><span class="font-mono font-extrabold">4 matches</span></li><li class="flex justify-between items-center text-gold"><span>Placement</span><span class="font-mono font-extrabold">1st–4th</span></li>`;
 }
 
 function renderBoard() { renderMapChips(); renderFormatRules(); renderZoneCards(); renderBracket(); renderStandings(); renderRosters(); renderMatchCards(); renderSavedAt(); }
@@ -588,7 +607,7 @@ $('btnPng').onclick = async () => {
 
 $('btnCopy').onclick = async () => {
   const teams = computeStandings(state), players = computePlayers(state).slice(0, 10);
-  const text = ['🏆 DDAM CUP — DOTA 2', '', 'FORMAT: 2 ZONES × 3 TEAMS · ZONE ROUND ROBIN → TOP 2 + TOP 2 → FINAL ROUND ROBIN', '']
+  const text = ['🏆 DDAM CUP — DOTA 2', '', 'FORMAT: 2 ZONES × 3 TEAMS · ZONE BO2 → A1 vs B2 / B1 vs A2 → BO3 PLACEMENT FINALS', '']
     .concat(teams.map(row => `${row.rank}. ${row.team.name} [${row.team.tag}] — ${row.total} pts (${row.wins}-${row.draws}-${row.losses}, ${row.team.zoneId ? `Zone ${row.team.zoneId}` : 'Unassigned'}${row.qualified ? ', finalist' : ''})`))
     .concat(['', 'PLAYERS', ''])
     .concat(players.map(row => `${row.player.name} — ${row.team.name}${row.zoneId ? ` [Zone ${row.zoneId}]` : ''}`))

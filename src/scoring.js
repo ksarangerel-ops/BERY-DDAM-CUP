@@ -1,5 +1,5 @@
 /* ============================================================
-   DOTA 2 scoring — zone BO2 round robin → four-team BO3 round robin
+   DOTA 2 scoring — zone BO2 round robin → four-team BO3 elimination bracket
 ============================================================ */
 import {
   MATCHES, ZONES, TEAMS_PER_ZONE, pointsForSeries,
@@ -19,20 +19,52 @@ function scoreParts(series) {
 }
 
 /* Resolve the two slots in a match. Zone slots are the current A/B order;
-   final slots are the qualified teams ordered A1, A2, B1, B2. */
+   semifinal slots are A1 vs B2 and B1 vs A2. Final slots are fed by the
+   winners and losers of those semifinal matches. */
 export function matchTeams(state, matchNoOrConfig) {
   const match = typeof matchNoOrConfig === 'object' ? matchNoOrConfig : matchConfig(matchNoOrConfig);
   if (!match) return [];
-  const pool = match.stage === 'zone'
-    ? state.teams.filter(team => team.zoneId === match.zoneId).slice(0, TEAMS_PER_ZONE)
-    : qualifiedTeams(state);
-  return (match.pair || []).map(index => pool[index]).filter(Boolean);
+  if (match.stage === 'zone') {
+    const pool = state.teams.filter(team => team.zoneId === match.zoneId).slice(0, TEAMS_PER_ZONE);
+    return (match.pair || []).map(index => pool[index]).filter(Boolean);
+  }
+  if (match.bracket === 'semi') {
+    const finalists = qualifiedTeams(state);
+    return (match.pair || []).map(index => finalists[index]).filter(Boolean);
+  }
+  if (match.bracket === 'grand') return (match.source || []).map(id => matchWinner(state, id)).filter(Boolean);
+  if (match.bracket === 'third') return (match.source || []).map(id => matchLoser(state, id)).filter(Boolean);
+  return [];
 }
 
 export function matchesForTeam(state, team, stage = null) {
   return MATCHES.filter(match =>
     (!stage || match.stage === stage) && matchTeams(state, match).some(candidate => candidate.id === team.id)
   );
+}
+
+export function matchComplete(state, matchNoOrConfig) {
+  const match = typeof matchNoOrConfig === 'object' ? matchNoOrConfig : matchConfig(matchNoOrConfig);
+  const teams = matchTeams(state, match);
+  const result = match && state.results[match.id];
+  return teams.length === 2 && !!result && teams.every(team => !!result[team.id]?.series);
+}
+
+export function matchWinner(state, matchNo) {
+  const match = matchConfig(matchNo);
+  const teams = matchTeams(state, match);
+  const result = match && state.results[match.id];
+  if (teams.length !== 2 || !result || !teams.every(team => result[team.id]?.series)) return null;
+  const { wins, losses } = scoreParts(result[teams[0].id].series);
+  if (wins === losses) return null;
+  return wins > losses ? teams[0] : teams[1];
+}
+
+export function matchLoser(state, matchNo) {
+  const winner = matchWinner(state, matchNo);
+  if (!winner) return null;
+  const match = matchConfig(matchNo);
+  return matchTeams(state, match).find(team => team.id !== winner.id) || null;
 }
 
 export function seriesStats(state, matchNo, teamId) {
@@ -149,7 +181,29 @@ export function computeStandings(state) {
     }), state, MATCHES);
   }
 
-  const finalists = sortRows(state.teams.filter(team => finalistIds.has(team.id)).map(team => {
+  const finalOrder = [];
+  const addFinalist = team => {
+    if (team && !finalOrder.some(item => item.id === team.id)) finalOrder.push(team);
+  };
+  if (matchComplete(state, 9)) {
+    addFinalist(matchWinner(state, 9));
+    addFinalist(matchLoser(state, 9));
+  }
+  if (!matchComplete(state, 9)) {
+    addFinalist(matchWinner(state, 7));
+    addFinalist(matchWinner(state, 8));
+  }
+  if (matchComplete(state, 10)) {
+    addFinalist(matchWinner(state, 10));
+    addFinalist(matchLoser(state, 10));
+  }
+  if (!matchComplete(state, 10)) {
+    addFinalist(matchLoser(state, 7));
+    addFinalist(matchLoser(state, 8));
+  }
+  qualifiedTeams(state).forEach(addFinalist);
+
+  const finalists = finalOrder.map(team => {
     const zone = aggregate(state, team, matchesForTeam(state, team, 'zone'));
     const final = aggregate(state, team, finalMatches());
     return {
@@ -165,7 +219,7 @@ export function computeStandings(state) {
       qualified: true,
       total: final.points,
     };
-  }), state, finalMatches());
+  });
 
   const eliminated = sortRows(state.teams.filter(team => !finalistIds.has(team.id)).map(team => {
     const zone = aggregate(state, team, matchesForTeam(state, team, 'zone'));

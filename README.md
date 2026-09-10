@@ -12,13 +12,12 @@ black-and-red esports theme and syncs through Supabase Realtime.
    once, for three matches per zone.
 4. Match points are **2–0 = 3 points**, **1–1 = 1 point**, **0–2 = 0 points**.
 5. The lowest-ranked team from each zone is eliminated. The top two from each
-   zone qualify, creating a four-team final group.
-6. The four finalists play a **BO3 round robin**. Every finalist plays the
-   other three once, for six final matches. A BO3 win is 3 points and a loss
-   is 0 points.
-7. Final 1st, 2nd, 3rd and 4th place are determined by the final BO3 points
-   and the published tie-break order. Zone points qualify teams but do not
-   carry into the final standings.
+   zone qualify, creating a four-team final bracket.
+6. The finalists play two **BO3 semifinals**: Zone A #1 vs Zone B #2, and
+   Zone B #1 vs Zone A #2.
+7. The semifinal winners play one BO3 for 1st/2nd, while the semifinal losers
+   play one BO3 for 3rd/4th. There are four final matches in total. Zone points
+   qualify teams but do not carry into the final placement.
 
 ## Tie-break order
 
@@ -42,7 +41,7 @@ When two or more teams have the same points:
   Team Bery and Team Bagaa.
 - Five-player roster editing per team.
 - Editable A/B zone assignment with a three-team limit per zone.
-- Zone standings, four-team final BO3 round-robin schedule and overall standings.
+- Zone standings, four-team final BO3 bracket and overall standings.
 - Supabase live sync with localStorage fallback.
 
 ## Run locally
@@ -101,7 +100,7 @@ Tournament settings are in `src/config.js`:
 export const ZONES = ['A', 'B'];
 export const TEAMS_PER_ZONE = 3;
 export const ZONE_MATCHES = 3;
-export const FINAL_MATCHES = 6;
+export const FINAL_MATCHES = 4;
 export const QUALIFIERS_PER_ZONE = 2;
 export const SQUAD_SIZE = 5;
 ```

@@ -18,24 +18,24 @@
   /* Only <html> may carry an opaque background here. An opaque background on
      <body> paints AFTER negative-z-index children in the root stacking context,
      which would hide the ::before backdrop layer entirely. */
-  html{background-color:#080808;}
+  html{background-color:#100b0d;}
   body{background:transparent;font-family:'Rajdhani',sans-serif;-webkit-font-smoothing:antialiased;}
 
   body::before{
     content:'';position:fixed;inset:0;z-index:-2;
     background:
-      linear-gradient(rgba(8,8,8,.86), rgba(12,5,6,.95)),
+      linear-gradient(rgba(8,8,8,.76), rgba(12,5,6,.89)),
       var(--bg-photo) center / cover no-repeat;
-    background-color:#080808;   /* fallback if the photo never loads */
+    background-color:#100b0d;   /* fallback if the photo never loads */
   }
   body::after{
     content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
     background-image:
-      radial-gradient(1200px 520px at 50% -10%, rgba(220,38,38,.20), transparent 62%),
-      radial-gradient(900px 440px at 92% 4%,  rgba(127,29,29,.18), transparent 62%),
-      radial-gradient(700px 400px at 4% 96%,  rgba(220,38,38,.10), transparent 60%),
-      linear-gradient(rgba(74,32,32,.22) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(74,32,32,.22) 1px, transparent 1px);
+      radial-gradient(1200px 520px at 50% -10%, rgba(220,38,38,.28), transparent 62%),
+      radial-gradient(900px 440px at 92% 4%,  rgba(127,29,29,.24), transparent 62%),
+      radial-gradient(700px 400px at 4% 96%,  rgba(220,38,38,.15), transparent 60%),
+      linear-gradient(rgba(110,46,46,.25) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(110,46,46,.25) 1px, transparent 1px);
     background-size: auto, auto, auto, 46px 46px, 46px 46px;
   }
 
@@ -46,7 +46,7 @@
 
   /* ---------- glass panels that float over the backdrop ---------- */
   .glass{
-    background:rgba(21,10,12,.78);
+    background:rgba(30,14,17,.72);
     -webkit-backdrop-filter:blur(14px) saturate(1.2);
     backdrop-filter:blur(14px) saturate(1.2);
     border:1px solid rgba(220,38,38,.28);
@@ -55,7 +55,7 @@
       0 22px 48px -26px rgba(0,0,0,.95),
       inset 0 1px 0 rgba(255,255,255,.05);
   }
-  .glass-2{ background:rgba(36,19,19,.78); }   /* table headers / inner strips */
+  .glass-2{ background:rgba(52,25,27,.76); }   /* table headers / inner strips */
   .glow-gold{ border-color:rgba(220,38,38,.55); box-shadow:0 0 0 1px rgba(220,38,38,.18), 0 0 34px -12px rgba(220,38,38,.62), 0 22px 48px -26px rgba(0,0,0,.95); }
   .glow-cyan{ border-color:rgba(252,165,165,.40); box-shadow:0 0 0 1px rgba(252,165,165,.12), 0 0 30px -12px rgba(252,165,165,.45), 0 22px 48px -26px rgba(0,0,0,.95); }
 
@@ -72,6 +72,7 @@
   }
   @keyframes pulseGold{0%,100%{box-shadow:0 0 0 1px rgba(220,38,38,.55),0 0 30px -10px rgba(220,38,38,.65)}50%{box-shadow:0 0 0 1px rgba(239,68,68,.9),0 0 46px -8px rgba(239,68,68,.85)}}
   .mvp-card{animation:pulseGold 3s ease-in-out infinite}
+  .champion-logo{width:5.25rem;height:5.25rem;object-fit:contain;filter:drop-shadow(0 0 18px rgba(252,165,165,.5));}
   .ico{width:1em;height:1em;display:inline-block;vertical-align:-.14em;flex:none}
   .ico-trophy{filter:drop-shadow(0 0 6px rgba(220,38,38,.65))}
 
