@@ -560,8 +560,8 @@ $('btnClearMatch').onclick = async () => {
   toast(`✓ ${matchTitle()} cleared`);
 };
 
-$('btnReset').onclick = async () => {
-  if (!confirm(`Reset every DOTA 2 series result across all ${NUM_MATCHES} games?\n\nTeam names, tags, zone assignments and player names are kept.`)) return;
+async function clearAllResults(confirmText) {
+  if (!confirm(confirmText)) return;
   const next = structuredClone(state);
   next.results = {};
   currentMatch = 1;
@@ -569,8 +569,11 @@ $('btnReset').onclick = async () => {
   pendingRemote = false;
   const result = await store.publish(next);
   lastSelfPublish = result.updated || null;
-  toast(result.ok && !result.local ? '✓ Results reset — teams kept' : 'Results reset on this device only', !result.ok);
-};
+  toast(result.ok && !result.local ? '✓ All series cleared — teams kept' : 'All series cleared on this device only', !result.ok);
+}
+
+$('btnClearAll').onclick = () => clearAllResults(`Clear every DOTA 2 series result across all ${NUM_MATCHES} games?\n\nTeam names, tags, zone assignments and player names are kept.`);
+$('btnReset').onclick = () => clearAllResults(`Reset every DOTA 2 series result across all ${NUM_MATCHES} games?\n\nTeam names, tags, zone assignments and player names are kept.`);
 
 $('btnMore').onclick = () => { showAllPlayers = !showAllPlayers; renderRosters(); };
 $('btnReload').onclick = () => { pendingRemote = false; formDirty = false; renderAll(); toast('✓ Loaded the latest results'); };
