@@ -59,7 +59,7 @@ The board opens at `http://localhost:5173`.
 Import the repository into Vercel. The project is already configured with
 `vercel.json`; Vercel will run `npm run build` and publish `dist/`.
 For shared live scores, add `VITE_SUPABASE_URL` and
-`VITE_SUPABASE_ANON_KEY` in Vercel Project Settings → Environment Variables,
+`VITE_SUPABASE_PUBLISHABLE_KEY` in Vercel Project Settings → Environment Variables,
 then redeploy.
 
 ```bash
@@ -74,7 +74,7 @@ npm run preview
 3. Copy `.env.example` to `.env` and fill in the project URL and anon key from
    **Project Settings → API**.
 4. For Vercel, add the same `VITE_SUPABASE_URL` and
-   `VITE_SUPABASE_ANON_KEY` variables to the project and redeploy.
+   `VITE_SUPABASE_PUBLISHABLE_KEY` variables to the project and redeploy.
 
 The starter SQL allows anonymous read/write so the existing Admin screen works
 without a login. That is suitable for a small internal cup; add Supabase Auth

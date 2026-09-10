@@ -10,13 +10,14 @@ import { TOURNAMENT_ID } from './config.js';
 
 const config = {
   url: import.meta.env.VITE_SUPABASE_URL,
-  anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+  publishableKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+    || import.meta.env.VITE_SUPABASE_ANON_KEY,
 };
 
-export const isConfigured = Boolean(config.url && config.anonKey);
+export const isConfigured = Boolean(config.url && config.publishableKey);
 export const missingKeys = Object.entries({
   VITE_SUPABASE_URL: config.url,
-  VITE_SUPABASE_ANON_KEY: config.anonKey,
+  VITE_SUPABASE_PUBLISHABLE_KEY: config.publishableKey,
 }).filter(([, value]) => !value).map(([key]) => key);
 
 let client = null;
@@ -26,7 +27,7 @@ const connectionListeners = new Set();
 
 if (isConfigured) {
   try {
-    client = createClient(config.url, config.anonKey);
+    client = createClient(config.url, config.publishableKey);
   } catch (error) {
     console.error('[supabase] init failed:', error);
   }
