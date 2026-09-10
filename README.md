@@ -71,14 +71,25 @@ npm run preview
 
 1. Create a Supabase project.
 2. Open **SQL Editor** and run [`supabase/schema.sql`](supabase/schema.sql).
-3. Copy `.env.example` to `.env` and fill in the project URL and anon key from
-   **Project Settings → API**.
-4. For Vercel, add the same `VITE_SUPABASE_URL` and
+3. In **Authentication → Users**, create your one admin user with an email and password.
+4. Copy that user's UUID, then run this in **SQL Editor**:
+
+   ```sql
+   insert into public.tournament_admins (user_id)
+   values ('YOUR-AUTH-USER-UUID')
+   on conflict (user_id) do nothing;
+   ```
+
+5. Disable public sign-ups in **Authentication → Settings** so nobody else can
+   create an account. The leaderboard stays public, but only the listed user
+   can write tournament state.
+6. Copy `.env.example` to `.env` and fill in the project URL and publishable key
+   from **Project Settings → API**.
+7. For Vercel, add the same `VITE_SUPABASE_URL` and
    `VITE_SUPABASE_PUBLISHABLE_KEY` variables to the project and redeploy.
 
-The starter SQL allows anonymous read/write so the existing Admin screen works
-without a login. That is suitable for a small internal cup; add Supabase Auth
-and tighten the RLS policies before using it as a public production system.
+The Admin tab requires Supabase Auth. Anonymous visitors can read the live
+leaderboard, but RLS only permits users in `public.tournament_admins` to write.
 
 ## Main configuration
 

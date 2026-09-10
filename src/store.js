@@ -77,8 +77,10 @@ export function createStore({ onState, onMode }) {
 
     unsubData = realtime.subscribe(
       remote => {
-        // Board has never been written: seed it from whatever we have locally.
-        if (!remote) { publish(state).catch(() => {}); return; }
+        // Do not seed a blank board anonymously. The first write is made by
+        // the authenticated admin after signing in; public visitors remain
+        // read-only.
+        if (!remote) return;
         if (!isUsable(remote)) {
           console.warn('[store] ignoring unusable remote snapshot');
           return;
@@ -103,6 +105,7 @@ export function createStore({ onState, onMode }) {
     if (!realtime.isLive()) return { ok: true, local: true, updated };
     try {
       await realtime.publish(state);
+      setMode(MODE.LIVE);
       return { ok: true, local: false, updated };
     } catch (err) {
       console.error('[store] publish failed:', err);

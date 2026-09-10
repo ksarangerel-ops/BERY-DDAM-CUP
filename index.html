@@ -172,6 +172,28 @@ tailwind.config = {
 
 <!-- ============ ADMIN VIEW ============ -->
 <section id="view-admin" class="hidden">
+  <div id="adminAuthGate" class="rounded-2xl glass p-5 mb-6">
+    <div id="adminLoggedOut" class="max-w-xl">
+      <p class="text-[10px] uppercase tracking-[.3em] font-display font-black text-cyan">RESTRICTED AREA</p>
+      <h2 class="font-display font-black text-xl sm:text-2xl text-white mt-2">Admin login required</h2>
+      <p class="text-sm text-slate-400 mt-2 font-semibold">Leaderboard is public. Only the tournament admin account can edit teams and results.</p>
+      <form id="adminLoginForm" class="grid gap-3 sm:grid-cols-[1fr_1fr_auto] items-end mt-4">
+        <label class="text-[10px] uppercase tracking-widest font-display font-bold text-slate-400">Email<input id="adminEmail" type="email" autocomplete="username" required class="mt-1 w-full bg-ink/60 border border-line rounded-lg px-3 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-gold"></label>
+        <label class="text-[10px] uppercase tracking-widest font-display font-bold text-slate-400">Password<input id="adminPassword" type="password" autocomplete="current-password" required class="mt-1 w-full bg-ink/60 border border-line rounded-lg px-3 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-gold"></label>
+        <button type="submit" id="btnAdminLogin" class="px-5 py-2.5 rounded-lg bg-gold text-ink font-display font-black text-xs uppercase tracking-widest hover:bg-gold2 transition shadow-gold">Sign in</button>
+      </form>
+      <p id="adminAuthMessage" class="text-xs text-rose-300 font-semibold mt-3"></p>
+    </div>
+    <div id="adminLoggedIn" class="hidden flex items-center gap-3 flex-wrap">
+      <div class="flex-1 min-w-[220px]">
+        <p class="text-[10px] uppercase tracking-[.3em] font-display font-black text-emerald-300">ADMIN ACCESS ACTIVE</p>
+        <p id="adminUserEmail" class="text-sm text-white font-bold mt-1"></p>
+      </div>
+      <button type="button" id="btnAdminLogout" class="px-4 py-2.5 rounded-lg glass border border-line font-display font-bold text-xs uppercase tracking-widest hover:border-rose-400 hover:text-rose-300 transition">Sign out</button>
+    </div>
+  </div>
+
+  <div id="adminEditor" class="hidden">
   <div class="grid gap-6 lg:grid-cols-[1fr_300px]">
     <div>
       <div class="rounded-2xl glass p-5 mb-5">
@@ -220,6 +242,7 @@ tailwind.config = {
         <p class="text-[11px] text-slate-500 mt-3">Clears all 12 DOTA 2 round-robin results. Team names, tags, zones and player names are kept.</p>
       </div>
     </aside>
+  </div>
   </div>
 </section>
 

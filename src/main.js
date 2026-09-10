@@ -14,7 +14,10 @@ import {
 } from './scoring.js';
 import { ICONS } from './icons.js';
 import { enhanceSelects, setSelectState, syncSelect } from './select.js';
-import { isConfigured, missingKeys, isLive } from './supabase.js';
+import {
+  isConfigured, missingKeys, isLive,
+  getSession, subscribeAuth, signIn, signOut,
+} from './supabase.js';
 
 let state = blankState();
 let currentMatch = 1;
@@ -23,6 +26,7 @@ let formDirty = false;
 let pendingRemote = false;
 let rosterSaving = false;
 let lastSelfPublish = null;
+let authSession = null;
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
@@ -432,10 +436,59 @@ function renderRulesLegend() {
 }
 
 function renderBoard() { renderMapChips(); renderFormatRules(); renderZoneCards(); renderBracket(); renderStandings(); renderRosters(); renderMatchCards(); renderSavedAt(); }
-function renderAdmin() { renderMatchTabs(); renderTeamCards(); renderRemoteNotice(); }
+function renderAdminAuth() {
+  const loggedOut = $('adminLoggedOut');
+  const loggedIn = $('adminLoggedIn');
+  const editor = $('adminEditor');
+  const signedIn = Boolean(authSession?.user);
+  loggedOut.classList.toggle('hidden', signedIn);
+  loggedIn.classList.toggle('hidden', !signedIn);
+  editor.classList.toggle('hidden', !signedIn);
+  if (signedIn) {
+    $('adminUserEmail').textContent = authSession.user.email || 'Authenticated admin';
+    $('adminAuthMessage').textContent = '';
+  } else if (!isConfigured) {
+    $('adminAuthMessage').textContent = 'Supabase is not configured, so admin login is unavailable.';
+  }
+}
+
+function renderAdmin() { renderAdminAuth(); renderMatchTabs(); renderTeamCards(); renderRemoteNotice(); }
 function renderAll() { renderSectionIcons(); renderBoard(); renderAdmin(); renderTeamEditor(); renderRulesLegend(); renderSyncBadge(); }
 
 /* ---------- actions ---------- */
+$('adminLoginForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  const email = $('adminEmail').value.trim();
+  const password = $('adminPassword').value;
+  const button = $('btnAdminLogin');
+  button.disabled = true;
+  button.textContent = 'Signing in…';
+  $('adminAuthMessage').textContent = '';
+  try {
+    await signIn(email, password);
+    $('adminPassword').value = '';
+    toast('✓ Admin access granted');
+  } catch (error) {
+    console.error('[ddam-cup] admin login failed:', error);
+    $('adminAuthMessage').textContent = error.message || 'Sign in failed';
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Sign in';
+  }
+});
+
+$('btnAdminLogout').onclick = async () => {
+  try {
+    await signOut();
+    formDirty = false;
+    pendingRemote = false;
+    toast('✓ Signed out');
+  } catch (error) {
+    console.error('[ddam-cup] admin logout failed:', error);
+    toast('Sign out failed', true);
+  }
+};
+
 $('resultForm').addEventListener('submit', async event => {
   event.preventDefault();
   const activeTeams = activeTeamsForMatch();
@@ -551,6 +604,23 @@ function toast(message, bad) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => wrap.classList.add('hidden'), 2600);
 }
+
+subscribeAuth(session => {
+  authSession = session;
+  if (!session) {
+    formDirty = false;
+    pendingRemote = false;
+  }
+  renderAdminAuth();
+});
+
+getSession().then(session => {
+  authSession = session;
+  renderAdminAuth();
+}).catch(error => {
+  console.error('[ddam-cup] auth session check failed:', error);
+  renderAdminAuth();
+});
 
 currentMatch = firstUnplayedMatch();
 store.start();

@@ -35,6 +35,35 @@ if (isConfigured) {
 
 export const isLive = () => client !== null;
 
+export async function getSession() {
+  if (!client) return null;
+  const { data, error } = await client.auth.getSession();
+  if (error) throw error;
+  return data.session;
+}
+
+export function subscribeAuth(onChange) {
+  if (!client) {
+    onChange(null);
+    return () => {};
+  }
+  const { data } = client.auth.onAuthStateChange((_event, session) => onChange(session));
+  return () => data.subscription.unsubscribe();
+}
+
+export async function signIn(email, password) {
+  if (!client) throw new Error('Supabase is not configured');
+  const { data, error } = await client.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data.session;
+}
+
+export async function signOut() {
+  if (!client) return;
+  const { error } = await client.auth.signOut();
+  if (error) throw error;
+}
+
 function setConnectionState(value) {
   connected = value;
   connectionListeners.forEach(listener => listener(value));
