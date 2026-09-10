@@ -5,7 +5,7 @@ import './style.css';
 import html2canvas from 'html2canvas';
 import {
   ZONES, MATCHES, NUM_MATCHES, TEAMS_PER_ZONE,
-  SERIES_POINTS, TOURNAMENT_ID,
+  SERIES_RESULTS, pointsForSeries, TOURNAMENT_ID,
 } from './config.js';
 import { createStore, blankState, MODE } from './store.js';
 import {
@@ -44,10 +44,11 @@ const matchTitle = (matchNo = currentMatch) => {
 const gameNumber = match => match.id;
 
 function resultOptions(match) {
-  const values = Object.keys(SERIES_POINTS);
+  const values = SERIES_RESULTS[match.stage === 'final' ? 'final' : 'zone'];
   return values.map(value => {
-    const points = SERIES_POINTS[value];
-    const label = `${value} · ${value === '1-1' ? 'Draw' : value === '2-0' ? 'Win' : 'Loss'} · ${points} pts`;
+    const points = pointsForSeries(match.stage, value);
+    const wins = Number(value[0]), losses = Number(value[2]);
+    const label = `${value} · ${wins === losses ? 'Draw' : wins > losses ? 'Win' : 'Loss'} · ${points} pts`;
     return `<option value="${value}">${label}</option>`;
   }).join('');
 }
@@ -60,12 +61,14 @@ function previewResult(match, series) {
     wins,
     losses,
     draws: wins === losses ? 1 : 0,
-    points: SERIES_POINTS[series],
+    points: pointsForSeries(match.stage, series),
   };
 }
 
-function oppositeSeries(series) {
-  return { '2-0': '0-2', '0-2': '2-0', '1-1': '1-1', '': '' }[series] || '';
+function oppositeSeries(match, series) {
+  return (match.stage === 'final'
+    ? { '2-0': '0-2', '2-1': '1-2', '1-2': '2-1', '0-2': '2-0', '': '' }
+    : { '2-0': '0-2', '0-2': '2-0', '1-1': '1-1', '': '' })[series] || '';
 }
 
 /* ---------- store wiring ---------- */
@@ -124,7 +127,7 @@ function renderRemoteNotice() {
 function renderMapChips() {
   $('mapChips').innerHTML = MATCHES.map(match => {
     const played = !!state.results[match.id];
-    const group = match.stage === 'final' ? 'FINAL ROUND' : `ZONE ${match.zoneId}`;
+    const group = match.stage === 'final' ? 'FINAL BO3' : `ZONE ${match.zoneId}`;
     return `<div class="clip-tag px-3 sm:px-4 py-2 border ${played ? 'border-gold/60 bg-gold/15' : 'border-line bg-ink/40'}">
       <div class="text-[9px] uppercase tracking-[.2em] font-display font-bold ${played ? 'text-gold' : 'text-slate-500'}">${group} · M${gameNumber(match)}</div>
       <div class="text-xs sm:text-sm font-bold ${played ? 'text-white' : 'text-slate-500'}">${match.format}</div>
@@ -148,7 +151,7 @@ function renderFormatRules() {
       <div class="grid gap-3 md:grid-cols-3 mt-4 text-sm">
         <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-gold">1. Zone stage</b><br><span class="text-slate-400">6 teams are divided into Zone ${zoneA} and Zone ${zoneB}, three teams per zone. Each zone plays a BO2 round robin.</span></div>
         <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-cyan">2. Qualification</b><br><span class="text-slate-400">The bottom team from each zone is eliminated. The top 2 from each zone advance.</span></div>
-        <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-white">3. Final round robin</b><br><span class="text-slate-400">The qualified 4 teams play one BO2 against each other. Six final matches decide the podium.</span></div>
+        <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-white">3. Final BO3 round robin</b><br><span class="text-slate-400">The qualified 4 teams play one BO3 against each other. Six final matches decide places 1–4.</span></div>
       </div>
       <p class="text-xs text-slate-500 mt-4">Current status: ${finalists.length ? `${finalists.length} finalists qualified.` : 'Zone assignment or zone results are not complete yet.'} Zone assignment can be changed from Admin → Team Setup.</p>
     </div>`;
@@ -183,7 +186,7 @@ function renderBracket() {
   const finalMatches = MATCHES.filter(match => match.stage === 'final');
   $('bracket').innerHTML = `<div class="rounded-2xl glass overflow-hidden border border-gold/25">
     <div class="px-4 sm:px-5 py-3 glass-2 border-b border-gold/20 flex items-center justify-between gap-3">
-      <div class="flex items-center gap-2.5"><span class="w-1.5 h-5 rounded-full bg-gold"></span><h3 class="font-display font-black text-xs sm:text-sm uppercase tracking-[.2em] text-white">Final Round Robin · 4 Teams</h3></div>
+      <div class="flex items-center gap-2.5"><span class="w-1.5 h-5 rounded-full bg-gold"></span><h3 class="font-display font-black text-xs sm:text-sm uppercase tracking-[.2em] text-white">Final BO3 Round Robin · 4 Teams</h3></div>
       <span class="text-[9px] uppercase tracking-widest font-display font-black ${ready ? 'text-gold' : 'text-slate-500'}">${ready ? '4 finalists ready' : 'Awaiting zone results'}</span>
     </div>
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 p-4 sm:p-5">
@@ -192,10 +195,10 @@ function renderBracket() {
         const result = state.results[match.id];
         const names = teams.length === 2 ? teams.map(team => esc(team.name)) : ['Finalist slot', 'Finalist slot'];
         const status = result ? 'Saved' : (ready ? 'Open' : 'Locked');
-        return `<div class="bracket-match"><div class="px-3 py-2 border-b border-gold/20 flex items-center justify-between"><span class="bracket-round-title">Match ${index + 1}</span><span class="text-[9px] uppercase tracking-widest ${result ? 'text-gold' : 'text-slate-500'}">${status}</span></div><span>${names[0]}</span><span>${names[1]}</span></div>`;
+        return `<div class="bracket-match"><div class="px-3 py-2 border-b border-gold/20 flex items-center justify-between"><span class="bracket-round-title">M${match.id} · Final ${index + 1}</span><span class="text-[9px] uppercase tracking-widest ${result ? 'text-gold' : 'text-slate-500'}">${status}</span></div><span>${names[0]}</span><span>${names[1]}</span></div>`;
       }).join('')}
     </div>
-    <p class="px-4 pb-4 text-[11px] text-slate-500">Zone ${ZONES[0]} #1, #2 and Zone ${ZONES[1]} #1, #2 form one group. Every finalist plays the other three teams once.</p>
+    <p class="px-4 pb-4 text-[11px] text-slate-500">Zone ${ZONES[0]} #1, #2 and Zone ${ZONES[1]} #1, #2 form one group. Every finalist plays the other three teams once in BO3. Final BO3 points decide places 1–4.</p>
   </div>`;
 }
 
@@ -273,7 +276,7 @@ function renderSavedAt() {
 /* ---------- admin ---------- */
 function renderMatchTabs() {
   const zoneTabs = ZONES.map(zoneId => `<div class="w-full mt-1 first:mt-0"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-cyan mb-2">Zone ${zoneId} · Round Robin</div><div class="flex flex-wrap gap-2">${MATCHES.filter(match => match.stage === 'zone' && match.zoneId === zoneId).map(renderMatchTab).join('')}</div></div>`).join('');
-  const finalTabs = `<div class="w-full mt-3 pt-3 border-t border-line/70"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-gold mb-2">Final Round Robin · BO2 · 4 teams · 6 matches</div><div class="flex flex-wrap gap-2">${MATCHES.filter(match => match.stage === 'final').map(renderMatchTab).join('')}</div></div>`;
+  const finalTabs = `<div class="w-full mt-3 pt-3 border-t border-line/70"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-gold mb-2">Final Round Robin · BO3 · 4 teams · 6 matches</div><div class="flex flex-wrap gap-2">${MATCHES.filter(match => match.stage === 'final').map(renderMatchTab).join('')}</div></div>`;
   $('matchTabs').innerHTML = zoneTabs + finalTabs;
   document.querySelectorAll('.mtab').forEach(button => {
     button.onclick = () => {
@@ -317,7 +320,7 @@ function renderTeamCards() {
       const otherSelect = [...document.querySelectorAll('#teamCards .team-card')]
         .find(card => card !== currentCard)?.querySelector('.t-series');
       if (otherSelect) {
-        otherSelect.value = oppositeSeries(select.value);
+        otherSelect.value = oppositeSeries(match, select.value);
         syncSelect(otherSelect);
       }
       formDirty = true;
@@ -382,7 +385,7 @@ function updateLive() {
     card.querySelector('.t-pts').textContent = preview ? preview.points : '—';
     setSelectState(select, { error: false, empty: !value });
   });
-  $('rankWarn').textContent = missing ? '⚠ Select the BO2 result' : '';
+  $('rankWarn').textContent = missing ? `⚠ Select the ${match.format} result` : '';
 }
 
 function renderTeamEditor() {
@@ -432,7 +435,7 @@ function renderTeamEditorValues() {
 }
 
 function renderRulesLegend() {
-  $('ptsLegend').innerHTML = `<li class="flex justify-between items-center"><span class="text-gold font-bold">BO2 2–0 Win</span><span class="font-mono font-extrabold text-white">3 pts</span></li><li class="flex justify-between items-center"><span class="text-slate-300">BO2 1–1 Draw</span><span class="font-mono font-extrabold text-white">1 pt</span></li><li class="flex justify-between items-center"><span class="text-slate-300">BO2 0–2 Loss</span><span class="font-mono font-extrabold text-white">0 pts</span></li><li class="flex justify-between items-center pt-2 mt-2 border-t border-line text-cyan"><span>Zone stage</span><span class="font-mono font-extrabold">3 matches</span></li><li class="flex justify-between items-center text-gold"><span>Final round robin</span><span class="font-mono font-extrabold">6 matches</span></li>`;
+  $('ptsLegend').innerHTML = `<li class="flex justify-between items-center"><span class="text-gold font-bold">Zone BO2 2–0 Win</span><span class="font-mono font-extrabold text-white">3 pts</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Zone BO2 1–1 Draw</span><span class="font-mono font-extrabold text-white">1 pt</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Zone BO2 0–2 Loss</span><span class="font-mono font-extrabold text-white">0 pts</span></li><li class="flex justify-between items-center pt-2 mt-2 border-t border-line text-cyan"><span>Zone stage</span><span class="font-mono font-extrabold">3 matches</span></li><li class="flex justify-between items-center text-gold"><span>Final BO3 win</span><span class="font-mono font-extrabold">3 pts</span></li><li class="flex justify-between items-center text-gold"><span>Final BO3 round robin</span><span class="font-mono font-extrabold">6 matches</span></li>`;
 }
 
 function renderBoard() { renderMapChips(); renderFormatRules(); renderZoneCards(); renderBracket(); renderStandings(); renderRosters(); renderMatchCards(); renderSavedAt(); }

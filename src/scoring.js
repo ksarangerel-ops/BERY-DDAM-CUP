@@ -1,8 +1,8 @@
 /* ============================================================
-   DOTA 2 scoring — zone BO2 round robin → four-team BO2 round robin
+   DOTA 2 scoring — zone BO2 round robin → four-team BO3 round robin
 ============================================================ */
 import {
-  MATCHES, ZONES, TEAMS_PER_ZONE, SERIES_POINTS,
+  MATCHES, ZONES, TEAMS_PER_ZONE, pointsForSeries,
   zoneMatches, finalMatches, QUALIFIERS_PER_ZONE,
 } from './config.js';
 
@@ -49,12 +49,12 @@ export function seriesStats(state, matchNo, teamId) {
     draws,
     gamesWon: wins,
     gamesPlayed: wins + losses,
-    points: SERIES_POINTS[result.series] ?? 0,
+    points: pointsForSeries(match.stage, result.series),
   };
 }
 
 function aggregate(state, team, matches) {
-  let series = 0, wins = 0, draws = 0, losses = 0, gamesWon = 0, points = 0;
+  let series = 0, wins = 0, draws = 0, losses = 0, gamesWon = 0, gamesPlayed = 0, points = 0;
   for (const match of matches) {
     const stats = seriesStats(state, match.id, team.id);
     if (!stats) continue;
@@ -63,9 +63,10 @@ function aggregate(state, team, matches) {
     draws += stats.draws;
     losses += stats.losses > stats.wins ? 1 : 0;
     gamesWon += stats.gamesWon;
+    gamesPlayed += stats.gamesPlayed;
     points += stats.points;
   }
-  return { series, wins, draws, losses, gamesWon, points };
+  return { series, wins, draws, losses, gamesWon, gamesPlayed, points };
 }
 
 function recordRatio(wins, losses) {
@@ -96,7 +97,7 @@ function sortRows(rows, state, matches) {
       if (h2h) return h2h;
     }
     return recordRatio(b.wins, b.losses) - recordRatio(a.wins, a.losses)
-      || recordRatio(b.gamesWon, b.series * 2 - b.gamesWon) - recordRatio(a.gamesWon, a.series * 2 - a.gamesWon)
+      || recordRatio(b.gamesWon, b.gamesPlayed - b.gamesWon) - recordRatio(a.gamesWon, a.gamesPlayed - a.gamesWon)
       || a.team.name.localeCompare(b.team.name);
   });
   rows.forEach((row, index) => { row.rank = index + 1; });
@@ -134,24 +135,51 @@ export function isFinalist(state, teamId) {
 
 export function computeStandings(state) {
   const finalistIds = new Set(qualifiedTeams(state).map(team => team.id));
-  return sortRows(state.teams.map(team => {
+  if (finalistIds.size < 4) {
+    return sortRows(state.teams.map(team => {
+      const zone = aggregate(state, team, matchesForTeam(state, team, 'zone'));
+      return {
+        team,
+        ...zone,
+        zonePoints: zone.points,
+        finalPoints: 0,
+        qualified: false,
+        total: zone.points,
+      };
+    }), state, MATCHES);
+  }
+
+  const finalists = sortRows(state.teams.filter(team => finalistIds.has(team.id)).map(team => {
     const zone = aggregate(state, team, matchesForTeam(state, team, 'zone'));
-    const final = finalistIds.has(team.id)
-      ? aggregate(state, team, finalMatches())
-      : { series: 0, wins: 0, draws: 0, losses: 0, gamesWon: 0, points: 0 };
+    const final = aggregate(state, team, finalMatches());
     return {
       team,
-      series: zone.series + final.series,
-      wins: zone.wins + final.wins,
-      draws: zone.draws + final.draws,
-      losses: zone.losses + final.losses,
-      gamesWon: zone.gamesWon + final.gamesWon,
+      series: final.series,
+      wins: final.wins,
+      draws: final.draws,
+      losses: final.losses,
+      gamesWon: final.gamesWon,
+      gamesPlayed: final.gamesPlayed,
       zonePoints: zone.points,
       finalPoints: final.points,
-      qualified: finalistIds.has(team.id),
-      total: zone.points + final.points,
+      qualified: true,
+      total: final.points,
+    };
+  }), state, finalMatches());
+
+  const eliminated = sortRows(state.teams.filter(team => !finalistIds.has(team.id)).map(team => {
+    const zone = aggregate(state, team, matchesForTeam(state, team, 'zone'));
+    return {
+      team,
+      ...zone,
+      zonePoints: zone.points,
+      finalPoints: 0,
+      qualified: false,
+      total: zone.points,
     };
   }), state, MATCHES);
+
+  return [...finalists, ...eliminated].map((row, index) => ({ ...row, rank: index + 1 }));
 }
 
 export function computePlayers(state) {

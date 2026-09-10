@@ -3,7 +3,7 @@
 
    Six teams start in two editable zones. Each zone has three teams and
    plays a BO2 round robin. The bottom team is eliminated; the top two from
-   each zone form a four-team BO2 round robin for the final standings.
+   each zone form a four-team BO3 round robin for the final standings.
 ============================================================ */
 export const ZONES = ['A', 'B'];
 export const TEAMS_PER_ZONE = 3;
@@ -12,11 +12,27 @@ export const FINAL_MATCHES = 6;
 export const QUALIFIERS_PER_ZONE = 2;
 export const SQUAD_SIZE = 5;
 
-export const SERIES_POINTS = {
+export const BO2_POINTS = {
   '2-0': 3,
   '1-1': 1,
   '0-2': 0,
 };
+
+export const BO3_POINTS = {
+  '2-0': 3,
+  '2-1': 3,
+  '1-2': 0,
+  '0-2': 0,
+};
+
+export const SERIES_POINTS = { ...BO2_POINTS, ...BO3_POINTS };
+export const SERIES_RESULTS = {
+  zone: Object.keys(BO2_POINTS),
+  final: Object.keys(BO3_POINTS),
+};
+export const pointsForSeries = (stage, series) => (
+  (stage === 'final' ? BO3_POINTS : BO2_POINTS)[series] ?? 0
+);
 
 const ROUND_ROBIN_PAIRS_3 = [[0, 1], [0, 2], [1, 2]];
 const ROUND_ROBIN_PAIRS_4 = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]];
@@ -34,7 +50,7 @@ export const MATCHES = [
     id: ZONES.length * ZONE_MATCHES + matchIndex + 1,
     stage: 'final',
     pair,
-    format: 'BO2',
+    format: 'BO3',
     label: `Final Round Robin · Match ${matchIndex + 1}`,
   })),
 ];

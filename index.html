@@ -55,7 +55,7 @@ tailwind.config = {
       <h1 class="font-display font-black text-base sm:text-2xl tracking-wider leading-none whitespace-nowrap">
         <span class="text-gold drop-shadow-[0_0_14px_rgba(220,38,38,.55)]">DDAM</span> <span class="text-white">CUP</span> <span class="text-cyan">DOTA 2</span>
       </h1>
-      <p class="text-[9px] sm:text-xs uppercase tracking-[.2em] sm:tracking-[.25em] text-cyan/80 font-semibold mt-1 truncate">DOTA 2 · Zone Round Robin → Final Round Robin</p>
+      <p class="text-[9px] sm:text-xs uppercase tracking-[.2em] sm:tracking-[.25em] text-cyan/80 font-semibold mt-1 truncate">DOTA 2 · Zone BO2 → Final BO3 Round Robin</p>
     </div>
     <span id="syncBadge"></span>
     <nav class="flex gap-1 p-1 rounded-lg glass">
@@ -86,7 +86,7 @@ tailwind.config = {
       <div class="absolute -right-12 -top-12 w-60 h-60 rounded-full bg-gold/15 blur-3xl"></div>
       <div class="relative flex flex-wrap items-end gap-x-6 gap-y-3">
         <div>
-          <p class="text-[10px] sm:text-xs uppercase tracking-[.35em] text-cyan font-bold">6 Teams · 2 Zones · BO2 Round Robin</p>
+          <p class="text-[10px] sm:text-xs uppercase tracking-[.35em] text-cyan font-bold">6 Teams · 2 Zones · Zone BO2 → Final BO3</p>
           <h2 class="font-display font-black text-2xl sm:text-4xl mt-1 text-white">DDAM CUP <span class="text-gold">DOTA 2</span></h2>
         </div>
         <div class="flex gap-2 sm:gap-3 ml-auto text-center" id="mapChips"></div>
@@ -165,7 +165,7 @@ tailwind.config = {
     </div>
 
     <p class="text-center text-[10px] sm:text-xs text-slate-400 mt-6 pb-2 font-semibold tracking-wider">
-      DDAM CUP DOTA 2 · BO2: 2–0 = 3 pts, 1–1 = 1 pt, 0–2 = 0 pt · Generated <span id="genAt"></span>
+      DDAM CUP DOTA 2 · Zone BO2: 2–0 = 3 pts, 1–1 = 1 pt · Final BO3 win = 3 pts · Generated <span id="genAt"></span>
     </p>
   </div>
 </section>
@@ -227,7 +227,7 @@ tailwind.config = {
       <div class="rounded-2xl glass p-5">
         <h3 class="font-display font-bold text-xs uppercase tracking-[.2em] text-cyan mb-3">DOTA 2 Scoring Rules</h3>
         <ul class="text-sm font-semibold space-y-1.5" id="ptsLegend"></ul>
-        <p class="text-xs text-slate-400 mt-3 pt-3 border-t border-line">Zone A/B each hold 3 teams. The bottom team is eliminated; top 2 from each zone qualify for the final round robin.</p>
+        <p class="text-xs text-slate-400 mt-3 pt-3 border-t border-line">Zone A/B each hold 3 teams. The bottom team is eliminated; top 2 from each zone qualify for the final BO3 round robin.</p>
       </div>
 
       <div class="rounded-2xl glass p-5">
@@ -261,11 +261,11 @@ tailwind.config = {
         <article class="rules-card"><div class="rules-number">02</div><div><h3>Хэсгийн шат</h3><p>Хэсэг бүрийн 3 баг тойргийн системээр тоглоно. Нэг баг өөрийн хэсгийн бусад 2 багтай тус бүр нэг удаа BO2 тоглоно.</p></div></article>
       </div>
 
-      <article class="rules-wide"><div class="rules-number">03</div><div><h3>Оноо ба хэсгээс хасагдах</h3><p>Тоглолт бүрийн дараа дараах оноогоор эрэмбэлнэ:</p><div class="grid gap-2 sm:grid-cols-3 mt-3"><div class="rules-point"><b>Хожил</b><strong>3 оноо</strong></div><div class="rules-point"><b>Тэнцээ</b><strong>1 оноо</strong></div><div class="rules-point"><b>Хожигдол</b><strong>0 оноо</strong></div></div><p class="mt-3">Хэсгийн шат дууссаны дараа хамгийн бага оноотой баг тухайн хэсгээс хасагдана. Ингэснээр хэсэг тус бүрээс 2 баг, нийт 4 баг шалгарна.</p></div></article>
+      <article class="rules-wide"><div class="rules-number">03</div><div><h3>Zone шатны оноо ба хасагдал</h3><p>Zone BO2 тоглолтыг дараах оноогоор эрэмбэлнэ:</p><div class="grid gap-2 sm:grid-cols-3 mt-3"><div class="rules-point"><b>Хожил</b><strong>3 оноо</strong></div><div class="rules-point"><b>Тэнцээ</b><strong>1 оноо</strong></div><div class="rules-point"><b>Хожигдол</b><strong>0 оноо</strong></div></div><p class="mt-3">Хэсгийн шат дууссаны дараа хамгийн бага оноотой баг тухайн хэсгээс хасагдана. Ингэснээр хэсэг тус бүрээс 2 баг, нийт 4 баг шалгарна.</p></div></article>
 
-      <article class="rules-wide"><div class="rules-number">04</div><div><h3>Шалгарсан 4 багийн нэгдсэн шат</h3><p>A хэсгийн 1, 2-р байр болон B хэсгийн 1, 2-р байр нэг хэсэгт орно. Шалгарсан 4 баг хоорондоо тус бүр нэг удаа тоглож, нийт <b>6 BO2 тоглолт</b> явуулна.</p><div class="rules-flow"><span>A1</span><span>A2</span><span>B1</span><span>B2</span><i>→</i><b>Нэгдсэн 4 багийн тойрог</b></div></div></article>
+        <article class="rules-wide"><div class="rules-number">04</div><div><h3>Шалгарсан 4 багийн нэгдсэн шат</h3><p>A хэсгийн 1, 2-р байр болон B хэсгийн 1, 2-р байр нэг хэсэгт орно. Шалгарсан 4 баг хоорондоо тус бүр нэг удаа <b>BO3</b> тоглож, нийт <b>6 тоглолт</b> явуулна. BO3-ийн 2–0 болон 2–1 хожил 3 оноо, 1–2 болон 0–2 хожигдол 0 оноо. Энэ шатны дүнгээр 1–4-р байр тодорно.</p><div class="rules-flow"><span>A1</span><span>A2</span><span>B1</span><span>B2</span><i>→</i><b>Нэгдсэн 4 багийн BO3 тойрог</b></div></div></article>
 
-      <article class="rules-wide"><div class="rules-number">05</div><div><h3>Эцсийн байр эзлэлт</h3><p>Нэгдсэн шатны нийт оноо болон нэмэлт үзүүлэлтээр эцсийн байр эзлүүлнэ.</p><div class="grid gap-2 sm:grid-cols-4 mt-3"><div class="podium-card first">🥇<span>1-р байр</span></div><div class="podium-card second">🥈<span>2-р байр</span></div><div class="podium-card third">🥉<span>3-р байр</span></div><div class="podium-card fourth"><span>4-р байр</span></div></div></div></article>
+      <article class="rules-wide"><div class="rules-number">05</div><div><h3>Эцсийн байр эзлэлт</h3><p>Zone-ийн оноо нь зөвхөн шалгаруулахад ашиглагдана. 1–4-р байр нь Final BO3-ийн оноо болон нэмэлт үзүүлэлтээр тодорно.</p><div class="grid gap-2 sm:grid-cols-4 mt-3"><div class="podium-card first">🥇<span>1-р байр</span></div><div class="podium-card second">🥈<span>2-р байр</span></div><div class="podium-card third">🥉<span>3-р байр</span></div><div class="podium-card fourth"><span>4-р байр</span></div></div></div></article>
 
       <article class="rules-wide"><div class="rules-number">06</div><div><h3>Оноо тэнцсэн тохиолдолд</h3><ol class="rules-list"><li>Хоорондын тоглолтын үр дүн</li><li>Тоглолтын нийт хожил/хожигдлын харьцаа</li><li>Game хожил/хожигдлын харьцаа</li><li>Нэмэлт шийдвэрлэх тоглолт (Tie-breaker)</li></ol><p class="mt-3">Нэмэлт тоглолт шаардлагатай эсэхийг тэмцээний зохион байгуулагч шийдвэрлэнэ.</p></div></article>
 
