@@ -229,6 +229,13 @@
   .bracket-match{border:1px solid rgba(220,38,38,.48);border-radius:.7rem;overflow:hidden;background:rgba(12,7,8,.82);box-shadow:0 0 24px -14px rgba(220,38,38,.85)}
   .bracket-match span{display:block;padding:.65rem .7rem;font-size:.82rem;font-weight:700;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bracket-match span+span{border-top:1px solid rgba(220,38,38,.35);color:#fecaca}
+  .bracket-rail{position:relative;padding:.85rem .8rem .7rem;border:1px solid rgba(252,165,165,.14);border-radius:.75rem;background:linear-gradient(135deg,rgba(252,165,165,.06),rgba(8,8,8,.18));overflow:hidden}
+  .bracket-rail::after{content:'';position:absolute;inset:auto -15% -65% 18%;height:8rem;background:radial-gradient(ellipse,rgba(220,38,38,.18),transparent 68%);pointer-events:none}
+  .bracket-rail b,.bracket-rail small{display:block;position:relative;z-index:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bracket-rail b{margin-top:.45rem;color:#e2e8f0;font-family:'Rajdhani',sans-serif;font-size:.7rem;font-weight:800}
+  .bracket-rail small{margin-top:.15rem;color:#64748b;font-family:'Orbitron',sans-serif;font-size:.46rem;font-weight:900;letter-spacing:.12em}
+  .bracket-rail-node{position:relative;z-index:1;display:grid;place-items:center;width:2rem;height:2rem;margin:0 auto;border:1px solid rgba(252,165,165,.42);border-radius:999px;background:#170b0d;color:#fca5a5;font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:800;box-shadow:0 0 18px -8px rgba(252,165,165,.9)}
+  .bracket-rail-node.is-gold{border-color:rgba(220,38,38,.85);background:rgba(220,38,38,.18);color:#fecaca;box-shadow:0 0 22px -7px rgba(220,38,38,.95)}
   .bracket-arrow{font-size:2rem;color:#ef4444;text-shadow:0 0 16px rgba(239,68,68,.8)}
   .bracket-final .bracket-match{border-color:rgba(239,68,68,.8);box-shadow:0 0 30px -12px rgba(239,68,68,.95)}
   .bracket-champion{margin-top:.6rem;text-align:center;padding:.55rem;border:1px solid rgba(220,38,38,.45);border-radius:.55rem;background:rgba(220,38,38,.12);font-family:'Orbitron',sans-serif;font-size:.62rem;font-weight:900;letter-spacing:.12em;color:#fecaca}
