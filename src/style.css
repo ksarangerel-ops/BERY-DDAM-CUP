@@ -442,4 +442,9 @@
   .evidence-row span{color:#bfc8af}
   .rules-final-warning{display:grid;gap:.35rem;margin-top:1rem;padding:1rem;text-align:center;border:1px solid rgba(255,176,46,.54);background:linear-gradient(90deg,rgba(255,176,46,.12),rgba(183,243,74,.08),rgba(255,176,46,.12));color:#ffcf72}
   .rules-final-warning b{font:900 .7rem/1 'JetBrains Mono',monospace;letter-spacing:.14em}.rules-final-warning span{color:#cbd0bd;font-size:.78rem;font-weight:600}.rules-final-warning strong{color:#d7ff74;font-size:.92rem}
+  /* Keep branded text readable even on browsers that do not support
+     background-clip:text; a gradient must never render as a blank block. */
+  .spectrum-text{background:none!important;color:#d7ff74!important;-webkit-text-fill-color:#d7ff74!important;animation:none!important}
+  header .rainbow-fill{background:#101810!important;border:1px solid rgba(183,243,74,.62);box-shadow:0 0 22px -8px rgba(183,243,74,.72)!important}
+  header .rainbow-fill img{display:block;opacity:1;filter:drop-shadow(0 0 6px rgba(183,243,74,.38))}
   @media(max-width:800px){.rules-masthead{padding:1rem;flex-direction:column}.rules-stamp{align-self:flex-start}.rules-dossier-grid{grid-template-columns:1fr}.rules-section.full{grid-column:auto}.rules-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.playoff-path{grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}.playoff-path i{display:none}.map-order{grid-template-columns:1fr}.danger-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.penalty-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
