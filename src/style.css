@@ -271,3 +271,105 @@
   .rules-list li{counter-increment:rules;display:flex;gap:.6rem;align-items:flex-start}.rules-list li::before{content:counter(rules);display:grid;place-items:center;flex:none;width:1.35rem;height:1.35rem;border-radius:50%;background:rgba(139,92,246,.2);color:#a5f3fc;font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:800}
   .rules-summary{display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:wrap;border:1px solid rgba(139,92,246,.35);border-radius:1rem;padding:1rem;background:linear-gradient(90deg,rgba(139,92,246,.12),rgba(7,8,22,.35),rgba(34,211,238,.12));color:#ddd6fe;font-size:.8rem;font-weight:800;text-align:center}
   .rules-summary i{color:#22d3ee;font-style:normal;font-size:1.1rem}.rules-summary b{color:#fff}
+
+  /* ==========================================================
+     CS2 TACTICAL HUD THEME
+     The CS2 build intentionally uses a separate visual language:
+     charcoal + field olive panels, acid-lime status lights and
+     amber match accents. Sharp corners and HUD rails replace the
+     soft purple glass treatment used by the DOTA board.
+  ========================================================== */
+  :root{
+    --bg-photo:url('https://images.unsplash.com/photo-1519669556878-63bdad8a1a49?auto=format&fit=crop&w=2400&q=80');
+    --spectrum:linear-gradient(105deg,#b7f34a 0%,#d7ff74 30%,#ffb02e 68%,#f4f1d0 100%);
+    --spectrum-soft:linear-gradient(105deg,rgba(183,243,74,.24),rgba(255,176,46,.22),rgba(244,241,208,.12));
+  }
+  html{background:#090b09}
+  body{color:#e8eadf;background:transparent;letter-spacing:.01em}
+  body::before{
+    background:
+      linear-gradient(112deg,rgba(5,8,5,.91),rgba(13,19,12,.78) 48%,rgba(8,10,7,.94)),
+      var(--bg-photo) center/cover no-repeat;
+    background-color:#090b09;
+  }
+  body::after{
+    background-image:
+      radial-gradient(800px 450px at 8% 4%,rgba(183,243,74,.13),transparent 64%),
+      radial-gradient(700px 420px at 92% 8%,rgba(255,176,46,.15),transparent 62%),
+      radial-gradient(700px 500px at 56% 86%,rgba(97,117,45,.13),transparent 68%),
+      linear-gradient(rgba(166,187,104,.12) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(166,187,104,.12) 1px,transparent 1px);
+    background-size:auto,auto,auto,60px 60px,60px 60px;
+    opacity:.9;
+  }
+  ::-webkit-scrollbar-track{background:#090b09}
+  ::-webkit-scrollbar-thumb{background:#4b5f3b;border-radius:0}
+  ::-webkit-scrollbar-thumb:hover{background:#b7f34a}
+
+  header{
+    background:rgba(8,12,8,.91)!important;
+    border-bottom:1px solid rgba(183,243,74,.45)!important;
+    box-shadow:0 12px 34px -20px rgba(183,243,74,.35),0 14px 34px -22px #000!important;
+  }
+  header::after{content:'LIVE COMPETITIVE CIRCUIT';position:absolute;right:1rem;bottom:-.65rem;color:#78846b;font:700 .48rem/1 'JetBrains Mono',monospace;letter-spacing:.18em;pointer-events:none}
+  .glass{
+    background:rgba(15,22,15,.86);
+    border:1px solid rgba(183,243,74,.24);
+    border-radius:.35rem!important;
+    box-shadow:0 0 0 1px rgba(183,243,74,.04),0 18px 42px -24px #000,inset 0 1px 0 rgba(255,255,255,.045);
+  }
+  .glass-2{background:rgba(24,34,25,.92);border-color:rgba(183,243,74,.18)}
+  .glow-gold{border-color:rgba(183,243,74,.62);box-shadow:0 0 0 1px rgba(183,243,74,.14),0 0 36px -14px rgba(183,243,74,.55),0 24px 54px -28px #000}
+  .glow-cyan{border-color:rgba(255,176,46,.55);box-shadow:0 0 0 1px rgba(255,176,46,.13),0 0 30px -12px rgba(255,176,46,.48),0 24px 54px -28px #000}
+  .rainbow-fill{background-image:linear-gradient(105deg,#b7f34a,#d7ff74 34%,#ffb02e 72%,#f4f1d0)!important;background-size:180% 100%;animation:tacticalSweep 7s ease-in-out infinite}
+  .rainbow-border{border:1px solid transparent!important;background:linear-gradient(rgba(15,22,15,.92),rgba(15,22,15,.92)) padding-box,var(--spectrum) border-box}
+  .spectrum-text{background:var(--spectrum);background-size:180% auto;animation:tacticalSweep 7s ease-in-out infinite}
+  @keyframes tacticalSweep{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  .clip-tag{clip-path:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,9px 100%,0 calc(100% - 9px))}
+  .row-champ{background:linear-gradient(90deg,rgba(183,243,74,.25),rgba(183,243,74,.06) 46%,transparent);box-shadow:inset 3px 0 #b7f34a}
+  .champ-name{background:linear-gradient(100deg,#d7ff74 10%,#b7f34a 34%,#fffbe1 48%,#ffb02e 66%,#d7ff74 92%);background-size:220% auto}
+  @keyframes pulseGold{0%,100%{box-shadow:0 0 0 1px rgba(183,243,74,.48),0 0 28px -10px rgba(183,243,74,.45)}50%{box-shadow:0 0 0 1px rgba(255,176,46,.82),0 0 42px -8px rgba(255,176,46,.62)}}
+  .champion-logo{filter:drop-shadow(0 0 18px rgba(183,243,74,.42))}
+  .ico-trophy{filter:drop-shadow(0 0 6px rgba(183,243,74,.62))}
+  .exporting .glass{background:#111811!important}
+  .exporting .glass-2{background:#182219!important}
+  .exporting .champ-name{background:none!important;-webkit-text-fill-color:#d7ff74!important;color:#d7ff74!important;animation:none!important}
+
+  .tabbtn.active{background-image:linear-gradient(105deg,#b7f34a,#ffb02e)!important;color:#090b09;box-shadow:0 0 22px -8px rgba(183,243,74,.72);animation:tacticalSweep 7s ease-in-out infinite}
+  .tabbtn{border-radius:.2rem!important}
+  .select-esports,.sel-trigger{background-color:#0b100b;border-color:#4b5f3b;border-radius:.25rem;color:#f4f1d0}
+  .select-esports:hover,.sel-trigger:hover{background-color:#172119;border-color:rgba(183,243,74,.78)}
+  .select-esports:focus,.select-esports:focus-visible,.sel-trigger:focus-visible,.sel-trigger.is-open{border-color:#b7f34a;box-shadow:0 0 0 1px #b7f34a,0 0 18px -7px rgba(183,243,74,.72)}
+  .select-esports option{background:#111811;color:#f4f1d0}
+  .select-esports option:checked{background:#b7f34a;color:#090b09}
+  .sel-pop{background:#182219;border-color:rgba(183,243,74,.58);border-radius:.25rem;box-shadow:0 0 0 1px rgba(183,243,74,.12),0 26px 50px -18px #000,0 0 34px -14px rgba(183,243,74,.42)}
+  .sel-opt .sel-check,.sel-opt.is-selected{color:#d7ff74}
+  .sel-opt.is-active{background:linear-gradient(90deg,rgba(183,243,74,.24),rgba(255,176,46,.12))}
+
+  .bracket{background:linear-gradient(135deg,rgba(183,243,74,.06),rgba(8,12,8,.28));gap:1.15rem}
+  .bracket-match{border-color:rgba(183,243,74,.48);border-radius:.25rem;background:rgba(8,13,8,.9);box-shadow:0 0 24px -14px rgba(183,243,74,.62)}
+  .bracket-match span+span{border-top-color:rgba(255,176,46,.35);color:#ffcf72}
+  .bracket-round-title{color:#ffcf72}
+  .bracket-rail{border-color:rgba(183,243,74,.22);border-radius:.25rem;background:linear-gradient(135deg,rgba(183,243,74,.06),rgba(8,12,8,.24))}
+  .bracket-rail-node{border-color:rgba(183,243,74,.52);background:#172119;color:#d7ff74;box-shadow:0 0 18px -8px rgba(183,243,74,.7)}
+  .bracket-rail-node.is-gold{border-color:rgba(255,176,46,.9);background:rgba(255,176,46,.16);color:#ffcf72;box-shadow:0 0 22px -7px rgba(255,176,46,.75)}
+  .bracket-final .bracket-match{border-color:rgba(255,176,46,.82);box-shadow:0 0 30px -12px rgba(255,176,46,.68)}
+  .bracket-champion{border-color:rgba(183,243,74,.5);background:rgba(183,243,74,.11);color:#d7ff74}
+
+  .rules-card,.rules-wide{border-color:rgba(183,243,74,.24);border-radius:.3rem;background:rgba(10,16,10,.78)}
+  .rules-number{background:rgba(183,243,74,.16);border-color:rgba(183,243,74,.58);color:#d7ff74;border-radius:.25rem}
+  .rules-zone-grid span,.rules-flow span{border-color:rgba(183,243,74,.35);background:rgba(183,243,74,.08);color:#d7ff74;border-radius:.25rem}
+  .rules-point{border-color:rgba(255,176,46,.25);background:rgba(255,176,46,.06);border-radius:.25rem}
+  .rules-flow i{color:#ffb02e}.rules-flow b{background:rgba(255,176,46,.17);border-color:rgba(255,176,46,.62)}
+  .podium-card{border-color:rgba(183,243,74,.3);border-radius:.25rem}.podium-card.first{background:rgba(183,243,74,.18);color:#d7ff74}
+  .rules-summary{border-color:rgba(183,243,74,.35);background:linear-gradient(90deg,rgba(183,243,74,.12),rgba(8,12,8,.38),rgba(255,176,46,.12));color:#d7ff74;border-radius:.3rem}
+  .rules-summary i{color:#ffb02e}
+
+  #view-board > .flex:first-child button,#view-admin button{border-radius:.25rem!important}
+  #view-board > .flex:first-child button:first-child,#btnSave,#btnAdminLogin{box-shadow:0 0 0 1px rgba(183,243,74,.34),0 10px 24px -14px rgba(183,243,74,.75)}
+  #teamCards .team-card,#capture > .glass,#bracket > .glass{border-radius:.35rem!important}
+  #teamCards .team-card{border-left:2px solid rgba(183,243,74,.48)}
+  #teamCards details{border-color:rgba(255,176,46,.25);border-radius:.25rem}
+  #teamCards details summary{color:#ffcf72}
+  #matchCards > div > .glass{border-radius:.25rem!important}
+  @media (max-width:800px){header::after{display:none}.bracket{gap:.75rem}}
