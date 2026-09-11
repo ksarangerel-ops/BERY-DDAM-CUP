@@ -6,19 +6,19 @@
    so an organiser is never locked out mid-tournament.
 
    state = {
-     teams:   [{ id, name, tag, zoneId, players:[{id,name} x5] }],
+     teams:   [{ id, name, tag, players:[{id,name} x5] }],
      results: { 1:{ teamId:{ series: '2-0' } }, ... },
      updated: ISO string
    }
    A match key that is absent = that match has not been played.
 ============================================================ */
-import { TEAM_SEED, SQUAD_SIZE, NUM_TEAMS, ZONES, CACHE_KEY } from './config.js';
+import { TEAM_SEED, SQUAD_SIZE, NUM_TEAMS, CACHE_KEY } from './config.js';
 import * as realtime from './supabase.js';
 
 export function blankState() {
   return {
-    teams: TEAM_SEED.map(([name, tag, zoneId], i) => ({
-      id: 't' + (i + 1), name, tag, zoneId: zoneId || null,
+    teams: TEAM_SEED.map(([name, tag], i) => ({
+      id: 't' + (i + 1), name, tag,
       players: Array.from({ length: SQUAD_SIZE }, (_, p) => ({
         id: `t${i + 1}p${p + 1}`, name: `${tag} Player ${p + 1}`,
       })),
@@ -34,7 +34,6 @@ export function isUsable(s) {
     && Array.isArray(s.teams)
     && s.teams.length === NUM_TEAMS
     && s.teams.every(t => t
-      && (t.zoneId == null || ZONES.includes(t.zoneId))
       && Array.isArray(t.players)
       && t.players.length === SQUAD_SIZE);
 }

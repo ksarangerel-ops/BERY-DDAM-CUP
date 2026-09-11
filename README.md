@@ -6,18 +6,15 @@ black-and-red esports theme and syncs through Supabase Realtime.
 ## Tournament format
 
 1. **Six teams** are entered with editable names, tags and five-player rosters.
-2. Teams start in **Zone A** and **Zone B**, three teams per zone. The organiser
-   can edit the assignment later from **Admin → Team Setup**.
-3. Each zone plays a **BO2 round robin**: every team plays the other two teams
-   once, for three matches per zone.
-4. Match points are **2–0 = 3 points**, **1–1 = 1 point**, **0–2 = 0 points**.
-5. The lowest-ranked team from each zone is eliminated. The top two from each
-   zone qualify, creating a four-team final bracket.
-6. The finalists play two **BO3 semifinals**: Zone A #1 vs Zone B #2, and
-   Zone B #1 vs Zone A #2.
-7. The semifinal winners play one BO3 for 1st/2nd, while the semifinal losers
-   play one BO3 for 3rd/4th. There are four final matches in total. Zone points
-   qualify teams but do not carry into the final placement.
+2. All six teams play one **BO1** against every other team: **15 Group Stage
+   matches** in total.
+3. Group Stage results create **Seed 1–6**. Seed 1 and Seed 2 wait in the
+   **Upper** slot.
+4. Seed 3 vs Seed 6 and Seed 4 vs Seed 5 play two **Lower BO1 qualifiers**.
+5. The two Lower winners join the two Upper seeds, creating the **Final Four**.
+6. The Final Four play a **BO3 round robin**: every finalist plays the other
+   three finalists once, for six matches total.
+7. Final Four results determine **1st–4th place**.
 
 ## Tie-break order
 
@@ -40,8 +37,8 @@ When two or more teams have the same points:
 - Six editable seeded teams: Team Alpha, Team Bravo, Team Charlie, Team Delta,
   Team Echo and Team Foxtrot.
 - Five-player roster editing per team.
-- Editable A/B zone assignment with a three-team limit per zone.
-- Zone standings, four-team final BO3 bracket and overall standings.
+- Six-team Group Stage standings, Upper/Lower qualification and Final Four BO3
+  round robin.
 - Supabase live sync with localStorage fallback.
 
 ## Run locally
@@ -97,11 +94,10 @@ leaderboard, but RLS only permits users in `public.tournament_admins` to write.
 Tournament settings are in `src/config.js`:
 
 ```js
-export const ZONES = ['A', 'B'];
-export const TEAMS_PER_ZONE = 3;
-export const ZONE_MATCHES = 3;
-export const FINAL_MATCHES = 4;
-export const QUALIFIERS_PER_ZONE = 2;
+export const GROUP_MATCHES = 15;
+export const LOWER_MATCHES = 2;
+export const FINAL_MATCHES = 6;
+export const NUM_TEAMS = 6;
 export const SQUAD_SIZE = 5;
 ```
 
