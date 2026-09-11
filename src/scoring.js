@@ -1,5 +1,5 @@
 /* ============================================================
-   DOTA 2 scoring — zone BO2 round robin → four-team BO3 elimination bracket
+   CS2 scoring — zone BO2 round robin → four-team BO3 elimination bracket
 ============================================================ */
 import {
   MATCHES, ZONES, TEAMS_PER_ZONE, pointsForSeries,

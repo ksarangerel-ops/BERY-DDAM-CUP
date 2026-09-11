@@ -1,6 +1,6 @@
-# DDAM CUP — DOTA 2 Tournament Board
+# DDAM CUP — CS2 Tournament Board
 
-Real-time DOTA 2 tournament scoreboard for six teams. The board uses a
+Real-time CS2 tournament scoreboard for six teams. The board uses a
 black-and-red esports theme and syncs through Supabase Realtime.
 
 ## Tournament format
@@ -36,9 +36,9 @@ When two or more teams have the same points:
 
 ## Features
 
-- DOTA 2 branding with black/red tournament styling.
-- Six seeded teams: Team Gegeenee, Team Ganaa, Team Garidaa, Team Amaraa,
-  Team Bery and Team Bagaa.
+- CS2 branding with a tactical purple/cyan esports styling.
+- Six editable seeded teams: Team Alpha, Team Bravo, Team Charlie, Team Delta,
+  Team Echo and Team Foxtrot.
 - Five-player roster editing per team.
 - Editable A/B zone assignment with a three-team limit per zone.
 - Zone standings, four-team final BO3 bracket and overall standings.

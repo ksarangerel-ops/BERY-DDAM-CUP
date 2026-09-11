@@ -1,5 +1,5 @@
 /* ============================================================
-   DDAM CUP DOTA 2 — tournament configuration
+   DDAM CUP CS2 — tournament configuration
 
    Six teams start in two editable zones. Each zone has three teams and
    plays a BO2 round robin. The bottom team is eliminated; the top two from
@@ -67,12 +67,12 @@ export const NUM_TEAMS = 6;
 
 /* The six seed names and the initial A/B split are editable from Admin. */
 export const TEAM_SEED = [
-  ['Team Gegeenee', 'ALP', 'A'],
-  ['Team Ganaa',    'BRV', 'A'],
-  ['Team Garidaa',  'CHR', 'A'],
-  ['Team Amaraa',   'DLT', 'B'],
-  ['Team Bery',     'ECH', 'B'],
-  ['Team Bagaa',    'FOX', 'B'],
+  ['Team Alpha',   'ALP', 'A'],
+  ['Team Bravo',   'BRV', 'A'],
+  ['Team Charlie', 'CHR', 'A'],
+  ['Team Delta',   'DLT', 'B'],
+  ['Team Echo',    'ECH', 'B'],
+  ['Team Foxtrot', 'FOX', 'B'],
 ];
 
 export const matchById = id => MATCHES.find(match => match.id === Number(id));
@@ -80,5 +80,5 @@ export const zoneMatches = zoneId => MATCHES.filter(match => match.stage === 'zo
 export const finalMatches = () => MATCHES.filter(match => match.stage === 'final');
 
 const ENV = import.meta.env || {};
-export const TOURNAMENT_ID = ENV.VITE_TOURNAMENT_ID || 'ddam-cup-dota2-final-bracket';
+export const TOURNAMENT_ID = ENV.VITE_TOURNAMENT_ID || 'ddam-cup-cs2-final-bracket';
 export const CACHE_KEY = `ddam-cup-cache:${TOURNAMENT_ID}`;

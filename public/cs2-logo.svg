@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">DDAM CUP CS2</title>
+  <desc id="desc">A geometric tactical shield with CS2 lettering</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset=".52" stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#a5f3fc"/>
+    </linearGradient>
+  </defs>
+  <path d="M18 10h92v64c0 24-18 39-46 46C36 113 18 98 18 74V10Z" fill="#070816" stroke="url(#bg)" stroke-width="5"/>
+  <path d="m28 25 20 10 16-14 16 14 20-10v47c0 14-10 24-36 32-26-8-36-18-36-32V25Z" fill="url(#bg)" opacity=".18"/>
+  <path d="M35 43h18l8 9 8-9h24v9H66l-5 7-5-7H35v-9Zm0 18h17l9 10 9-10h23v9H66l-5 7-5-7H35v-9Z" fill="url(#steel)"/>
+  <path d="M43 84h42" stroke="#22d3ee" stroke-width="4" stroke-linecap="round"/>
+</svg>

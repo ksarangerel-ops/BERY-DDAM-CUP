@@ -13,7 +13,7 @@
        photo-1511512578047-dfb367046420  (dark arcade control room)
      ========================================================== */
   :root{
-    --bg-photo: url('https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=2400&q=80');
+    --bg-photo: url('https://images.unsplash.com/photo-1560253023-3ec5d502959f?auto=format&fit=crop&w=2400&q=80');
     --spectrum: linear-gradient(105deg,#22d3ee 0%,#3b82f6 32%,#8b5cf6 66%,#d946ef 100%);
     --spectrum-soft: linear-gradient(105deg,rgba(34,211,238,.24),rgba(59,130,246,.22),rgba(139,92,246,.26),rgba(217,70,239,.22));
   }

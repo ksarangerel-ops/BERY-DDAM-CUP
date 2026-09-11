@@ -1,5 +1,5 @@
 /* ============================================================
-   DDAM CUP DOTA 2 — entry point
+   DDAM CUP CS2 — entry point
 ============================================================ */
 import './style.css';
 import html2canvas from 'html2canvas';
@@ -143,15 +143,15 @@ function renderFormatRules() {
     <div class="rounded-2xl glass p-5 border border-cyan/20">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div class="text-[10px] uppercase tracking-[.3em] font-display font-black text-cyan">DOTA 2 TOURNAMENT FORMAT</div>
-          <h3 class="font-display font-black text-lg sm:text-xl text-white mt-1">DDAM CUP — 6 Team BO3 Bracket</h3>
+          <div class="text-[10px] uppercase tracking-[.3em] font-display font-black text-cyan">CS2 TOURNAMENT FORMAT</div>
+          <h3 class="font-display font-black text-lg sm:text-xl text-white mt-1">DDAM CUP — 6 Team CS2 Bracket</h3>
         </div>
         <span class="text-[10px] uppercase tracking-widest font-display font-black px-2 py-1 rounded border ${assigned === 6 ? 'text-emerald-300 border-emerald-400/40 bg-emerald-400/10' : 'text-gold border-gold/40 bg-gold/10'}">${assigned}/6 teams assigned</span>
       </div>
       <div class="grid gap-3 md:grid-cols-3 mt-4 text-sm">
         <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-gold">1. Zone stage</b><br><span class="text-slate-400">6 teams are divided into Zone ${zoneA} and Zone ${zoneB}, three teams per zone. Each zone plays a BO2 round robin.</span></div>
         <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-cyan">2. Qualification</b><br><span class="text-slate-400">The bottom team from each zone is eliminated. The top 2 from each zone advance.</span></div>
-        <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-white">3. Final BO3 bracket</b><br><span class="text-slate-400">The qualified 4 teams play two semifinals. Winners play for 1st/2nd; losers play for 3rd/4th.</span></div>
+        <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-white">3. CS2 playoff BO3 bracket</b><br><span class="text-slate-400">The qualified 4 teams play two semifinals. Winners play for 1st/2nd; losers play for 3rd/4th.</span></div>
       </div>
       <p class="text-xs text-slate-500 mt-4">Current status: ${finalists.length ? `${finalists.length} finalists qualified.` : 'Zone assignment or zone results are not complete yet.'} Zone assignment can be changed from Admin → Team Setup.</p>
     </div>`;
@@ -198,7 +198,7 @@ function renderBracket() {
   };
   $('bracket').innerHTML = `<div class="rounded-2xl glass overflow-hidden border border-gold/25">
     <div class="px-4 sm:px-5 py-3 glass-2 border-b border-gold/20 flex items-center justify-between gap-3">
-      <div class="flex items-center gap-2.5"><span class="w-1.5 h-5 rounded-full bg-gold"></span><h3 class="font-display font-black text-xs sm:text-sm uppercase tracking-[.2em] text-white">Final BO3 Elimination · 4 Teams</h3></div>
+      <div class="flex items-center gap-2.5"><span class="w-1.5 h-5 rounded-full bg-gold"></span><h3 class="font-display font-black text-xs sm:text-sm uppercase tracking-[.2em] text-white">CS2 Playoff BO3 · 4 Teams</h3></div>
       <span class="text-[9px] uppercase tracking-widest font-display font-black ${ready ? 'text-gold' : 'text-slate-500'}">${ready ? '4 finalists ready' : 'Awaiting zone results'}</span>
     </div>
     <div class="grid gap-4 lg:grid-cols-2 p-4 sm:p-5">
@@ -254,7 +254,7 @@ function renderRosters() {
       </div>`
     : `<div class="h-full rounded-2xl border border-cyan/40 bg-gradient-to-br from-cyan/10 via-panel/80 to-ink/90 backdrop-blur-md p-5 flex flex-col justify-center text-center">
         <img src="/ddam-logo.svg" alt="DDAM CUP" class="champion-logo mx-auto mb-2 opacity-80">
-        <div class="text-[10px] uppercase tracking-[.3em] font-display font-black text-cyan">DOTA 2 CUP STATUS</div>
+        <div class="text-[10px] uppercase tracking-[.3em] font-display font-black text-cyan">CS2 CUP STATUS</div>
         <div class="font-display font-black text-xl sm:text-2xl mt-2 text-white">${state.teams.length} Teams</div>
         <div class="text-sm text-slate-400 mt-1">${assigned}/6 zone assignments complete</div>
         <div class="grid grid-cols-2 gap-2 mt-4">
@@ -310,7 +310,7 @@ function renderSavedAt() {
 /* ---------- admin ---------- */
 function renderMatchTabs() {
   const zoneTabs = ZONES.map(zoneId => `<div class="w-full mt-1 first:mt-0"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-cyan mb-2">Zone ${zoneId} · Round Robin</div><div class="flex flex-wrap gap-2">${MATCHES.filter(match => match.stage === 'zone' && match.zoneId === zoneId).map(renderMatchTab).join('')}</div></div>`).join('');
-  const finalTabs = `<div class="w-full mt-3 pt-3 border-t border-line/70"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-gold mb-2">Final BO3 Bracket · 4 teams · 4 matches</div><div class="flex flex-wrap gap-2">${MATCHES.filter(match => match.stage === 'final').map(renderMatchTab).join('')}</div></div>`;
+  const finalTabs = `<div class="w-full mt-3 pt-3 border-t border-line/70"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-gold mb-2">CS2 Playoff BO3 · 4 teams · 4 matches</div><div class="flex flex-wrap gap-2">${MATCHES.filter(match => match.stage === 'final').map(renderMatchTab).join('')}</div></div>`;
   $('matchTabs').innerHTML = zoneTabs + finalTabs;
   document.querySelectorAll('.mtab').forEach(button => {
     button.onclick = () => {
@@ -489,7 +489,7 @@ function renderTeamEditorValues() {
 }
 
 function renderRulesLegend() {
-  $('ptsLegend').innerHTML = `<li class="flex justify-between items-center"><span class="text-gold font-bold">Zone BO2 2–0 Win</span><span class="font-mono font-extrabold text-white">3 pts</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Zone BO2 1–1 Draw</span><span class="font-mono font-extrabold text-white">1 pt</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Zone BO2 0–2 Loss</span><span class="font-mono font-extrabold text-white">0 pts</span></li><li class="flex justify-between items-center pt-2 mt-2 border-t border-line text-cyan"><span>Zone stage</span><span class="font-mono font-extrabold">6 matches</span></li><li class="flex justify-between items-center text-gold"><span>Final BO3 bracket</span><span class="font-mono font-extrabold">4 matches</span></li><li class="flex justify-between items-center text-gold"><span>Placement</span><span class="font-mono font-extrabold">1st–4th</span></li>`;
+  $('ptsLegend').innerHTML = `<li class="flex justify-between items-center"><span class="text-gold font-bold">Zone BO2 2–0 Win</span><span class="font-mono font-extrabold text-white">3 pts</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Zone BO2 1–1 Draw</span><span class="font-mono font-extrabold text-white">1 pt</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Zone BO2 0–2 Loss</span><span class="font-mono font-extrabold text-white">0 pts</span></li><li class="flex justify-between items-center pt-2 mt-2 border-t border-line text-cyan"><span>CS2 zone stage</span><span class="font-mono font-extrabold">6 matches</span></li><li class="flex justify-between items-center text-gold"><span>CS2 playoff BO3</span><span class="font-mono font-extrabold">4 matches</span></li><li class="flex justify-between items-center text-gold"><span>Placement</span><span class="font-mono font-extrabold">1st–4th</span></li>`;
 }
 
 function renderBoard() { renderMapChips(); renderFormatRules(); renderZoneCards(); renderBracket(); renderStandings(); renderRosters(); renderMatchCards(); renderSavedAt(); }
@@ -616,8 +616,8 @@ async function clearAllResults(confirmText) {
   toast(result.ok && !result.local ? '✓ All series cleared — teams kept' : 'All series cleared on this device only', !result.ok);
 }
 
-$('btnClearAll').onclick = () => clearAllResults(`Clear every DOTA 2 series result across all ${NUM_MATCHES} games?\n\nTeam names, tags, zone assignments and player names are kept.`);
-$('btnReset').onclick = () => clearAllResults(`Reset every DOTA 2 series result across all ${NUM_MATCHES} games?\n\nTeam names, tags, zone assignments and player names are kept.`);
+$('btnClearAll').onclick = () => clearAllResults(`Clear every CS2 series result across all ${NUM_MATCHES} games?\n\nTeam names, tags, zone assignments and player names are kept.`);
+$('btnReset').onclick = () => clearAllResults(`Reset every CS2 series result across all ${NUM_MATCHES} games?\n\nTeam names, tags, zone assignments and player names are kept.`);
 
 $('btnMore').onclick = () => { showAllPlayers = !showAllPlayers; renderRosters(); };
 $('btnReload').onclick = () => { pendingRemote = false; formDirty = false; renderAll(); toast('✓ Loaded the latest results'); };
@@ -643,7 +643,7 @@ $('btnPng').onclick = async () => {
   try {
     const canvas = await html2canvas($('capture'), { backgroundColor: '#080808', scale: Math.min(3, (window.devicePixelRatio || 1) * 2), useCORS: true, logging: false });
     const link = document.createElement('a');
-    link.download = `ddam-cup-dota2-${new Date().toISOString().slice(0, 10)}.png`;
+    link.download = `ddam-cup-cs2-${new Date().toISOString().slice(0, 10)}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
     toast('✓ PNG downloaded');
@@ -654,7 +654,7 @@ $('btnPng').onclick = async () => {
 
 $('btnCopy').onclick = async () => {
   const teams = computeStandings(state), players = computePlayers(state).slice(0, 10);
-  const text = ['🏆 DDAM CUP — DOTA 2', '', 'FORMAT: 2 ZONES × 3 TEAMS · ZONE BO2 → A1 vs B2 / B1 vs A2 → BO3 PLACEMENT FINALS', '']
+  const text = ['🏆 DDAM CUP — CS2', '', 'FORMAT: 2 ZONES × 3 TEAMS · ZONE BO2 → A1 vs B2 / B1 vs A2 → CS2 BO3 PLAYOFF FINALS', '']
     .concat(teams.map(row => `${row.rank}. ${row.team.name} [${row.team.tag}] — ${row.total} pts (${row.wins}-${row.draws}-${row.losses}, ${row.team.zoneId ? `Zone ${row.team.zoneId}` : 'Unassigned'}${row.qualified ? ', finalist' : ''})`))
     .concat(['', 'PLAYERS', ''])
     .concat(players.map(row => `${row.player.name} — ${row.team.name}${row.zoneId ? ` [Zone ${row.zoneId}]` : ''}`))
