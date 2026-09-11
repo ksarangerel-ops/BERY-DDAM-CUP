@@ -243,30 +243,49 @@ tailwind.config = {
 
 <!-- ============ RULES VIEW ============ -->
 <section id="view-rules" class="hidden">
-  <div class="rounded-2xl glass overflow-hidden border border-gold/25">
-    <div class="p-5 sm:p-7 border-b border-gold/20 bg-gradient-to-br from-gold/15 via-panel/70 to-ink/80">
-      <p class="text-[10px] sm:text-xs uppercase tracking-[.35em] text-cyan font-display font-black">DDAM CUP CS2 · OFFICIAL FORMAT</p>
-      <h2 class="font-display font-black text-2xl sm:text-4xl text-white mt-2">ТЭМЦЭЭНИЙ ДҮРЭМ</h2>
-      <p class="text-sm sm:text-base text-slate-400 mt-3 max-w-3xl font-semibold">CS2-ийн 6 багийг хоёр zone-д хувааж, zone-ийн BO2 тоглолтын дараа шалгарсан 4 багийг BO3 playoff bracket-ээр тоглуулж эцсийн 1–4-р байрыг тодруулна.</p>
-    </div>
-
-    <div class="p-5 sm:p-7 space-y-5">
-      <div class="grid gap-4 md:grid-cols-2">
-        <article class="rules-card"><div class="rules-number">01</div><div><h3>Тэмцээний бүтэц</h3><p>Нийт <b>6 баг</b> оролцоно. Сугалааны зарчмаар 2 хэсэгт хувааж, хэсэг бүрт 3 баг оролцуулна.</p><div class="rules-zone-grid"><span>A хэсэг · 3 баг</span><span>B хэсэг · 3 баг</span></div></div></article>
-        <article class="rules-card"><div class="rules-number">02</div><div><h3>Хэсгийн шат</h3><p>Хэсэг бүрийн 3 баг тойргийн системээр тоглоно. Нэг баг өөрийн хэсгийн бусад 2 багтай тус бүр нэг удаа BO2 тоглоно.</p></div></article>
+  <div class="rules-dossier">
+    <div class="rules-masthead">
+      <div>
+        <p class="rules-kicker">DDAM CUP · CS2 / COMPETITIVE BRIEFING</p>
+        <h2>ТЭМЦЭЭНИЙ АЛБАН ЁСНЫ ДҮРЭМ</h2>
+        <p class="rules-lead">Шударга, саадгүй, түргэн шуурхай тэмцээн явуулахын тулд бүх баг, тоглогч болон зохион байгуулагчид дараах журмыг мөрдөнө.</p>
       </div>
-
-      <article class="rules-wide"><div class="rules-number">03</div><div><h3>Zone шатны оноо ба хасагдал</h3><p>Zone BO2 тоглолтыг дараах оноогоор эрэмбэлнэ:</p><div class="grid gap-2 sm:grid-cols-3 mt-3"><div class="rules-point"><b>Хожил</b><strong>3 оноо</strong></div><div class="rules-point"><b>Тэнцээ</b><strong>1 оноо</strong></div><div class="rules-point"><b>Хожигдол</b><strong>0 оноо</strong></div></div><p class="mt-3">Хэсгийн шат дууссаны дараа хамгийн бага оноотой баг тухайн хэсгээс хасагдана. Ингэснээр хэсэг тус бүрээс 2 баг, нийт 4 баг шалгарна.</p></div></article>
-
-        <article class="rules-wide"><div class="rules-number">04</div><div><h3>Шалгарсан 4 багийн Final bracket</h3><p>Zone A-ийн 1-р байр нь Zone B-ийн 2-р байртай, Zone B-ийн 1-р байр нь Zone A-ийн 2-р байртай <b>BO3 semifinal</b> тоглоно. Хоёр semifinal-ийн ялагчид Grand Final-д 1, 2-р байрны төлөө; хожигдсон багууд 3, 4-р байрны төлөө BO3 тоглоно. Нийт <b>4 тоглолт</b> явна.</p><div class="rules-flow"><span>A1 vs B2</span><span>B1 vs A2</span><i>→</i><b>Winners: 1/2 · Losers: 3/4</b></div></div></article>
-
-        <article class="rules-wide"><div class="rules-number">05</div><div><h3>Эцсийн байр эзлэлт</h3><p>Grand Final-д хожсон баг <b>1-р байр</b>, хожигдсон баг <b>2-р байр</b> эзэлнэ. 3rd Place Final-д хожсон баг <b>3-р байр</b>, хожигдсон баг <b>4-р байр</b> эзэлнэ. Zone-ийн оноо нь зөвхөн Final bracket-д шалгарахад ашиглагдана.</p><div class="grid gap-2 sm:grid-cols-4 mt-3"><div class="podium-card first">🥇<span>1-р байр</span></div><div class="podium-card second">🥈<span>2-р байр</span></div><div class="podium-card third">🥉<span>3-р байр</span></div><div class="podium-card fourth"><span>4-р байр</span></div></div></div></article>
-
-      <article class="rules-wide"><div class="rules-number">06</div><div><h3>Оноо тэнцсэн тохиолдолд</h3><ol class="rules-list"><li>Хоорондын тоглолтын үр дүн</li><li>Тоглолтын нийт хожил/хожигдлын харьцаа</li><li>Game хожил/хожигдлын харьцаа</li><li>Нэмэлт шийдвэрлэх тоглолт (Tie-breaker)</li></ol><p class="mt-3">Нэмэлт тоглолт шаардлагатай эсэхийг тэмцээний зохион байгуулагч шийдвэрлэнэ.</p></div></article>
-
-      <div class="rules-summary"><span>6 баг</span><i>→</i><span>2 zone</span><i>→</i><span>BO2 round robin</span><i>→</i><span>4 баг</span><i>→</i><span>BO3 bracket</span><i>→</i><b>1–4-р байр</b></div>
-      <p class="text-center text-xs text-slate-500 font-semibold">Багийн нэр, tag, тоглогч болон zone хуваарилалтыг Admin → Team Setup хэсгээс дараа нь засаж болно.</p>
+      <div class="rules-stamp"><span>RULEBOOK</span><b>CS2</b><small>v1.0 · OFFICIAL</small></div>
     </div>
+
+    <div class="rules-alert"><span class="rules-alert-icon">!</span><div><b>IMPORTANT NOTICE</b><p>Тоглолтын үеийн маргаантай асуудлыг зөвхөн зохион байгуулагч / шүүгчид мэдэгдэнэ. Тэдний гаргасан эцсийн шийдвэрийг бүх баг, тоглогч хүндэтгэн дагана.</p></div></div>
+
+    <div class="rules-facts">
+      <div><b>06</b><span>БАГ</span></div><div><b>15</b><span>GROUP BO1</span></div><div><b>01–06</b><span>SEED</span></div><div><b>PLAYOFF</b><span>QF → SF → FINAL</span></div>
+    </div>
+
+    <div class="rules-dossier-grid">
+      <article class="rules-section"><div class="rules-section-no">01</div><div><div class="rules-section-head"><h3>Бүрэлдэхүүн ба бүртгэл</h3><span>ROSTER / ELIGIBILITY</span></div><ol class="dossier-list"><li>Нэг баг <b>5 үндсэн тоглогчтой</b> байна.</li><li>Эмэгтэй тоглогч оролцох боломжтой.</li><li>Тоглолтын үеэр зөвшөөрөгдсөн бүрэлдэхүүнээс гадуур тоглогч оруулахыг хориглоно.</li><li>Тэмцээн эхэлсний дараа тоглогч солихыг зохион байгуулагчийн зөвшөөрөлгүйгээр хориглоно.</li><li>Өөр багийн бүртгэлтэй тоглогчийг зөвшөөрөлгүйгээр ашиглахыг хориглоно.</li></ol></div></article>
+
+      <article class="rules-section featured"><div class="rules-section-no">02</div><div><div class="rules-section-head"><h3>Group Stage</h3><span>ROUND ROBIN · BO1</span></div><p>Нийт <b>6 баг</b> нэг группд орж, бүх багууд хоорондоо тус бүр нэг удаа тоглоно.</p><div class="rules-flow dossier-flow"><span>6 TEAMS</span><i>→</i><span>15 MATCHES</span><i>→</i><span>SEED 1–6</span></div><ol class="dossier-list"><li>Тоглолт бүр <b>BO1</b> буюу нэг map байна.</li><li>Нийт 15 тоглолтын дараа Seed 1–6 тодорхойлогдоно.</li><li>Group Stage дээр шууд хасагдах баг байхгүй. Бүх 6 баг Playoff-т шалгарна.</li><li>Seed 1, 2 нь Quarterfinal алгасаж Semifinal-д шууд орно.</li><li>Seed 3, 4, 5, 6 нь Quarterfinal шатнаас эхэлнэ.</li></ol></div></article>
+
+      <article class="rules-section"><div class="rules-section-no">03</div><div><div class="rules-section-head"><h3>Map Ban / Pick</h3><span>MAP POOL PROTOCOL</span></div><p>Map-уудыг зохион байгуулагчийн урьдчилан зарласан CS2 Map Pool-оос сонгоно.</p><div class="ban-sequence"><span class="ban">A · BAN</span><span class="ban">B · BAN</span><span class="ban">A · BAN</span><span class="ban">B · BAN</span><span class="ban">A · BAN</span><span class="ban">B · BAN</span><span class="decider">REMAINING · PLAY</span></div><ol class="dossier-list" start="12"><li>Ban хийсэн map тухайн тоглолтод дахин тоглогдохгүй.</li><li>Бүх ban дууссаны дараа үлдсэн map-ыг өөрчлөх боломжгүй.</li><li>Ban-ийн дарааллыг тоглолтоос өмнө зохион байгуулагч мэдэгдэнэ.</li><li>BO3-д эсрэг талын сонгосон map дээр тоглох талаа сонгоно.</li><li>BO1 болон BO3-ын decider map дээр сүүлд ban хийсэн багийн эсрэг тал T эсвэл CT сонгоно.</li><li>Map сонголтын маргааныг зохион байгуулагч эцэслэн шийдвэрлэнэ.</li></ol></div></article>
+
+      <article class="rules-section featured"><div class="rules-section-no">04</div><div><div class="rules-section-head"><h3>Playoff замнал</h3><span>SEED → PODIUM</span></div><div class="playoff-path"><div><b>QF</b><span>Seed 3–6<br>BO1</span></div><i>→</i><div><b>SF</b><span>Seed 1–2<br>BO3</span></div><i>→</i><div><b>FINAL</b><span>Grand Final<br>BO3</span></div><i>+</i><div><b>3RD</b><span>Placement<br>BO3</span></div></div><ul class="dossier-bullets"><li>Quarterfinal-ийн ялагчид Seed 1, 2-той тус тус Semifinal тоглоно.</li><li>Semifinal-ийн ялагчид Grand Final-д 1, 2-р байрны төлөө тоглоно.</li><li>Semifinal-ийн хожигдогчид 3-р байрын тоглолтод тоглоно.</li><li>Quarterfinal-д хожигдсон багууд цааш тоглохгүй. Group Stage-ийн Seed-ээр 5, 6-р байр тодорно.</li></ul><div class="format-strip"><span>Quarterfinal · BO1</span><span>Semifinal · BO3</span><span>Grand Final · BO3</span><span>3rd Place · BO3</span></div></div></article>
+
+      <article class="rules-section"><div class="rules-section-no">05</div><div><div class="rules-section-head"><h3>BO3 map дараалал</h3><span>BEST OF THREE</span></div><div class="map-order"><div><b>MAP 1</b><span>Team A-ийн сонгосон map</span></div><div><b>MAP 2</b><span>Team B-ийн сонгосон map</span></div><div><b>MAP 3</b><span>Үлдсэн decider map</span></div></div><p class="rules-note">Аль нэг баг эхний 2 map-ыг дараалан хожвол Map 3 тоглогдохгүй. Decider Map дээр сүүлд ban хийсэн багийн эсрэг тал тоглох талаа сонгоно.</p></div></article>
+
+      <article class="rules-section"><div class="rules-section-no">06</div><div><div class="rules-section-head"><h3>Тоглолтын өмнөх бэлтгэл</h3><span>CHECK-IN</span></div><ol class="dossier-list" start="25"><li>CS2 тоглоомоо хамгийн сүүлийн хувилбарт шинэчилсэн байх.</li><li>Steam болон CS2 аккаунтдаа асуудалгүй нэвтэрсэн байх.</li><li>Шаардлагатай тохиргоо, файлуудаа бэлэн байлгах.</li><li>Тоглолтын серверт цагтаа орсон байх.</li><li>Шаардлагатай бол зохион байгуулагчийн өгсөн сервер, lobby-г ашиглах.</li></ol><p class="rules-note">Сервер, map эсвэл match-тэй холбоотой асуудлыг зөвхөн зохион байгуулагч / шүүгч шийдвэрлэнэ.</p></div></article>
+
+      <article class="rules-section featured"><div class="rules-section-no">07</div><div><div class="rules-section-head"><h3>Оноо ба Seed эрэмбэ</h3><span>STANDINGS / TIEBREAK</span></div><div class="score-cards"><div class="win"><b>1 POINT</b><span>Match Win</span></div><div class="loss"><b>0 POINT</b><span>Match Loss</span></div></div><p>Group Stage-ийн байрлалыг дараах дарааллаар тогтооно:</p><ol class="dossier-list ranking-list"><li><b>Нийт Match Win</b> — олон хожилтой баг өндөр байр эзэлнэ.</li><li><b>Head-to-Head</b> — яг 2 баг тэнцсэн тохиолдолд шууд тоглолтын үр дүн.</li><li><b>Round Difference</b> — 3 ба түүнээс олон баг тэнцвэл нийт Round Win − Round Loss.</li><li><b>Нийт Round Win</b> — дээрх үзүүлэлтүүд тэнцсэн тохиолдолд.</li><li><b>BO1 tie-breaker</b> — шаардлагатай бол зохион байгуулагчийн шийдвэрээр.</li></ol></div></article>
+
+      <article class="rules-section"><div class="rules-section-no">08</div><div><div class="rules-section-head"><h3>Цаг баримтлах ба техникийн асуудал</h3><span>SERVER / TECH PAUSE</span></div><ol class="dossier-list" start="36"><li>Тоглолт эхлэхэд баг бүр 5 тоглогчтой бүрэн бүрэлдэхүүнтэй байна.</li><li>Зөв сервер / lobby-д орсон байх.</li><li>Зохион байгуулагчийн зааврыг дагаж мөрдөнө.</li><li>Интернет, компьютер, CS2 crash, FPS, Steam-ийн хувийн асуудлаар match автоматаар restart хийхгүй.</li><li>Pause, үргэлжлүүлэх эсвэл rematch хийх эсэхийг зохион байгуулагч шийднэ.</li><li>Серверийн нийтлэг асуудал, server crash, зохион байгуулагчийн техникийн алдаанд rematch хийх эсэхийг зохион байгуулагч шийдвэрлэнэ.</li></ol></div></article>
+
+      <article class="rules-section danger"><div class="rules-section-no">09</div><div><div class="rules-section-head"><h3>Хатуу хориглох зүйлс</h3><span>ZERO TOLERANCE</span></div><div class="danger-grid"><span>CHEAT / HACK</span><span>WALLHACK / AIM ASSIST</span><span>ACCOUNT SHARING</span><span>MATCH FIXING</span><span>UNFAIR INFORMATION</span><span>INTENTIONAL DISRUPTION</span></div><ol class="dossier-list" start="48"><li>Cheat / Hack болон давуу тал олгох программ ашиглах.</li><li>Өөр тоглогчийн аккаунтаар тоглох.</li><li>Match fixing буюу үр дүнг зориудаар тохиролцох.</li><li>Өөр багтай тохиролцож давуу байдал бий болгох.</li><li>Бусад багийн тоглогч, тактик, мэдээллийг хууль бусаар ашиглах.</li><li>Зохион байгуулагч болон өрсөлдөгч багт санаатайгаар саад учруулах.</li></ol><p class="rules-note danger-note">Cheat / Hack болон зориудаар шударга бус тоглолт хийсэн нь нотлогдвол тухайн багийг шууд тэмцээнээс хасна.</p></div></article>
+
+      <article class="rules-section"><div class="rules-section-no">10</div><div><div class="rules-section-head"><h3>Spectator ба Ghosting</h3><span>INFORMATION CONTROL</span></div><p>Тоглолтод оролцоогүй хүн spectator-аар үзэж байгаа тохиолдолд багуудад мэдээлэл өгөх, Discord / voice chat-аар enemy-ийн байрлал хэлэх, stream / spectator мэдээлэл ашиглах, тоглолтыг шууд дамжуулахыг хориглоно.</p><p class="rules-note">Ghosting / Stream Sniping тогтоогдвол тухайн тоглогч болон багт сахилгын арга хэмжээ авна.</p></div></article>
+
+      <article class="rules-section"><div class="rules-section-no">11</div><div><div class="rules-section-head"><h3>Сахилгын арга хэмжээ</h3><span>DISCIPLINARY ACTION</span></div><div class="penalty-list"><span>01 · Анхааруулга</span><span>02 · Тоглолтыг хүчингүй болгох</span><span>03 · Оноо хасах</span><span>04 · Тоглогчийг хасах</span><span>05 · Багийг шууд хасах</span></div></div></article>
+
+      <article class="rules-section full"><div class="rules-section-no">12</div><div><div class="rules-section-head"><h3>Маргаан ба нотлох баримт</h3><span>FINAL AUTHORITY</span></div><p>Маргаантай асуудал гарвал багууд тоглолтыг зогсоож маргалдахгүй бөгөөд зохион байгуулагч / шүүгчид нэн даруй мэдэгдэнэ.</p><div class="evidence-row"><span>Match нөхцөл</span><span>Demo / Replay</span><span>Server log</span><span>Screenshot</span><span>Video evidence</span><span>Бусад мэдээлэл</span></div><p class="rules-note">Зохион байгуулагч / шүүгчийн гаргасан эцсийн шийдвэрийг бүх баг, тоглогч хүндэтгэн дагана.</p></div></article>
+    </div>
+
+    <div class="rules-final-warning"><b>⏰ ANTI-DELAY NOTICE</b><span>Бүх баг тоглолтын хуваарьт заасан цагаас өмнө сервер / lobby-дээ бэлэн байна.</span><strong>🔥 Шударга тоглож, өрсөлдөөнтэй CS2 тэмцээн болгоцгооё!</strong></div>
   </div>
 </section>
 
