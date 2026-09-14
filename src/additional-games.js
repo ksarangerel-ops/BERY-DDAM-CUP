@@ -14,7 +14,7 @@ const GAME_DEFS = {
   stumble: { label: 'Stumble Guys', short: 'STUMBLE', format: '30 players · Grand Prix', rules: './games.html#stumble', logo: '/game-logos/stumble.svg', logoClass: 'wordmark light', art: '/game-backdrops/stumble-game.png' },
   pubg: { label: 'PUBG Mobile', short: 'PUBG', format: '3 maps · placement + kills', rules: './games.html#pubg', logo: '/game-logos/pubg-mobile.svg', logoClass: 'wordmark light', art: '/game-backdrops/pubg-game.jpg' },
   tekken: { label: 'Tekken 8', short: 'TEKKEN', format: '18 players · BO3 / BO5 playoff', rules: './games.html#tekken', logo: '/game-logos/tekken8.svg', logoClass: 'wordmark light', art: '/game-backdrops/tekken-game.jpeg' },
-  tetris: { label: 'Tetris', short: 'TETRIS', format: '3 games · 2 zones · final 4', rules: './games.html#tetris', logo: '/game-logos/tetrio.png', logoClass: 'wordmark tetris-logo', art: '/game-backdrops/tetris-effect.jpg' },
+  tetris: { label: 'Tetris', short: 'TETRIS', format: '3 games · 2 zones · final 4', rules: './games.html#tetris', logo: '/game-logos/tetrio.webp', logoClass: 'wordmark tetris-logo', art: '/game-backdrops/tetris-gamer.webp' },
 };
 const GAME_IDS = Object.keys(GAME_DEFS);
 const REQUIRED_GAME_IDS = GAME_IDS.filter(id => id !== 'tetris');
@@ -71,6 +71,10 @@ function normalizeState(value) {
   if (!usable(value)) return null;
   if (!value.games.tetris?.teams || !Array.isArray(value.games.tetris.games) || value.games.tetris.games.length !== 3) {
     value.games.tetris = defaultState().games.tetris;
+    const referenceTeams = value.games.tekken?.teams || value.games.mecha?.teams;
+    if (Array.isArray(referenceTeams) && referenceTeams.length === 6) {
+      value.games.tetris.teams = value.games.tetris.teams.map((team, index) => ({ ...team, name: referenceTeams[index]?.name || team.name, tag: referenceTeams[index]?.tag || team.tag }));
+    }
   }
   if (!Array.isArray(value.games.tekken.teams) || value.games.tekken.teams.length !== 6) {
     value.games.tekken.teams = TEAM_NAMES.map((name, index) => ({ id: `t${index + 1}`, name, tag: TAGS[index] }));
