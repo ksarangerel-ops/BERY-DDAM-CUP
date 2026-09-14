@@ -50,13 +50,14 @@
     .game-art { position: absolute; inset: -4px; z-index: 0; background-image: var(--game-art); background-position: center; background-size: cover; opacity: .78; filter: blur(1.2px) brightness(1.16) saturate(1.18) contrast(1.08); pointer-events: none; transition: opacity .3s ease, filter .35s ease, transform .45s ease; }
     .game-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,10,11,.42), rgba(8,10,11,.12) 55%, rgba(8,10,11,.28)); }
     .game-card > div { position: relative; z-index: 1; }
-    .game-card > div:first-of-type { width: min(820px, 100%); padding: 18px 22px 22px; border: 1px solid rgba(255,255,255,.14); border-radius: 18px; background: rgba(6,9,11,.58); box-shadow: 0 18px 38px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.05); backdrop-filter: blur(9px); }
+    .game-card > div:first-of-type { width: min(820px, 100%); padding: 18px 22px 22px; border: 1px solid rgba(255,255,255,.14); border-left: 3px solid var(--card-accent, rgba(255,255,255,.5)); border-radius: 18px; background: linear-gradient(115deg, rgba(6,9,11,.72), rgba(6,9,11,.3)); box-shadow: 0 18px 38px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.05); backdrop-filter: blur(3px); }
+    .game-card .card-top { padding-bottom: 14px; border-bottom: 1px solid color-mix(in srgb, var(--card-accent, #fff) 30%, transparent); }
     .game-card > div:first-of-type p { color: #e0e8e2; text-shadow: 0 2px 8px rgba(0,0,0,.75); }
     .game-card:hover { transform: translateY(-6px); border-color: rgba(192,255,102,.8); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(192,255,102,.14); }
     .game-card:hover .game-art { opacity: .94; filter: blur(0) brightness(1.24) saturate(1.2) contrast(1.08); transform: scale(1.04); }
-    .game-card.dota { --game-art: url('/game-backdrops/dota-game.png'); border-color: rgba(255,89,89,.32); background: linear-gradient(145deg, rgba(53,22,25,.96), rgba(14,12,14,.97)); }
+    .game-card.dota { --game-art: url('/game-backdrops/dota-game.png'); --card-accent: #ff6464; border-color: rgba(255,89,89,.32); background: linear-gradient(145deg, rgba(53,22,25,.96), rgba(14,12,14,.97)); }
     .game-card.dota:hover { border-color: rgba(255,101,101,.8); box-shadow: 0 18px 50px rgba(0,0,0,.35), 0 0 30px rgba(255,73,73,.14); }
-    .game-card.ml { --game-art: url('/game-backdrops/mlbb-game.jpg'); border-color: rgba(255,107,214,.3); background: linear-gradient(145deg, rgba(49,25,54,.96), rgba(15,12,22,.97)); }
+    .game-card.ml { --game-art: url('/game-backdrops/mlbb-game.jpg'); --card-accent: #ff7bd8; border-color: rgba(255,107,214,.3); background: linear-gradient(145deg, rgba(49,25,54,.96), rgba(15,12,22,.97)); }
     .game-card.ml:hover { border-color: rgba(255,143,226,.82); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(255,107,214,.18); }
     .game-card.ml .game-logo { background: linear-gradient(145deg, rgba(167,139,250,.24), rgba(255,107,214,.14)); }
     .game-card.rules-card { min-height: 470px; border-color: rgba(113,217,255,.25); background: linear-gradient(145deg, rgba(18,31,39,.96), rgba(10,14,17,.97)); }
@@ -77,20 +78,20 @@
     .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 38px; padding-top: 17px; border-top: 1px solid rgba(255,255,255,.1); color: #caff65; font-size: 11px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
     .dota .card-footer { color: #ff9999; }
     .arrow { font-size: 22px; line-height: 1; }
-    .game-card.cs2 { --game-art: url('/game-backdrops/cs2-game.png'); border-color: rgba(255,210,61,.36); background: linear-gradient(145deg, rgba(50,39,12,.98), rgba(13,15,14,.98)); }
+    .game-card.cs2 { --game-art: url('/game-backdrops/cs2-game.png'); --card-accent: #ffe06b; border-color: rgba(255,210,61,.36); background: linear-gradient(145deg, rgba(50,39,12,.98), rgba(13,15,14,.98)); }
     .game-card.cs2:hover { border-color: rgba(255,226,75,.9); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 38px rgba(255,194,31,.2); }
     .game-card.cs2 .game-logo { background: linear-gradient(145deg, #fff064, #f4a62b); border: 1px solid rgba(255,240,114,.72); box-shadow: 0 0 24px rgba(255,192,35,.27); }
     .game-card.cs2 .status, .game-card.cs2 .card-footer { color: #ffe06b; border-color: rgba(255,211,73,.55); }
-    .game-card.mecha { --game-art: url('/game-backdrops/mecha-game.webp'); border-color: rgba(255,180,72,.34); background: linear-gradient(145deg, rgba(47,33,23,.96), rgba(12,18,22,.98)); }
+    .game-card.mecha { --game-art: url('/game-backdrops/mecha-game.webp'); --card-accent: #ffc66a; border-color: rgba(255,180,72,.34); background: linear-gradient(145deg, rgba(47,33,23,.96), rgba(12,18,22,.98)); }
     .game-card.mecha:hover { border-color: rgba(255,198,95,.9); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(255,156,54,.16); }
     .game-card.mecha .status, .game-card.mecha .card-footer { color: #ffc66a; border-color: rgba(255,190,84,.5); }
-    .game-card.stumble { --game-art: url('/game-backdrops/stumble-game.png'); border-color: rgba(255,118,78,.38); background: linear-gradient(145deg, rgba(47,24,38,.98), rgba(16,18,36,.98)); }
+    .game-card.stumble { --game-art: url('/game-backdrops/stumble-game.png'); --card-accent: #ffb276; border-color: rgba(255,118,78,.38); background: linear-gradient(145deg, rgba(47,24,38,.98), rgba(16,18,36,.98)); }
     .game-card.stumble:hover { border-color: rgba(255,151,86,.92); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(255,105,78,.18); }
     .game-card.stumble .status, .game-card.stumble .card-footer { color: #ffb276; border-color: rgba(255,137,81,.52); }
-    .game-card.pubg { --game-art: url('/game-backdrops/pubg-game.jpg'); border-color: rgba(65,218,183,.3); background: linear-gradient(145deg, rgba(13,43,45,.98), rgba(11,18,24,.98)); }
+    .game-card.pubg { --game-art: url('/game-backdrops/pubg-game.jpg'); --card-accent: #76f1cf; border-color: rgba(65,218,183,.3); background: linear-gradient(145deg, rgba(13,43,45,.98), rgba(11,18,24,.98)); }
     .game-card.pubg:hover { border-color: rgba(93,240,201,.9); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(55,225,188,.16); }
     .game-card.pubg .status, .game-card.pubg .card-footer { color: #76f1cf; border-color: rgba(87,228,193,.5); }
-    .game-card.tekken { --game-art: url('/game-backdrops/tekken-game.jpeg'); border-color: rgba(255,88,119,.34); background: linear-gradient(145deg, rgba(52,20,29,.98), rgba(15,14,22,.98)); }
+    .game-card.tekken { --game-art: url('/game-backdrops/tekken-game.jpeg'); --card-accent: #ff9bae; border-color: rgba(255,88,119,.34); background: linear-gradient(145deg, rgba(52,20,29,.98), rgba(15,14,22,.98)); }
     .game-card.tekken:hover { border-color: rgba(255,116,145,.9); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(255,65,104,.17); }
     .game-card.tekken .status, .game-card.tekken .card-footer { color: #ff9bae; border-color: rgba(255,102,130,.5); }
     .footer { margin-top: 42px; color: #64726b; font-size: 10px; letter-spacing: .18em; text-align: center; text-transform: uppercase; }
