@@ -284,8 +284,8 @@
   .rainbow-fill{background-image:var(--spectrum)!important}
   /* Keep the DOTA title visible in normal browsers and html2canvas exports. */
   .spectrum-text{background:none!important;color:#ffd7ad!important;-webkit-text-fill-color:#ffd7ad!important;animation:none!important}
-  .row-champ{background:linear-gradient(90deg,rgba(255,52,52,.28),rgba(255,52,52,.08) 45%,transparent);box-shadow:inset 3px 0 0 0 #ff3434}
-  .champ-name{background:linear-gradient(100deg,#ffb0a9 10%,#ff4646 30%,#fff3ee 46%,#ff8a4d 62%,#ffb0a9 90%);background-size:220% auto}
+  .row-champ{background:linear-gradient(90deg,rgba(139,92,246,.28),rgba(34,211,238,.1) 45%,transparent);box-shadow:inset 3px 0 0 0 #8b5cf6}
+  .champ-name{background:linear-gradient(100deg,#c4b5fd 10%,#8b5cf6 30%,#ecfeff 46%,#22d3ee 62%,#c4b5fd 90%);background-size:220% auto}
   .tabbtn.active{background-image:var(--spectrum);box-shadow:0 0 24px -6px rgba(255,52,52,.8)}
   #btnPng{background-image:linear-gradient(105deg,#ff6b35,#ffb347)!important;color:#241007!important;box-shadow:0 0 0 1px rgba(255,151,74,.5),0 10px 24px -14px rgba(255,92,39,.82)!important}
   #btnCopy{border-color:rgba(116,214,255,.62)!important;color:#9ceaff!important;background:rgba(33,112,148,.18)!important}
