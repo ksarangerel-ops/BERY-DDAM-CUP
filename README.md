@@ -1,9 +1,17 @@
-# DDAM CUP — CS2 Tournament Board
+# DDAM CUP — DOTA 2 & CS2 Tournament Hub
 
-Real-time CS2 tournament scoreboard for six teams. The board uses a
-black-and-red esports theme and syncs through Supabase Realtime.
+One Vercel website with separate real-time DOTA 2 and CS2 tournament boards.
+The launcher is at `/`; the dedicated boards are `/dota2.html` and `/cs2.html`.
+Both boards use the same Supabase project but separate tournament IDs.
 
-## Tournament format
+## Tournament boards
+
+- **DOTA 2:** two editable zones with BO2 round-robin matches followed by the
+  existing BO3 playoff bracket.
+- **CS2:** six-team Group BO1 round robin (15 matches), two Lower BO1 qualifiers,
+  then a Final Four BO3 round robin (6 matches) for places 1–4.
+
+## CS2 tournament format
 
 1. **Six teams** are entered with editable names, tags and five-player rosters.
 2. All six teams play one **BO1** against every other team: **15 Group Stage
@@ -33,7 +41,9 @@ When two or more teams have the same points:
 
 ## Features
 
-- CS2 branding with a tactical purple/cyan esports styling.
+- One launcher with DOTA 2 / CS2 selection and board-to-board navigation.
+- DOTA 2 branding with the original board layout and scoring.
+- CS2 branding with a tactical HUD styling.
 - Six editable seeded teams: Team Alpha, Team Bravo, Team Charlie, Team Delta,
   Team Echo and Team Foxtrot.
 - Five-player roster editing per team.
@@ -50,7 +60,8 @@ npm install
 npm run dev
 ```
 
-The board opens at `http://localhost:5173`.
+The launcher opens at `http://localhost:5173`. Direct board pages are
+`http://localhost:5173/dota2.html` and `http://localhost:5173/cs2.html`.
 
 ## Vercel deployment
 
@@ -101,5 +112,6 @@ export const NUM_TEAMS = 6;
 export const SQUAD_SIZE = 5;
 ```
 
-If the number of teams or roster size changes, use a new `VITE_TOURNAMENT_ID`
-so an old board shape cannot be mixed into the new tournament.
+If the number of teams or roster size changes, use a new game-specific
+`VITE_DOTA_TOURNAMENT_ID` or `VITE_CS2_TOURNAMENT_ID` so an old board shape
+cannot be mixed into the new tournament.

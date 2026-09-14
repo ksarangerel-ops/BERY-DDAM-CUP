@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DDAM CUP — CS2 Tournament Scoreboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['Orbitron', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        body: ['Rajdhani', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+      },
+      colors: {
+        ink:   '#090b09',
+        panel: '#111811',
+        panel2:'#182219',
+        line:  '#3b4d3a',
+        gold:  '#b7f34a',
+        gold2: '#d7ff74',
+        cyan:  '#ffb02e',
+      },
+      boxShadow: {
+        gold: '0 0 0 1px rgba(183,243,74,.65), 0 0 28px -6px rgba(183,243,74,.65)',
+        cyan: '0 0 0 1px rgba(255,176,46,.45), 0 0 22px -8px rgba(255,176,46,.45)',
+      }
+    }
+  }
+}
+</script>
+</head>
+<body class="min-h-screen text-slate-200">
+<div class="fixed top-2 right-2 z-[60] flex items-center gap-1 rounded-xl border border-cyan/30 bg-black/80 p-1.5 shadow-xl backdrop-blur-md">
+  <a href="./" class="rounded-lg px-2 py-1 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-white">Home</a>
+  <a href="./dota2.html" class="rounded-lg px-2 py-1 text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-white">DOTA 2</a>
+  <a href="./cs2.html" class="rounded-lg bg-cyan/20 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-cyan">CS2</a>
+</div>
+
+
+<!-- ============ HEADER ============ -->
+<header class="border-b border-gold/25 sticky top-0 z-40 bg-ink/75 backdrop-blur-xl shadow-[0_10px_30px_-18px_rgba(0,0,0,.9)]">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3 sm:gap-4">
+    <div class="rainbow-fill w-11 h-11 shrink-0 clip-tag bg-gradient-to-br from-gold to-stone-950 grid place-items-center text-ink shadow-[0_0_26px_-6px_rgba(183,243,74,.9)] overflow-hidden">
+      <img src="/ddam-logo.svg" alt="DDAM CUP CS2" class="w-full h-full object-contain p-1">
+    </div>
+    <div class="min-w-0 flex-1">
+      <h1 class="font-display font-black text-base sm:text-2xl tracking-wider leading-none whitespace-nowrap">
+        <span class="text-white drop-shadow-[0_0_14px_rgba(183,243,74,.55)]">DDAM</span> <span class="text-white">CUP</span> <span class="spectrum-text">CS2</span>
+      </h1>
+      <p class="text-[9px] sm:text-xs uppercase tracking-[.2em] sm:tracking-[.25em] text-cyan/80 font-semibold mt-1 truncate">CS2 · Group BO1 → Lower Qualifier → Final BO3</p>
+    </div>
+    <span id="syncBadge"></span>
+    <nav class="flex gap-1 p-1 rounded-lg glass">
+      <button data-view="board" class="tabbtn active px-2.5 sm:px-5 py-2 rounded-md font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest transition"><span class="sm:hidden">Board</span><span class="hidden sm:inline">Leaderboard</span></button>
+      <button data-view="admin" class="tabbtn px-2.5 sm:px-5 py-2 rounded-md font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest transition text-slate-400 hover:text-white">Admin</button>
+      <button data-view="rules" class="tabbtn px-2.5 sm:px-5 py-2 rounded-md font-display text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest transition text-slate-400 hover:text-white">Rules</button>
+    </nav>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-6 sm:py-8">
+
+<!-- ============ LEADERBOARD VIEW ============ -->
+<section id="view-board">
+
+  <div class="flex flex-wrap items-center gap-2 mb-5">
+    <button id="btnPng" title="Download the current leaderboard as an image for sharing" class="rainbow-fill px-4 py-2.5 rounded-lg bg-gold text-ink font-display font-bold text-xs uppercase tracking-widest hover:bg-gold2 transition shadow-gold">⬇ Export PNG</button>
+    <button id="btnCopy" title="Copy a plain-text ranking for Discord, Messenger or chat" class="px-4 py-2.5 rounded-lg glass font-display font-bold text-xs uppercase tracking-widest hover:border-cyan hover:text-cyan transition">📋 Copy Text</button>
+    <span class="ml-auto text-xs text-slate-400 font-semibold" id="savedAt"></span>
+  </div>
+  <p class="text-[11px] text-slate-500 mb-5">Export PNG = зураг татах · Copy Text = ranking-ийг chat-д шууд хуулж тавих</p>
+
+  <!-- capture area -->
+  <div id="capture" class="rounded-2xl">
+
+    <!-- banner -->
+    <div class="rounded-2xl glass glow-gold p-5 sm:p-6 mb-5 relative overflow-hidden">
+      <div class="absolute -right-12 -top-12 w-60 h-60 rounded-full bg-gold/15 blur-3xl"></div>
+      <div class="relative flex flex-wrap items-end gap-x-6 gap-y-3">
+        <div>
+          <p class="text-[10px] sm:text-xs uppercase tracking-[.35em] text-cyan font-bold">6 Teams · Group Stage BO1 · Final Four BO3</p>
+          <h2 class="font-display font-black text-2xl sm:text-4xl mt-1 text-white">DDAM CUP <span class="spectrum-text">CS2</span></h2>
+        </div>
+        <div class="flex gap-2 sm:gap-3 ml-auto text-center" id="mapChips"></div>
+      </div>
+    </div>
+
+    <!-- tournament format -->
+    <div id="formatRules" class="mb-5"></div>
+
+    <!-- group standings and lower qualification -->
+    <div id="stageCards" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4 mb-5"></div>
+
+    <!-- elimination-style bracket -->
+    <div id="bracket" class="mb-5"></div>
+
+    <!-- team standings -->
+    <div class="rounded-2xl glass overflow-hidden">
+      <div class="px-4 sm:px-5 py-3 glass-2 border-b border-gold/20 flex items-center gap-2.5">
+        <span class="w-1.5 h-5 rounded-full bg-gold shadow-[0_0_12px_rgba(183,243,74,.85)]"></span>
+        <span class="text-gold" id="iconStandings"></span>
+        <h3 class="font-display font-black text-xs sm:text-sm uppercase tracking-[.2em] text-white">Team Standings</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[700px] text-left">
+          <thead>
+            <tr class="glass-2 text-[10px] sm:text-[11px] uppercase tracking-[.18em] font-display font-bold text-slate-400 border-b border-line/70">
+              <th class="py-3.5 pl-4 pr-2 w-16">Rank</th>
+              <th class="py-3.5 px-2">Team</th>
+              <th class="py-3.5 px-2 text-center w-16">Matches</th>
+              <th class="py-3.5 px-2 text-center w-24"><span class="text-gold">W-D-L</span></th>
+              <th class="py-3.5 px-2 text-center w-20"><span class="text-cyan">Game W</span></th>
+              <th class="py-3.5 px-2 text-center w-24">Group Pts</th>
+              <th class="py-3.5 px-2 text-center w-24">Final Pts</th>
+              <th class="py-3.5 pr-4 pl-2 text-right w-24">Total</th>
+            </tr>
+          </thead>
+          <tbody id="standings" class="divide-y divide-line/50"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MVP / top players -->
+    <div class="mt-6 grid gap-4 lg:grid-cols-[300px_1fr]">
+      <div id="mvpCard"></div>
+      <div class="rounded-2xl glass overflow-hidden">
+        <div class="px-4 sm:px-5 py-3 glass-2 border-b border-cyan/20 flex items-center gap-2.5 flex-wrap">
+          <span class="w-1.5 h-5 rounded-full bg-cyan shadow-[0_0_12px_rgba(255,176,46,.8)]"></span>
+          <span class="text-cyan" id="iconFrag"></span>
+          <h3 class="font-display font-black text-xs sm:text-sm uppercase tracking-[.2em] text-white">Team Rosters</h3>
+          <span class="text-[10px] uppercase tracking-[.15em] font-bold text-slate-500 hidden sm:inline">CS2 · 5 players per team</span>
+          <button id="btnMore" class="ml-auto text-[10px] uppercase tracking-[.15em] font-display font-bold text-cyan hover:text-gold transition">Show all</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[480px] text-left">
+            <thead>
+              <tr class="glass-2 text-[10px] sm:text-[11px] uppercase tracking-[.18em] font-display font-bold text-slate-400 border-b border-line/70">
+                <th class="py-3 pl-4 pr-2 w-14">#</th>
+                <th class="py-3 px-2">Player</th>
+                <th class="py-3 px-2">Team</th>
+                <th class="py-3 px-2 text-center w-20">Stage</th>
+              </tr>
+            </thead>
+            <tbody id="mvpTable" class="divide-y divide-line/50"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- per-match breakdown -->
+    <div class="mt-6">
+      <div class="flex items-center gap-2.5 mb-3">
+        <span class="text-slate-400" id="iconMap"></span>
+        <h3 class="font-display font-bold text-sm uppercase tracking-[.2em] text-slate-300">Match Breakdown</h3>
+      </div>
+      <div class="grid gap-4 md:grid-cols-3" id="matchCards"></div>
+    </div>
+
+    <p class="text-center text-[10px] sm:text-xs text-slate-400 mt-6 pb-2 font-semibold tracking-wider">
+      DDAM CUP CS2 · Group BO1: Win = 1 pt, Loss = 0 pt · Lower BO1 → Final Four BO3 round robin · Generated <span id="genAt"></span>
+    </p>
+  </div>
+</section>
+
+<!-- ============ ADMIN VIEW ============ -->
+<section id="view-admin" class="hidden">
+  <div id="adminAuthGate" class="rounded-2xl glass p-5 mb-6">
+    <div id="adminLoggedOut" class="max-w-xl">
+      <p class="text-[10px] uppercase tracking-[.3em] font-display font-black text-cyan">RESTRICTED AREA</p>
+      <h2 class="font-display font-black text-xl sm:text-2xl text-white mt-2">Admin login required</h2>
+      <p class="text-sm text-slate-400 mt-2 font-semibold">Leaderboard is public. Only the tournament admin account can edit teams and results.</p>
+      <form id="adminLoginForm" class="grid gap-3 sm:grid-cols-[1fr_1fr_auto] items-end mt-4">
+        <label class="text-[10px] uppercase tracking-widest font-display font-bold text-slate-400">Email<input id="adminEmail" type="email" autocomplete="username" required class="mt-1 w-full bg-ink/60 border border-line rounded-lg px-3 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-gold"></label>
+        <label class="text-[10px] uppercase tracking-widest font-display font-bold text-slate-400">Password<input id="adminPassword" type="password" autocomplete="current-password" required class="mt-1 w-full bg-ink/60 border border-line rounded-lg px-3 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-gold"></label>
+        <button type="submit" id="btnAdminLogin" class="rainbow-fill px-5 py-2.5 rounded-lg bg-gold text-ink font-display font-black text-xs uppercase tracking-widest hover:bg-gold2 transition shadow-gold">Sign in</button>
+      </form>
+      <p id="adminAuthMessage" class="text-xs text-rose-300 font-semibold mt-3"></p>
+    </div>
+    <div id="adminLoggedIn" class="hidden flex items-center gap-3 flex-wrap">
+      <div class="flex-1 min-w-[220px]">
+        <p class="text-[10px] uppercase tracking-[.3em] font-display font-black text-emerald-300">ADMIN ACCESS ACTIVE</p>
+        <p id="adminUserEmail" class="text-sm text-white font-bold mt-1"></p>
+      </div>
+      <button type="button" id="btnAdminLogout" class="px-4 py-2.5 rounded-lg glass border border-line font-display font-bold text-xs uppercase tracking-widest hover:border-rose-400 hover:text-rose-300 transition">Sign out</button>
+    </div>
+  </div>
+
+  <div id="adminEditor" class="hidden">
+  <div class="grid gap-6 lg:grid-cols-[1fr_300px]">
+    <div>
+      <div class="rounded-2xl glass p-5 mb-5">
+        <label class="block text-[11px] uppercase tracking-[.25em] font-display font-bold text-cyan mb-3">Select CS2 Series</label>
+        <div class="flex flex-wrap gap-2" id="matchTabs"></div>
+      </div>
+
+      <form id="resultForm">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+          <h3 class="font-display font-black text-sm uppercase tracking-[.2em] text-white">Enter Results — <span id="curMatchLabel" class="text-gold"></span></h3>
+          <span id="rankWarn" class="text-xs font-bold text-rose-400"></span>
+        </div>
+
+        <div id="remoteNotice" class="hidden mb-4 rounded-xl border border-cyan/50 bg-cyan/10 px-4 py-3 flex items-center gap-3 flex-wrap">
+          <span class="w-2 h-2 rounded-full bg-cyan animate-pulse"></span>
+          <span class="text-sm font-bold text-cyan">Another organiser published new results while you were typing.</span>
+          <span class="text-xs text-slate-300 font-semibold">Your unsaved edits are kept until you save or reload.</span>
+          <button type="button" id="btnReload" class="ml-auto px-3 py-1.5 rounded-lg bg-cyan/20 border border-cyan/50 text-cyan font-display font-bold text-[10px] uppercase tracking-widest hover:bg-cyan/30 transition">Load latest</button>
+        </div>
+
+        <div class="grid gap-4 xl:grid-cols-2" id="teamCards"></div>
+
+        <div class="mt-5 flex flex-wrap gap-2">
+          <button type="submit" id="btnSave" class="rainbow-fill px-6 py-3 rounded-lg bg-gold text-ink font-display font-black text-xs uppercase tracking-widest hover:bg-gold2 transition shadow-gold">✓ Save Series Result</button>
+          <button type="button" id="btnClearMatch" class="px-5 py-3 rounded-lg glass font-display font-bold text-xs uppercase tracking-widest hover:border-rose-500 hover:text-rose-400 transition">Clear This Series</button>
+          <button type="button" id="btnClearAll" class="px-5 py-3 rounded-lg bg-rose-500/10 border border-rose-500/45 text-rose-200 font-display font-bold text-xs uppercase tracking-widest hover:bg-rose-500/20 hover:border-rose-300 transition">Clear All Series</button>
+        </div>
+      </form>
+    </div>
+
+    <aside class="space-y-5">
+      <div class="rounded-2xl glass p-5">
+        <h3 class="font-display font-bold text-xs uppercase tracking-[.2em] text-cyan mb-3">CS2 Match Rules</h3>
+        <ul class="text-sm font-semibold space-y-1.5" id="ptsLegend"></ul>
+        <p class="text-xs text-slate-400 mt-3 pt-3 border-t border-line">6 баг Group Stage-д бүгд BO1 тоглоно. Seed 1/2 Upper-д хүлээж, Seed 3–6 Lower BO1 тоглосны дараа ялагч 2 баг Final Four BO3 round robin-д орно.</p>
+      </div>
+
+      <div class="rounded-2xl glass p-5">
+        <h3 class="font-display font-bold text-xs uppercase tracking-[.2em] text-cyan mb-3">Team Setup</h3>
+        <div class="space-y-2" id="teamEditor"></div>
+        <p class="text-[11px] text-slate-500 mt-3">Багийн нэр, tag болон 5 тоглогчийн бүрэлдэхүүнийг эндээс засварлаж болно.</p>
+      </div>
+
+      <div class="rounded-2xl glass p-5">
+        <h3 class="font-display font-bold text-xs uppercase tracking-[.2em] text-rose-400 mb-3">Danger Zone</h3>
+        <button id="btnReset" class="w-full px-4 py-2.5 rounded-lg bg-rose-500/10 border border-rose-500/40 text-rose-300 font-display font-bold text-xs uppercase tracking-widest hover:bg-rose-500/20 transition">Reset Entire Tournament</button>
+       <p class="text-[11px] text-slate-500 mt-3">Clears all CS2 series results. Team names, tags and player names are kept.</p>
+      </div>
+    </aside>
+  </div>
+  </div>
+</section>
+
+<!-- ============ RULES VIEW ============ -->
+<section id="view-rules" class="hidden">
+  <div class="rules-dossier">
+    <div class="rules-masthead">
+      <div>
+        <p class="rules-kicker">DDAM CUP · CS2 / COMPETITIVE BRIEFING</p>
+        <h2>ТЭМЦЭЭНИЙ АЛБАН ЁСНЫ ДҮРЭМ</h2>
+        <p class="rules-lead">Шударга, саадгүй, түргэн шуурхай тэмцээн явуулахын тулд бүх баг, тоглогч болон зохион байгуулагчид дараах журмыг мөрдөнө.</p>
+      </div>
+      <div class="rules-stamp"><span>RULEBOOK</span><b>CS2</b><small>v1.0 · OFFICIAL</small></div>
+    </div>
+
+    <div class="rules-alert"><span class="rules-alert-icon">!</span><div><b>IMPORTANT NOTICE</b><p>Тоглолтын үеийн маргаантай асуудлыг зөвхөн зохион байгуулагч / шүүгчид мэдэгдэнэ. Тэдний гаргасан эцсийн шийдвэрийг бүх баг, тоглогч хүндэтгэн дагана.</p></div></div>
+
+    <div class="rules-facts">
+       <div><b>06</b><span>БАГ</span></div><div><b>15</b><span>GROUP BO1</span></div><div><b>02</b><span>UPPER</span></div><div><b>06</b><span>FINAL BO3</span></div>
+    </div>
+
+    <div class="rules-dossier-grid">
+      <article class="rules-section"><div class="rules-section-no">01</div><div><div class="rules-section-head"><h3>Бүрэлдэхүүн ба бүртгэл</h3><span>ROSTER / ELIGIBILITY</span></div><ol class="dossier-list"><li>Нэг баг <b>5 үндсэн тоглогчтой</b> байна.</li><li>Эмэгтэй тоглогч оролцох боломжтой.</li><li>Тоглолтын үеэр зөвшөөрөгдсөн бүрэлдэхүүнээс гадуур тоглогч оруулахыг хориглоно.</li><li>Тэмцээн эхэлсний дараа тоглогч солихыг зохион байгуулагчийн зөвшөөрөлгүйгээр хориглоно.</li><li>Өөр багийн бүртгэлтэй тоглогчийг зөвшөөрөлгүйгээр ашиглахыг хориглоно.</li></ol></div></article>
+
+      <article class="rules-section featured"><div class="rules-section-no">02</div><div><div class="rules-section-head"><h3>Group Stage</h3><span>ROUND ROBIN · BO1</span></div><p>Нийт <b>6 баг</b> нэг группд орж, бүх багууд хоорондоо тус бүр нэг удаа тоглоно.</p><div class="rules-flow dossier-flow"><span>6 TEAMS</span><i>→</i><span>15 MATCHES</span><i>→</i><span>SEED 1–6</span></div><ol class="dossier-list"><li>Тоглолт бүр <b>BO1</b> буюу нэг map байна.</li><li>Нийт 15 тоглолтын дараа Seed 1–6 тодорхойлогдоно.</li><li>Group Stage дээр шууд хасагдах баг байхгүй.</li><li>Seed 1, 2 нь Upper-д шууд орж, дараагийн шатыг хүлээнэ.</li><li>Seed 3, 4, 5, 6 нь Lower Qualifier BO1 тоглоно.</li></ol></div></article>
+
+      <article class="rules-section"><div class="rules-section-no">03</div><div><div class="rules-section-head"><h3>Map Ban / Pick</h3><span>MAP POOL PROTOCOL</span></div><p>Map-уудыг зохион байгуулагчийн урьдчилан зарласан CS2 Map Pool-оос сонгоно.</p><div class="ban-sequence"><span class="ban">A · BAN</span><span class="ban">B · BAN</span><span class="ban">A · BAN</span><span class="ban">B · BAN</span><span class="ban">A · BAN</span><span class="ban">B · BAN</span><span class="decider">REMAINING · PLAY</span></div><ol class="dossier-list" start="12"><li>Ban хийсэн map тухайн тоглолтод дахин тоглогдохгүй.</li><li>Бүх ban дууссаны дараа үлдсэн map-ыг өөрчлөх боломжгүй.</li><li>Ban-ийн дарааллыг тоглолтоос өмнө зохион байгуулагч мэдэгдэнэ.</li><li>BO3-д эсрэг талын сонгосон map дээр тоглох талаа сонгоно.</li><li>BO1 болон BO3-ын decider map дээр сүүлд ban хийсэн багийн эсрэг тал T эсвэл CT сонгоно.</li><li>Map сонголтын маргааныг зохион байгуулагч эцэслэн шийдвэрлэнэ.</li></ol></div></article>
+
+      <article class="rules-section featured"><div class="rules-section-no">04</div><div><div class="rules-section-head"><h3>Upper → Lower → Final Four</h3><span>SEED → PODIUM</span></div><div class="playoff-path"><div><b>UPPER</b><span>Seed 1–2<br>WAIT</span></div><i>→</i><div><b>LOWER</b><span>Seed 3–6<br>BO1</span></div><i>→</i><div><b>FINAL 4</b><span>2 Winners<br>+ Upper 2</span></div><i>→</i><div><b>1–4</b><span>Round Robin<br>BO3</span></div></div><ul class="dossier-bullets"><li>Seed 1, 2 нь Upper-д шууд орж, Lower шатны тоглолтыг хүлээнэ.</li><li>Seed 3 vs Seed 6, Seed 4 vs Seed 5 гэсэн хоёр Lower BO1 тоглолт болно.</li><li>Lower-ийн хоёр ялагч нь Upper-ийн хоёр багтай нийлж Final Four болно.</li><li>Final Four-ийн 4 баг хоорондоо BO3 round-robin тоглож, нийт 6 тоглолтын дараа 1–4-р байр тодорно.</li></ul><div class="format-strip"><span>Upper · 2 teams</span><span>Lower · 2 BO1</span><span>Final Four · 6 BO3</span><span>Places · 1–4</span></div></div></article>
+
+      <article class="rules-section"><div class="rules-section-no">05</div><div><div class="rules-section-head"><h3>BO3 map дараалал</h3><span>BEST OF THREE</span></div><div class="map-order"><div><b>MAP 1</b><span>Team A-ийн сонгосон map</span></div><div><b>MAP 2</b><span>Team B-ийн сонгосон map</span></div><div><b>MAP 3</b><span>Үлдсэн decider map</span></div></div><p class="rules-note">Аль нэг баг эхний 2 map-ыг дараалан хожвол Map 3 тоглогдохгүй. Decider Map дээр сүүлд ban хийсэн багийн эсрэг тал тоглох талаа сонгоно.</p></div></article>
+
+      <article class="rules-section"><div class="rules-section-no">06</div><div><div class="rules-section-head"><h3>Тоглолтын өмнөх бэлтгэл</h3><span>CHECK-IN</span></div><ol class="dossier-list" start="25"><li>CS2 тоглоомоо хамгийн сүүлийн хувилбарт шинэчилсэн байх.</li><li>Steam болон CS2 аккаунтдаа асуудалгүй нэвтэрсэн байх.</li><li>Шаардлагатай тохиргоо, файлуудаа бэлэн байлгах.</li><li>Тоглолтын серверт цагтаа орсон байх.</li><li>Шаардлагатай бол зохион байгуулагчийн өгсөн сервер, lobby-г ашиглах.</li></ol><p class="rules-note">Сервер, map эсвэл match-тэй холбоотой асуудлыг зөвхөн зохион байгуулагч / шүүгч шийдвэрлэнэ.</p></div></article>
+
+      <article class="rules-section featured"><div class="rules-section-no">07</div><div><div class="rules-section-head"><h3>Оноо ба Seed эрэмбэ</h3><span>STANDINGS / TIEBREAK</span></div><div class="score-cards"><div class="win"><b>1 POINT</b><span>Match Win</span></div><div class="loss"><b>0 POINT</b><span>Match Loss</span></div></div><p>Group Stage-ийн байрлалыг дараах дарааллаар тогтооно:</p><ol class="dossier-list ranking-list"><li><b>Нийт Match Win</b> — олон хожилтой баг өндөр байр эзэлнэ.</li><li><b>Head-to-Head</b> — яг 2 баг тэнцсэн тохиолдолд шууд тоглолтын үр дүн.</li><li><b>Round Difference</b> — 3 ба түүнээс олон баг тэнцвэл нийт Round Win − Round Loss.</li><li><b>Нийт Round Win</b> — дээрх үзүүлэлтүүд тэнцсэн тохиолдолд.</li><li><b>BO1 tie-breaker</b> — шаардлагатай бол зохион байгуулагчийн шийдвэрээр.</li></ol></div></article>
+
+      <article class="rules-section"><div class="rules-section-no">08</div><div><div class="rules-section-head"><h3>Цаг баримтлах ба техникийн асуудал</h3><span>SERVER / TECH PAUSE</span></div><ol class="dossier-list" start="36"><li>Тоглолт эхлэхэд баг бүр 5 тоглогчтой бүрэн бүрэлдэхүүнтэй байна.</li><li>Зөв сервер / lobby-д орсон байх.</li><li>Зохион байгуулагчийн зааврыг дагаж мөрдөнө.</li><li>Интернет, компьютер, CS2 crash, FPS, Steam-ийн хувийн асуудлаар match автоматаар restart хийхгүй.</li><li>Pause, үргэлжлүүлэх эсвэл rematch хийх эсэхийг зохион байгуулагч шийднэ.</li><li>Серверийн нийтлэг асуудал, server crash, зохион байгуулагчийн техникийн алдаанд rematch хийх эсэхийг зохион байгуулагч шийдвэрлэнэ.</li></ol></div></article>
+
+      <article class="rules-section danger"><div class="rules-section-no">09</div><div><div class="rules-section-head"><h3>Хатуу хориглох зүйлс</h3><span>ZERO TOLERANCE</span></div><div class="danger-grid"><span>CHEAT / HACK</span><span>WALLHACK / AIM ASSIST</span><span>ACCOUNT SHARING</span><span>MATCH FIXING</span><span>UNFAIR INFORMATION</span><span>INTENTIONAL DISRUPTION</span></div><ol class="dossier-list" start="48"><li>Cheat / Hack болон давуу тал олгох программ ашиглах.</li><li>Өөр тоглогчийн аккаунтаар тоглох.</li><li>Match fixing буюу үр дүнг зориудаар тохиролцох.</li><li>Өөр багтай тохиролцож давуу байдал бий болгох.</li><li>Бусад багийн тоглогч, тактик, мэдээллийг хууль бусаар ашиглах.</li><li>Зохион байгуулагч болон өрсөлдөгч багт санаатайгаар саад учруулах.</li></ol><p class="rules-note danger-note">Cheat / Hack болон зориудаар шударга бус тоглолт хийсэн нь нотлогдвол тухайн багийг шууд тэмцээнээс хасна.</p></div></article>
+
+      <article class="rules-section"><div class="rules-section-no">10</div><div><div class="rules-section-head"><h3>Spectator ба Ghosting</h3><span>INFORMATION CONTROL</span></div><p>Тоглолтод оролцоогүй хүн spectator-аар үзэж байгаа тохиолдолд багуудад мэдээлэл өгөх, Discord / voice chat-аар enemy-ийн байрлал хэлэх, stream / spectator мэдээлэл ашиглах, тоглолтыг шууд дамжуулахыг хориглоно.</p><p class="rules-note">Ghosting / Stream Sniping тогтоогдвол тухайн тоглогч болон багт сахилгын арга хэмжээ авна.</p></div></article>
+
+      <article class="rules-section"><div class="rules-section-no">11</div><div><div class="rules-section-head"><h3>Сахилгын арга хэмжээ</h3><span>DISCIPLINARY ACTION</span></div><div class="penalty-list"><span>01 · Анхааруулга</span><span>02 · Тоглолтыг хүчингүй болгох</span><span>03 · Оноо хасах</span><span>04 · Тоглогчийг хасах</span><span>05 · Багийг шууд хасах</span></div></div></article>
+
+      <article class="rules-section full"><div class="rules-section-no">12</div><div><div class="rules-section-head"><h3>Маргаан ба нотлох баримт</h3><span>FINAL AUTHORITY</span></div><p>Маргаантай асуудал гарвал багууд тоглолтыг зогсоож маргалдахгүй бөгөөд зохион байгуулагч / шүүгчид нэн даруй мэдэгдэнэ.</p><div class="evidence-row"><span>Match нөхцөл</span><span>Demo / Replay</span><span>Server log</span><span>Screenshot</span><span>Video evidence</span><span>Бусад мэдээлэл</span></div><p class="rules-note">Зохион байгуулагч / шүүгчийн гаргасан эцсийн шийдвэрийг бүх баг, тоглогч хүндэтгэн дагана.</p></div></article>
+    </div>
+
+    <div class="rules-final-warning"><b>⏰ ANTI-DELAY NOTICE</b><span>Бүх баг тоглолтын хуваарьт заасан цагаас өмнө сервер / lobby-дээ бэлэн байна.</span><strong>🔥 Шударга тоглож, өрсөлдөөнтэй CS2 тэмцээн болгоцгооё!</strong></div>
+  </div>
+</section>
+
+</main>
+
+<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden">
+  <div class="px-5 py-3 rounded-xl bg-panel2 border border-gold/50 shadow-gold font-display font-bold text-xs uppercase tracking-widest text-gold toast-in" id="toastMsg"></div>
+</div>
+
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

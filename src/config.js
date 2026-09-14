@@ -66,5 +66,5 @@ export const lowerMatches = () => MATCHES.filter(match => match.stage === 'lower
 export const finalMatches = () => MATCHES.filter(match => match.stage === 'final');
 
 const ENV = import.meta.env || {};
-export const TOURNAMENT_ID = ENV.VITE_TOURNAMENT_ID || 'ddam-cup-cs2-group-final-v1';
+export const TOURNAMENT_ID = ENV.VITE_CS2_TOURNAMENT_ID || 'ddam-cup-cs2-group-final-v1';
 export const CACHE_KEY = `ddam-cup-cache:${TOURNAMENT_ID}`;

@@ -4,6 +4,8 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
+    { "source": "/dota2", "destination": "/dota2.html" },
+    { "source": "/cs2", "destination": "/cs2.html" },
     { "source": "/(.*)", "destination": "/" }
   ]
 }
