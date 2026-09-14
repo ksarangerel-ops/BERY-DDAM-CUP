@@ -21,7 +21,7 @@
     .hero::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(17,10,13,.82), rgba(17,10,13,.48) 48%, rgba(17,10,13,.08)); pointer-events: none; }
     .hero::after { content: ''; position: absolute; inset: -4px; z-index: -2; background-image: var(--hero-art); background-repeat: no-repeat; background-position: center; background-size: cover; opacity: .72; filter: blur(1px) brightness(1.18) saturate(1.2) contrast(1.04); pointer-events: none; transition: filter .35s ease, transform .35s ease; }
     .hero:hover::after { filter: blur(0) brightness(1.22) saturate(1.2) contrast(1.04); transform: scale(1.02); }
-    .hero-copy-panel { position: relative; z-index: 1; width: min(820px, 100%); padding: 24px 26px; border: 1px solid rgba(255,255,255,.16); border-radius: 18px; background: rgba(7,10,12,.62); box-shadow: 0 18px 38px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.06); backdrop-filter: blur(10px); }
+    .hero-copy-panel { position: relative; z-index: 1; width: min(820px, 100%); padding: 0; }
     .hero-copy-panel p { color: #e1e8e2; text-shadow: 0 2px 8px rgba(0,0,0,.7); }
     .hero > * { position: relative; z-index: 1; }
     .hero[data-board="cs2"] { border-color: rgba(255,210,61,.46); background: linear-gradient(135deg, rgba(57,43,11,.97), rgba(15,15,12,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(255,194,31,.14); }
@@ -47,11 +47,12 @@
     .game-card { position: relative; isolation: isolate; display: flex; flex: 0 0 100%; min-height: clamp(560px, calc(100vh - 260px), 780px); flex-direction: column; justify-content: space-between; overflow: hidden; scroll-snap-align: start; padding: clamp(30px, 5vw, 64px); border: 1px solid rgba(255,255,255,.14); border-radius: 28px; background: linear-gradient(145deg, rgba(24,31,27,.96), rgba(11,14,14,.97)); text-decoration: none; color: inherit; counter-increment: game-card; transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease, background .25s ease; }
     .game-card::before { content: '0' counter(game-card); position: absolute; top: 4px; right: 18px; z-index: 0; color: rgba(255,255,255,.08); font-size: 80px; font-weight: 950; letter-spacing: -.08em; line-height: 1; pointer-events: none; }
     .game-card::after { content: ''; position: absolute; right: -74px; bottom: -92px; z-index: 0; width: 210px; height: 210px; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; box-shadow: 0 0 0 16px rgba(255,255,255,.025), 0 0 0 34px rgba(255,255,255,.018); pointer-events: none; }
-    .game-art { position: absolute; inset: -4px; z-index: 0; background-image: var(--game-art); background-position: center; background-size: cover; opacity: .78; filter: blur(1.2px) brightness(1.16) saturate(1.18) contrast(1.08); pointer-events: none; transition: opacity .3s ease, filter .35s ease, transform .45s ease; }
+    .game-art { position: absolute; inset: 0; z-index: 0; background-image: var(--game-art); background-position: center; background-size: cover; opacity: .78; filter: brightness(1.1) saturate(1.18) contrast(1.08); pointer-events: none; transition: opacity .3s ease, filter .35s ease, transform .45s ease; }
     .game-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,10,11,.42), rgba(8,10,11,.12) 55%, rgba(8,10,11,.28)); }
     .game-card > div { position: relative; z-index: 1; }
-    .game-card > div:first-of-type { width: min(820px, 100%); padding: 18px 22px 22px; border: 1px solid rgba(255,255,255,.14); border-left: 3px solid var(--card-accent, rgba(255,255,255,.5)); border-radius: 18px; background: linear-gradient(115deg, rgba(6,9,11,.72), rgba(6,9,11,.3)); box-shadow: 0 18px 38px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.05); backdrop-filter: blur(3px); }
-    .game-card .card-top { padding-bottom: 14px; border-bottom: 1px solid color-mix(in srgb, var(--card-accent, #fff) 30%, transparent); }
+    .game-card > div:first-of-type { width: min(820px, 100%); padding: 0; }
+    .game-card .card-top { padding-bottom: 14px; border-bottom: 1px solid color-mix(in srgb, var(--card-accent, #fff) 34%, transparent); }
+    .card-kicker { display: inline-flex; margin-top: 22px; color: var(--card-accent, #caff65); font-size: 10px; font-weight: 950; letter-spacing: .2em; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,.75); }
     .game-card > div:first-of-type p { color: #e0e8e2; text-shadow: 0 2px 8px rgba(0,0,0,.75); }
     .game-card:hover { transform: translateY(-6px); border-color: rgba(192,255,102,.8); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(192,255,102,.14); }
     .game-card:hover .game-art { opacity: .94; filter: blur(0) brightness(1.24) saturate(1.2) contrast(1.08); transform: scale(1.04); }
@@ -73,7 +74,7 @@
     .status { padding: 6px 9px; border: 1px solid rgba(192,255,102,.4); border-radius: 999px; color: #caff65; font-size: 9px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
     .dota .status { border-color: rgba(255,116,116,.45); color: #ff9999; }
     .ml .status, .ml .card-footer { border-color: rgba(255,107,214,.45); color: #ff9be1; }
-    .game-card h2 { margin: 42px 0 12px; font-size: clamp(34px, 5vw, 64px); letter-spacing: .08em; }
+    .game-card h2 { margin: 10px 0 12px; font-size: clamp(34px, 5vw, 64px); letter-spacing: .08em; text-shadow: 0 3px 16px rgba(0,0,0,.72); }
     .game-card p { max-width: 700px; min-height: 48px; margin: 0; color: #9eaca5; font-size: 17px; line-height: 1.7; }
     .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 38px; padding-top: 17px; border-top: 1px solid rgba(255,255,255,.1); color: #caff65; font-size: 11px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
     .dota .card-footer { color: #ff9999; }
@@ -134,6 +135,7 @@
         <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo"><img src="/game-logos/dota2.svg" alt="DOTA 2 logo"></div><span class="status">DOTA 2</span></div>
+          <span class="card-kicker">Official rules · live board</span>
           <h2>DOTA 2</h2>
           <p>Zone BO2 round-robin → playoff BO3 bracket. Багуудын оноо, тоглолт, дүрмийг харах.</p>
         </div>
@@ -144,6 +146,7 @@
         <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/cs2.svg" alt="Counter-Strike 2 logo"></div><span class="status">CS2</span></div>
+          <span class="card-kicker">Official rules · live board</span>
           <h2>CS2</h2>
           <p>6 teams Group BO1 → Lower qualifiers → Final Four BO3 round-robin. Seed 1–4 байр шийднэ.</p>
         </div>
@@ -154,6 +157,7 @@
         <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark"><img src="/game-logos/mlbb.webp" alt="Mobile Legends logo"></div><span class="status">MLBB RULES</span></div>
+          <span class="card-kicker">Official rules · live board</span>
           <h2>MOBILE LEGENDS</h2>
           <p>2 хэсэг BO2 → A1/B2, B1/A2 semifinal BO3 → Grand Final + 3rd Place. Official дүрэм.</p>
         </div>
@@ -164,6 +168,7 @@
         <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo"><img src="/game-logos/mecha.webp" alt="Meccha Chameleon logo"></div><span class="status">RULES READY</span></div>
+          <span class="card-kicker">Official rules · live board</span>
           <h2>MECCHA CHAMELEON</h2>
           <p>6 баг · 2 lobby · 12 round. Seeker/Hider онооны системтэй official format.</p>
         </div>
@@ -174,6 +179,7 @@
         <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/stumble.svg" alt="Stumble Guys logo"></div><span class="status">RULES READY</span></div>
+          <span class="card-kicker">Official rules · live board</span>
           <h2>STUMBLE GUYS</h2>
           <p>6 баг · 30 тоглогч · Grand Prix 10 round. Solo leaderboard-оор багийн оноо бодно.</p>
         </div>
@@ -184,6 +190,7 @@
         <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/pubg-mobile.svg" alt="PUBG Mobile logo"></div><span class="status">RULES READY</span></div>
+          <span class="card-kicker">Official rules · live board</span>
           <h2>PUBG MOBILE</h2>
           <p>6 баг · Sanhok, Livik, Erangel. Placement + kill points-аар аварга тодорно.</p>
         </div>
@@ -194,6 +201,7 @@
         <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/tekken8.svg" alt="Tekken 8 logo"></div><span class="status">RULES READY</span></div>
+          <span class="card-kicker">Official rules · live board</span>
           <h2>TEKKEN 8</h2>
           <p>6 баг · 18 тоглогч · Group BO3 → 6-player round robin → Final 4 BO5 bracket.</p>
         </div>
