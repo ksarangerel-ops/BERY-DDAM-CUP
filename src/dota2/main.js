@@ -244,6 +244,21 @@ function renderRosters() {
   const champion = matchComplete(state, 9)
     ? computeStandings(state).find(row => row.rank === 1 && row.qualified)
     : null;
+  $('leaderCards').innerHTML = state.teams.map((team, index) => `
+    <article class="leader-card leader-card-${index + 1}">
+      <div class="leader-card-head">
+        <span>TEAM ${esc(team.name.replace(/^Team\s+/i, ''))}</span>
+        <b>${esc(team.tag)}</b>
+      </div>
+      <div class="leader-card-body">
+        <div class="leader-avatar"><img src="/leader-avatars/leader-${index + 1}.png" alt="${esc(team.name)} leader"></div>
+        <div class="leader-copy">
+          <span class="leader-role">TEAM LEADER</span>
+          <strong>${esc(team.name)}</strong>
+          <small>Captain · ${esc(team.tag)}</small>
+        </div>
+      </div>
+    </article>`).join('');
   $('mvpCard').innerHTML = champion
     ? `<div class="mvp-card rainbow-border h-full rounded-2xl border border-gold/60 bg-gradient-to-br from-gold/20 via-panel/85 to-ink/90 backdrop-blur-md p-5 flex flex-col justify-center text-center">
         <img src="/ddam-logo.svg" alt="DDAM ESPORT CUP" class="champion-logo mx-auto mb-3">
