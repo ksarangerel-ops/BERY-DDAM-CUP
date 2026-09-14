@@ -10,7 +10,7 @@ const client = isConfigured ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 const GAME_DEFS = {
   mlbb: { label: 'Mobile Legends', short: 'MLBB', format: '2 groups · BO2 → BO3 playoff', rules: './mobile-legends.html', logo: '/game-logos/mlbb-official.jpg', logoClass: 'wordmark', art: '/game-backdrops/mlbb-game.jpg' },
-  mecha: { label: 'Meccha Chameleon', short: 'MECHA', format: 'Seeker / Hider · 12 rounds', rules: './games.html#mecha', logo: '/game-logos/mecha.webp', art: '/game-backdrops/mecha-chameleon-hero.jpg' },
+  mecha: { label: 'Meccha Chameleon', short: 'MECHA', format: '2 lobbies · 6 rounds/lobby · 4 players/team', rules: './games.html#mecha', logo: '/game-logos/mecha.webp', art: '/game-backdrops/mecha-chameleon-hero.jpg' },
   stumble: { label: 'Stumble Guys', short: 'STUMBLE', format: '30 players · Grand Prix', rules: './games.html#stumble', logo: '/game-logos/stumble.svg', logoClass: 'wordmark light', art: '/game-backdrops/stumble-game.png' },
   pubg: { label: 'PUBG Mobile', short: 'PUBG', format: '3 maps · placement + kills', rules: './games.html#pubg', logo: '/game-logos/pubg-mobile.svg', logoClass: 'wordmark light', art: '/game-backdrops/pubg-game.jpg' },
   tekken: { label: 'Tekken 8', short: 'TEKKEN', format: '18 players · BO3 / BO5 playoff', rules: './games.html#tekken', logo: '/game-logos/tekken8.svg', logoClass: 'wordmark light', art: '/game-backdrops/tekken-game.jpeg' },
@@ -60,7 +60,7 @@ function defaultState() {
     updated: null,
     games: {
       mlbb: { teams: mlTeams, groupResults: groupMatches().map(match => ({ ...match, series: '' })), playoff: { sf1: '', sf2: '', final: '', third: '' } },
-      mecha: { teams: makeTeams().map(team => ({ ...team, hider: 0, seeker: 0, bonus: 0 })) },
+      mecha: { teams: makeTeams().map(team => ({ ...team, hider: 0, topMissedSpot: 0, seekersCaught: 0, cleanSweeps: 0 })) },
       stumble: { teams: makeTeams().map(team => ({ ...team, players: Array.from({ length: 5 }, (_, index) => ({ id: `${team.id}p${index + 1}`, name: `${team.tag} Player ${index + 1}`, points: 0 })) })) },
       pubg: { teams: makeTeams().map(team => ({ ...team, maps: MAP_NAMES.map(() => ({ placement: '', kills: '' })) })) },
       tekken: { teams: makeTeams(), players: makePlayers(18, 3, 'k') },
@@ -81,6 +81,12 @@ function normalizeState(value) {
   if (!Array.isArray(value.games.tekken.teams) || value.games.tekken.teams.length !== 6) {
     value.games.tekken.teams = TEAM_NAMES.map((name, index) => ({ id: `t${index + 1}`, name, tag: TAGS[index] }));
   }
+  value.games.mecha?.teams?.forEach(team => {
+    if (team.hider == null) team.hider = 0;
+    if (team.topMissedSpot == null) team.topMissedSpot = 0;
+    if (team.seekersCaught == null) team.seekersCaught = Math.round(num(team.seeker) / 0.33);
+    if (team.cleanSweeps == null) team.cleanSweeps = Math.round(num(team.bonus) / 2);
+  });
   if (value.teamNameVersion !== TEAM_NAME_VERSION) {
     ['mecha', 'stumble', 'pubg', 'tekken', 'tetris'].forEach(id => {
       value.games[id]?.teams?.forEach((team, index) => { team.name = TEAM_NAMES[index] || team.name; });
@@ -141,6 +147,15 @@ async function publish(next) {
 function showToast(message) { const el = $('toast'); el.textContent = message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2800); }
 function teamName(game, id, fallback = 'Waiting') { return teamById(game, id)?.name || fallback; }
 function scoreForBo2(series) { const result = parts(series); return result.wins === result.losses ? [1, 1] : result.wins > result.losses ? [3, 0] : [0, 3]; }
+function mechaStats(team) {
+  const hider = Math.round(num(team.hider) * 10) / 10;
+  const topMissedSpot = num(team.topMissedSpot);
+  const seekersCaught = team.seekersCaught == null ? Math.round(num(team.seeker) / 0.33) : num(team.seekersCaught);
+  const cleanSweeps = team.cleanSweeps == null ? Math.round(num(team.bonus) / 2) : num(team.cleanSweeps);
+  const seeker = Math.round(seekersCaught * 0.33 * 10) / 10;
+  const bonus = cleanSweeps * 2;
+  return { hider, topMissedSpot, seekersCaught, cleanSweeps, seeker, bonus, points: Math.round((hider + seeker + bonus) * 10) / 10 };
+}
 
 function mlRows(game, group) {
   const rows = game.teams.filter(team => team.group === group).map(team => ({ team, points: 0, gamesWon: 0, gamesLost: 0, played: 0 }));
@@ -193,8 +208,8 @@ function renderMlbb(game) {
 }
 
 function renderMecha(game) {
-  const rows = game.teams.map(team => ({ name: team.name, sub: team.tag, hider: num(team.hider), seeker: num(team.seeker), bonus: num(team.bonus), points: num(team.hider) + num(team.seeker) + num(team.bonus) })).sort((a, b) => b.points - a.points || b.hider - a.hider);
-  return `${boardHead(GAME_DEFS.mecha, '6 баг · Hider / Seeker · Lobby A/B · 12 rounds', GAME_DEFS.mecha.rules)}<div class="ag-pad"><div class="ag-status-grid"><div class="ag-status"><b>12</b><span>Total rounds</span></div><div class="ag-status"><b>2</b><span>Players as Seeker</span></div><div class="ag-status"><b>${rows.reduce((sum, row) => sum + row.points, 0)}</b><span>Total points</span></div></div><div class="ag-form-section" style="margin-top:16px"><h3>Team ranking</h3>${rankingTable(rows, [{ key: 'hider', label: 'Hider pts' }, { key: 'seeker', label: 'Seeker pts' }, { key: 'bonus', label: 'Bonus' }, { key: 'points', label: 'Total', score: true }])}</div><p class="ag-help" style="margin:14px 0 0">Hider rank оноо + барьсан Hider бүрийн 2 оноо + бүх 10 Hider барьсан bonus 10 оноо.</p></div>`;
+  const rows = game.teams.map(team => { const score = mechaStats(team); return { name: team.name, sub: team.tag, hider: score.hider, seeker: score.seeker, bonus: score.bonus, points: score.points }; }).sort((a, b) => b.points - a.points || b.hider - a.hider);
+  return `${boardHead(GAME_DEFS.mecha, '6 баг · 2 lobby · 4 тоглогч/баг · lobby тус бүр 6 round', GAME_DEFS.mecha.rules)}<div class="ag-pad"><div class="ag-status-grid"><div class="ag-status"><b>12</b><span>Total rounds</span></div><div class="ag-status"><b>2 + 2</b><span>Women / men per team</span></div><div class="ag-status"><b>${rows.reduce((sum, row) => sum + row.points, 0).toFixed(1)}</b><span>Total points</span></div></div><div class="ag-form-section" style="margin-top:16px"><h3>Team ranking</h3>${rankingTable(rows, [{ key: 'hider', label: 'Hider pts' }, { key: 'seeker', label: 'Seeker pts' }, { key: 'bonus', label: 'Clean-sweep bonus' }, { key: 'points', label: 'Total', score: true }])}</div><p class="ag-help" style="margin:14px 0 0">Hider оноо Missed Spot Ranking-оос хувьчилна. Seeker оноо = барьсан Hider × 0.33; бүх 10 Hider баривал +2.0 bonus.</p></div>`;
 }
 
 function renderStumble(game) {
@@ -250,10 +265,10 @@ function renderMlbbDashboard(game) {
   return dashboardBoard(GAME_DEFS.mlbb, '6 баг · A/B хэсэг · BO2 round-robin · 4 баг playoff', GAME_DEFS.mlbb.rules, main, side, 'Tie-break: head-to-head → нийт хожсон game → нийт хожигдсон game бага → нэмэлт BO1.');
 }
 function renderMechaDashboard(game) {
-  const rows = game.teams.map(team => ({ name: team.name, sub: `${team.tag} · Hider ${num(team.hider)} · Seeker ${num(team.seeker)}`, points: `${num(team.hider) + num(team.seeker) + num(team.bonus)} pts`, raw: num(team.hider) + num(team.seeker) + num(team.bonus) })).sort((a, b) => b.raw - a.raw || a.name.localeCompare(b.name));
-  const main = dashPanel('TOP TWO ADVANCE', 'GROUP RACE', `<div class="ag-dash-groups">${dashGroup('A', rows.slice(0, 3), { title: 'LOBBY A', meta: '12 ROUNDS' })}${dashGroup('B', rows.slice(3), { title: 'LOBBY B', meta: '12 ROUNDS' })}</div>`, '', 'ALL GROUPS →');
+  const rows = game.teams.map(team => { const score = mechaStats(team); return { name: team.name, sub: `${team.tag} · Hider ${score.hider.toFixed(1)} · Seeker ${score.seekersCaught} caught · +${score.bonus.toFixed(1)}`, points: `${score.points.toFixed(1)} pts`, raw: score.points, topMissedSpot: score.topMissedSpot }; }).sort((a, b) => b.raw - a.raw || b.topMissedSpot - a.topMissedSpot || a.name.localeCompare(b.name));
+  const main = dashPanel('TWO LOBBIES · 6 ROUNDS EACH', 'GROUP RACE', `<div class="ag-dash-groups">${dashGroup('A', rows.slice(0, 3), { title: 'LOBBY A · WOMEN', meta: '6 ROUNDS' })}${dashGroup('B', rows.slice(3), { title: 'LOBBY B · MEN', meta: '6 ROUNDS' })}</div>`, '', 'ALL LOBBIES →');
   const side = `${dashPanel('GET READY', 'UP NEXT', dashMatchList([{ code: 'R1', left: rows[0]?.name || 'Team A', right: rows[3]?.name || 'Team D', meta: 'HIDER / SEEKER' }, { code: 'R2', left: rows[1]?.name || 'Team B', right: rows[4]?.name || 'Team E', meta: 'LOBBY A · NEXT ROUND' }, { code: 'R3', left: rows[2]?.name || 'Team C', right: rows[5]?.name || 'Team F', meta: 'LOBBY B · NEXT ROUND' }]))}${dashPanel('JUST FINISHED', 'LATEST RESULTS', dashMatchList([], 'No round results yet.'))}${dashPanel('TOP SCORE', 'MOST PICKED', dashPicked(rows, row => row.points))}`;
-  return dashboardBoard(GAME_DEFS.mecha, '6 баг · Hider / Seeker · Lobby A/B · 12 rounds', GAME_DEFS.mecha.rules, main, side, 'Оноо: Hider rank оноо + барьсан Hider бүрийн 2 оноо + бүх 10 Hider барьсан bonus 10 оноо.');
+  return dashboardBoard(GAME_DEFS.mecha, '6 баг · 2 lobby · 4 тоглогч/баг · lobby тус бүр 6 round', GAME_DEFS.mecha.rules, main, side, 'Hider = 10 × (тоглогчийн Missed Spot / раундын нийт Missed Spot). Seeker = барьсан Hider × 0.33; бүх 10 Hider баривал +2.0. Tie-break: нийт оноо → хамгийн өндөр Missed Spot авсан round → нийт барьсан Hider.');
 }
 function renderStumbleDashboard(game) {
   const rows = game.teams.map(team => ({ name: team.name, sub: `${team.tag} · 5 players`, points: `${team.players.reduce((sum, player) => sum + num(player.points), 0)} pts`, raw: team.players.reduce((sum, player) => sum + num(player.points), 0) })).sort((a, b) => b.raw - a.raw);
@@ -281,7 +296,7 @@ function renderTabs() { $('gameTabs').innerHTML = GAME_IDS.map(id => `<button cl
 
 function inputTeamNames(game) { return `<div class="ag-form-section"><h3>Team setup</h3><div class="ag-form-grid">${game.teams.map(team => `<label class="ag-label">${esc(team.tag || team.id)}<input class="ag-input" data-team-name="${team.id}" value="${esc(team.name)}"></label>`).join('')}</div></div>`; }
 function renderMlEditor(game) { const name = id => teamName(game, id); return `${inputTeamNames(game)}<div class="ag-form-section"><h3>Group BO2 results</h3><div class="ag-form-grid">${game.groupResults.map(match => `<label class="ag-label">${match.group} · ${esc(name(match.a))} vs ${esc(name(match.b))}<select class="ag-select" data-ml-group="${match.id}">${seriesOptions(ML_SERIES, match.series)}</select></label>`).join('')}</div></div><div class="ag-form-section"><h3>Playoff BO3 results</h3><div class="ag-form-grid">${[['sf1','Semifinal 1'],['sf2','Semifinal 2'],['final','Grand Final'],['third','3rd Place Final']].map(([id, label]) => `<label class="ag-label">${label}<select class="ag-select" data-ml-playoff="${id}">${seriesOptions(BO3_SERIES, game.playoff[id])}</select></label>`).join('')}</div></div>`; }
-function renderMechaEditor(game) { return `${inputTeamNames(game)}<div class="ag-form-section"><h3>Team points</h3><div class="ag-grid">${game.teams.map(team => `<div class="ag-form-grid three"><label class="ag-label">${esc(team.name)} · Hider<input class="ag-input" type="number" min="0" data-mecha="${team.id}" data-field="hider" value="${num(team.hider)}"></label><label class="ag-label">Seeker<input class="ag-input" type="number" min="0" data-mecha="${team.id}" data-field="seeker" value="${num(team.seeker)}"></label><label class="ag-label">Bonus<input class="ag-input" type="number" min="0" data-mecha="${team.id}" data-field="bonus" value="${num(team.bonus)}"></label></div>`).join('')}</div></div>`; }
+function renderMechaEditor(game) { return `${inputTeamNames(game)}<div class="ag-form-section"><h3>Official Meccha scoring input</h3><p class="ag-help">Hider points-ийг Missed Spot Ranking-ийн эцсийн дэлгэцээс 0.1 нарийвчлалтайгаар нийлбэрлэн оруулна. Seeker оноо автоматаар бодогдоно.</p><div class="ag-grid">${game.teams.map(team => { const score = mechaStats(team); return `<div class="ag-form-section"><h3>${esc(team.name)} · ${esc(team.tag)}</h3><div class="ag-form-grid three"><label class="ag-label">Hider points<input class="ag-input" type="number" min="0" step="0.1" data-mecha="${team.id}" data-field="hider" value="${score.hider}"></label><label class="ag-label">Highest Missed Spot rounds<input class="ag-input" type="number" min="0" max="12" step="1" data-mecha="${team.id}" data-field="topMissedSpot" value="${score.topMissedSpot}"></label><label class="ag-label">Hiders caught<input class="ag-input" type="number" min="0" max="20" step="1" data-mecha="${team.id}" data-field="seekersCaught" value="${score.seekersCaught}"></label><label class="ag-label">10/10 clean-sweep rounds<input class="ag-input" type="number" min="0" max="2" step="1" data-mecha="${team.id}" data-field="cleanSweeps" value="${score.cleanSweeps}"></label><div class="ag-mecha-total">Seeker ${score.seeker.toFixed(1)} + bonus ${score.bonus.toFixed(1)} = <b>${score.points.toFixed(1)} total</b></div></div></div>`; }).join('')}</div></div>`; }
 function renderStumbleEditor(game) { return `<div class="ag-form-section"><h3>Player points</h3><div class="ag-grid">${game.teams.map(team => `<div class="ag-form-section"><h3>${esc(team.name)}</h3><div class="ag-form-grid">${team.players.map(player => `<label class="ag-label">${esc(player.name)}<input class="ag-input" data-stumble-name="${player.id}" value="${esc(player.name)}"><input class="ag-input" type="number" min="0" data-stumble-points="${player.id}" value="${num(player.points)}"></label>`).join('')}</div></div>`).join('')}</div></div>`; }
 function renderPubgEditor(game) { return `${inputTeamNames(game)}<div class="ag-grid">${game.teams.map(team => `<div class="ag-form-section"><h3>${esc(team.name)}</h3><div class="ag-form-grid three">${team.maps.map((map, index) => `<div><label class="ag-label">${MAP_NAMES[index]} · Place<select class="ag-select" data-pubg="${team.id}" data-map="${index}" data-field="placement"><option value="">—</option>${[1,2,3,4,5,6].map(place => `<option value="${place}" ${String(place) === String(map.placement) ? 'selected' : ''}>${place}</option>`).join('')}</select></label><label class="ag-label" style="margin-top:8px">Kills<input class="ag-input" type="number" min="0" data-pubg="${team.id}" data-map="${index}" data-field="kills" value="${esc(map.kills)}"></label></div>`).join('')}</div></div>`).join('')}</div>`; }
 function renderTekkenEditor(game) { return `<div class="ag-form-section"><h3>Player results</h3><div class="ag-grid">${game.players.map(player => `<div class="ag-form-grid five"><label class="ag-label">Player<input class="ag-input" data-tekken="${player.id}" data-field="name" value="${esc(player.name)}"></label><label class="ag-label">Points<input class="ag-input" type="number" min="0" data-tekken="${player.id}" data-field="points" value="${num(player.points)}"></label><label class="ag-label">W<input class="ag-input" type="number" min="0" data-tekken="${player.id}" data-field="wins" value="${num(player.wins)}"></label><label class="ag-label">L<input class="ag-input" type="number" min="0" data-tekken="${player.id}" data-field="losses" value="${num(player.losses)}"></label><label class="ag-label">Game W/L<input class="ag-input" data-tekken="${player.id}" data-field="games" value="${num(player.gamesWon)}-${num(player.gamesLost)}"></label></div>`).join('')}</div></div>`; }

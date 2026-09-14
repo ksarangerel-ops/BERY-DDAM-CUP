@@ -18,6 +18,9 @@ Mobile Legends rules at `/mobile-legends.html`.
   edit team names, series results, player points and map scores from the page.
 - **Mobile Legends:** six teams split into two BO2 groups, then A1 vs B2 and
   B1 vs A2 BO3 semifinals, Grand Final and 3rd Place Final.
+- **Meccha Chameleon:** six teams with 2 women + 2 men each, split into a women’s
+  and men’s lobby. Each lobby has six rounds; Hider scores come from Missed Spot
+  Ranking and Seeker scores use 0.33 per caught Hider plus a 2-point clean-sweep bonus.
 
 ## CS2 tournament format
 
