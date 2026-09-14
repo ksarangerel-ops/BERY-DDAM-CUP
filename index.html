@@ -64,6 +64,13 @@
     .game-card.ml .game-logo { background: linear-gradient(145deg, rgba(167,139,250,.24), rgba(255,107,214,.14)); }
     .game-card.rules-card { min-height: 470px; border-color: rgba(113,217,255,.25); background: linear-gradient(145deg, rgba(18,31,39,.96), rgba(10,14,17,.97)); }
     .game-card.rules-card:hover { border-color: rgba(113,217,255,.75); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(113,217,255,.14); }
+    .game-card.reference-card { min-height: clamp(560px, calc(100vh - 260px), 780px); border-radius: 28px; }
+    .game-card.reference-card::before { color: rgba(255,255,255,.1); }
+    .game-card.reference-card .game-art { opacity: .84; filter: brightness(.9) saturate(1.18) contrast(1.06); }
+    .game-card.reference-card .game-art::after { background: linear-gradient(90deg, rgba(8,10,11,.58), rgba(8,10,11,.16) 55%, rgba(8,10,11,.36)); }
+    .game-card.reference-card .card-kicker { margin-top: 26px; }
+    .game-card.reference-card:hover .game-art { opacity: .98; filter: blur(0) brightness(1.08) saturate(1.22) contrast(1.08); }
+    .game-card.reference-card:hover { border-color: color-mix(in srgb, var(--card-accent) 82%, white); }
     .card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .game-logo { width: 100px; height: 100px; padding: 14px; border-radius: 24px; background: rgba(255,255,255,.06); overflow: hidden; }
     .game-logo.wordmark { width: 164px; }
@@ -158,7 +165,7 @@
         <div class="card-footer"><span>Open CS2 board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-mlbb" class="game-card ml" href="./additional-games.html?game=mlbb" data-board="mlbb" data-board-title="MOBILE LEGENDS" data-board-line="GROUPS TO FINALS." data-board-copy="2 хэсэг BO2 → A1/B2, B1/A2 semifinal BO3 → Grand Final + 3rd Place. Official дүрэм." data-board-format="BO2 GROUPS → BO3 PLAYOFF" data-accent="#ff9be1" data-art="/game-backdrops/mlbb-game.jpg">
+      <a id="game-mlbb" class="game-card reference-card ml" href="./additional-games.html?game=mlbb" data-board="mlbb" data-board-title="MOBILE LEGENDS" data-board-line="GROUPS TO FINALS." data-board-copy="2 хэсэг BO2 → A1/B2, B1/A2 semifinal BO3 → Grand Final + 3rd Place. Official дүрэм." data-board-format="BO2 GROUPS → BO3 PLAYOFF" data-accent="#ff9be1" data-art="/game-backdrops/mlbb-game.jpg">
         <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark mlbb-logo"><img src="/game-logos/mlbb-official.jpg" alt="Mobile Legends logo"></div><span class="status">MLBB RULES</span></div>
@@ -169,7 +176,7 @@
           <div class="card-footer"><span>Open MLBB board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-mecha" class="game-card rules-card mecha" href="./additional-games.html?game=mecha" data-board="mecha" data-board-title="MECCHA CHAMELEON" data-board-line="HIDE. PAINT. SEEK." data-board-copy="6 баг · 2 lobby · 12 round. Seeker/Hider онооны системтэй official format." data-board-format="12 ROUNDS · SEEKER / HIDER" data-accent="#ffc66a" data-art="/game-backdrops/mecha-chameleon-hero.jpg">
+      <a id="game-mecha" class="game-card reference-card rules-card mecha" href="./additional-games.html?game=mecha" data-board="mecha" data-board-title="MECCHA CHAMELEON" data-board-line="HIDE. PAINT. SEEK." data-board-copy="6 баг · 2 lobby · 12 round. Seeker/Hider онооны системтэй official format." data-board-format="12 ROUNDS · SEEKER / HIDER" data-accent="#ffc66a" data-art="/game-backdrops/mecha-chameleon-hero.jpg">
         <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo"><img src="/game-logos/mecha.webp" alt="Meccha Chameleon logo"></div><span class="status">RULES READY</span></div>
@@ -180,7 +187,7 @@
         <div class="card-footer"><span>Open live board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-stumble" class="game-card rules-card stumble" href="./additional-games.html?game=stumble" data-board="stumble" data-board-title="STUMBLE GUYS" data-board-line="GRAND PRIX RUN." data-board-copy="6 баг · 30 тоглогч · Grand Prix 10 round. Solo leaderboard-оор багийн оноо бодно." data-board-format="30 PLAYERS · 10 ROUNDS" data-accent="#ffb276" data-art="/game-backdrops/stumble-game.png">
+      <a id="game-stumble" class="game-card reference-card rules-card stumble" href="./additional-games.html?game=stumble" data-board="stumble" data-board-title="STUMBLE GUYS" data-board-line="GRAND PRIX RUN." data-board-copy="6 баг · 30 тоглогч · Grand Prix 10 round. Solo leaderboard-оор багийн оноо бодно." data-board-format="30 PLAYERS · 10 ROUNDS" data-accent="#ffb276" data-art="/game-backdrops/stumble-game.png">
         <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/stumble.svg" alt="Stumble Guys logo"></div><span class="status">RULES READY</span></div>
@@ -191,7 +198,7 @@
         <div class="card-footer"><span>Open live board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-pubg" class="game-card rules-card pubg" href="./additional-games.html?game=pubg" data-board="pubg" data-board-title="PUBG MOBILE" data-board-line="DROP TO WIN." data-board-copy="6 баг · Sanhok, Livik, Erangel. Placement + kill points-аар аварга тодорно." data-board-format="3 MAPS · PLACEMENT + KILLS" data-accent="#76f1cf" data-art="/game-backdrops/pubg-game.jpg">
+      <a id="game-pubg" class="game-card reference-card rules-card pubg" href="./additional-games.html?game=pubg" data-board="pubg" data-board-title="PUBG MOBILE" data-board-line="DROP TO WIN." data-board-copy="6 баг · Sanhok, Livik, Erangel. Placement + kill points-аар аварга тодорно." data-board-format="3 MAPS · PLACEMENT + KILLS" data-accent="#76f1cf" data-art="/game-backdrops/pubg-game.jpg">
         <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/pubg-mobile.svg" alt="PUBG Mobile logo"></div><span class="status">RULES READY</span></div>
@@ -213,7 +220,7 @@
         <div class="card-footer"><span>Open live board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-tetris" class="game-card rules-card tetris" href="./additional-games.html?game=tetris" data-board="tetris" data-board-title="TETRIS" data-board-line="ZONE SHOWDOWN." data-board-copy="3 games · 2 zones per game · top 4 teams advance to the final bracket." data-board-format="3 GAMES → 2 ZONES → FINAL 4" data-accent="#82eaff" data-art="/game-backdrops/tetris-gamer.webp">
+      <a id="game-tetris" class="game-card reference-card rules-card tetris" href="./additional-games.html?game=tetris" data-board="tetris" data-board-title="TETRIS" data-board-line="ZONE SHOWDOWN." data-board-copy="3 games · 2 zones per game · top 4 teams advance to the final bracket." data-board-format="3 GAMES → 2 ZONES → FINAL 4" data-accent="#82eaff" data-art="/game-backdrops/tetris-gamer.webp">
         <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/tetris-logo.jpg" alt="Tetris logo"></div><span class="status">RULES READY</span></div>
