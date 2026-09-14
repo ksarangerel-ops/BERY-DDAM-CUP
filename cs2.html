@@ -85,9 +85,14 @@ tailwind.config = {
     <div class="rounded-2xl glass glow-gold p-5 sm:p-6 mb-5 relative overflow-hidden">
       <div class="absolute -right-12 -top-12 w-60 h-60 rounded-full bg-gold/15 blur-3xl"></div>
       <div class="relative flex flex-wrap items-end gap-x-6 gap-y-3">
-        <div>
-          <p class="text-[10px] sm:text-xs uppercase tracking-[.35em] text-cyan font-bold">6 Teams · Group BO1 · 4-match Playoff BO3</p>
-      <h2 class="font-display font-black text-2xl sm:text-4xl mt-1 text-white">DDAM ESPORT CUP <span class="spectrum-text">CS2</span></h2>
+        <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+          <div class="w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-xl border border-gold/70 bg-gradient-to-br from-gold2 to-gold grid place-items-center shadow-[0_0_26px_-6px_rgba(255,212,71,.8)] overflow-hidden">
+            <img src="/game-logos/cs2.svg" alt="Counter-Strike 2 logo" class="w-full h-full object-contain p-2">
+          </div>
+          <div class="min-w-0">
+            <p class="text-[10px] sm:text-xs uppercase tracking-[.35em] text-cyan font-bold">6 Teams · Group BO1 · 4-match Playoff BO3</p>
+            <h2 class="font-display font-black text-2xl sm:text-4xl mt-1 text-white">DDAM ESPORT CUP <span class="spectrum-text">CS2</span></h2>
+          </div>
         </div>
         <div class="flex gap-2 sm:gap-3 ml-auto text-center" id="mapChips"></div>
       </div>
