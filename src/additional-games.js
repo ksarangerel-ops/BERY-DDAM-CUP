@@ -14,8 +14,10 @@ const GAME_DEFS = {
   stumble: { label: 'Stumble Guys', short: 'STUMBLE', format: '30 players · Grand Prix', rules: './games.html#stumble', logo: '/game-logos/stumble.svg', logoClass: 'wordmark light', art: '/game-backdrops/stumble-game.png' },
   pubg: { label: 'PUBG Mobile', short: 'PUBG', format: '3 maps · placement + kills', rules: './games.html#pubg', logo: '/game-logos/pubg-mobile.svg', logoClass: 'wordmark light', art: '/game-backdrops/pubg-game.jpg' },
   tekken: { label: 'Tekken 8', short: 'TEKKEN', format: '18 players · BO3 / BO5 playoff', rules: './games.html#tekken', logo: '/game-logos/tekken8.svg', logoClass: 'wordmark light', art: '/game-backdrops/tekken-game.jpeg' },
+  tetris: { label: 'Tetris', short: 'TETRIS', format: '3 games · 2 zones · final 4', rules: './games.html#tetris', logo: '/game-logos/tetrio.png', logoClass: 'wordmark tetris-logo', art: '/game-backdrops/tetris-effect.jpg' },
 };
 const GAME_IDS = Object.keys(GAME_DEFS);
+const REQUIRED_GAME_IDS = GAME_IDS.filter(id => id !== 'tetris');
 const TEAM_NAMES = ['Team Alpha', 'Team Bravo', 'Team Charlie', 'Team Delta', 'Team Echo', 'Team Foxtrot'];
 const TAGS = ['ALP', 'BRV', 'CHR', 'DLT', 'ECH', 'FOX'];
 const ML_SERIES = ['', '2-0', '1-1', '0-2'];
@@ -45,6 +47,12 @@ function defaultState() {
   const makePlayers = (count, perTeam, prefix) => makeTeams().flatMap((team, teamIndex) => Array.from({ length: perTeam }, (_, playerIndex) => ({
     id: `${prefix}${teamIndex + 1}p${playerIndex + 1}`, teamId: team.id, name: `${team.tag} Player ${playerIndex + 1}`, points: 0, wins: 0, losses: 0, gamesWon: 0, gamesLost: 0,
   }))).slice(0, count);
+  const tetrisTeams = makeTeams();
+  const tetrisGames = Array.from({ length: 3 }, (_, index) => ({
+    id: `game${index + 1}`,
+    label: `Game ${index + 1}`,
+    rows: tetrisTeams.map((team, teamIndex) => ({ teamId: team.id, zone: teamIndex < 3 ? 'A' : 'B', wins: 0, place: '' })),
+  }));
   return {
     version: 1,
     updated: null,
@@ -54,18 +62,22 @@ function defaultState() {
       stumble: { teams: makeTeams().map(team => ({ ...team, players: Array.from({ length: 5 }, (_, index) => ({ id: `${team.id}p${index + 1}`, name: `${team.tag} Player ${index + 1}`, points: 0 })) })) },
       pubg: { teams: makeTeams().map(team => ({ ...team, maps: MAP_NAMES.map(() => ({ placement: '', kills: '' })) })) },
       tekken: { teams: makeTeams(), players: makePlayers(18, 3, 'k') },
+      tetris: { teams: tetrisTeams, games: tetrisGames },
     },
   };
 }
 
 function normalizeState(value) {
   if (!usable(value)) return null;
+  if (!value.games.tetris?.teams || !Array.isArray(value.games.tetris.games) || value.games.tetris.games.length !== 3) {
+    value.games.tetris = defaultState().games.tetris;
+  }
   if (!Array.isArray(value.games.tekken.teams) || value.games.tekken.teams.length !== 6) {
     value.games.tekken.teams = TEAM_NAMES.map((name, index) => ({ id: `t${index + 1}`, name, tag: TAGS[index] }));
   }
   return value;
 }
-function usable(value) { return !!value && value.games && GAME_IDS.every(id => value.games[id]); }
+function usable(value) { return !!value && value.games && REQUIRED_GAME_IDS.every(id => value.games[id]); }
 function readCache() { try { const value = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); return normalizeState(value); } catch { return null; } }
 function writeCache(value) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(value)); } catch { /* private mode */ } }
 
@@ -171,7 +183,28 @@ function renderTekken(game) {
   return `${boardHead(GAME_DEFS.tekken, '6 баг · 18 тоглогч · player leaderboard · team total', GAME_DEFS.tekken.rules)}<div class="ag-pad"><div class="ag-status-grid"><div class="ag-status"><b>18</b><span>Players</span></div><div class="ag-status"><b>3</b><span>Players / team</span></div><div class="ag-status"><b>${playerRows.reduce((sum, row) => sum + row.points, 0)}</b><span>Player points</span></div></div><div class="ag-grid two" style="margin-top:16px"><div class="ag-form-section"><h3>Player leaderboard</h3>${rankingTable(playerRows, [{ key: 'points', label: 'Points', score: true }, { key: 'record', label: 'W-L' }, { key: 'games', label: 'Game W-L' }])}</div><div class="ag-form-section"><h3>Team total</h3>${rankingTable(teams, [{ key: 'points', label: 'Points', score: true }, { key: 'wins', label: 'Match wins' }, { key: 'games', label: 'Game wins' }])}</div></div><p class="ag-help" style="margin:14px 0 0">Tie-break: нийт оноо → head-to-head → game differential → нийт хожсон game → нэмэлт BO1.</p></div>`;
 }
 
-function renderPublic() { const game = state.games[activeGame]; const body = activeGame === 'mlbb' ? renderMlbb(game) : activeGame === 'mecha' ? renderMecha(game) : activeGame === 'stumble' ? renderStumble(game) : activeGame === 'pubg' ? renderPubg(game) : renderTekken(game); $('publicBoard').innerHTML = body; }
+function tetrisPlacePoints(place) { return ({ 1: 10, 2: 7, 3: 5, 4: 3, 5: 1, 6: 0 })[num(place)] || 0; }
+function tetrisAggregate(game) {
+  return game.teams.map(team => {
+    const records = game.games.flatMap(stage => stage.rows.filter(row => row.teamId === team.id));
+    const wins = records.reduce((sum, row) => sum + num(row.wins), 0);
+    const placePoints = records.reduce((sum, row) => sum + tetrisPlacePoints(row.place), 0);
+    const places = records.filter(row => row.place).map(row => `G${game.games.findIndex(stage => stage.rows.includes(row)) + 1} #${row.place}`).join(' · ');
+    return { name: team.name, sub: `${team.tag} · ${places || 'No final place yet'}`, wins, placePoints, points: wins * 3 + placePoints };
+  }).sort((a, b) => b.points - a.points || b.wins - a.wins || b.placePoints - a.placePoints || a.name.localeCompare(b.name));
+}
+function tetrisZoneTable(game, stage, zone) {
+  const rows = stage.rows.filter(row => row.zone === zone).map(row => ({ team: teamById(game, row.teamId), wins: num(row.wins), place: row.place || '—' }));
+  return `<div class="ag-form-section ag-tetris-zone"><h3>Zone ${zone} · top 2 advance</h3><div class="ag-table-wrap"><table class="ag-table"><thead><tr><th>Team</th><th class="num">Wins</th><th class="num">Place</th></tr></thead><tbody>${rows.map(row => `<tr><td><span class="ag-team">${esc(row.team?.name || 'Waiting')}</span><span class="ag-sub">${esc(row.team?.tag || '')}</span></td><td class="num score">${row.wins}</td><td class="num">${esc(row.place)}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function renderTetris(game) {
+  const rows = tetrisAggregate(game);
+  const entered = game.games.reduce((sum, stage) => sum + stage.rows.filter(row => row.wins || row.place).length, 0);
+  const stages = game.games.map(stage => `<div class="ag-form-section ag-tetris-stage"><div class="ag-tetris-stage-head"><h3>${esc(stage.label)}</h3><span>ZONE A + ZONE B → FINAL 4</span></div><div class="ag-grid two">${tetrisZoneTable(game, stage, 'A')}${tetrisZoneTable(game, stage, 'B')}</div></div>`).join('');
+  return `${boardHead(GAME_DEFS.tetris, '6 баг · 3 games · 2 zones / game · final 4', GAME_DEFS.tetris.rules)}<div class="ag-pad"><div class="ag-status-grid"><div class="ag-status"><b>3</b><span>Games</span></div><div class="ag-status"><b>2</b><span>Zones / game</span></div><div class="ag-status"><b>${entered}/18</b><span>Zone results entered</span></div></div><div class="ag-tetris-flow"><div><b>GAME 1</b><span>Zone A + B</span></div><i>→</i><div><b>GAME 2</b><span>Zone A + B</span></div><i>→</i><div><b>GAME 3</b><span>Zone A + B</span></div><i>→</i><div><b>FINAL 4</b><span>Top teams</span></div></div><div class="ag-form-section" style="margin-top:16px"><h3>Overall team ranking</h3>${rankingTable(rows, [{ key: 'wins', label: 'Wins' }, { key: 'placePoints', label: 'Place pts' }, { key: 'points', label: 'Total', score: true }])}</div><div class="ag-tetris-stages" style="margin-top:16px">${stages}</div><p class="ag-help" style="margin:14px 0 0">Game win = 3 оноо. Final place оноо: 1-р байр 10, 2-р байр 7, 3-р байр 5, 4-р байр 3, 5-р байр 1. Тэнцвэл нийт win → final place points дарааллаар шийднэ.</p></div>`;
+}
+
+function renderPublic() { const game = state.games[activeGame]; const body = activeGame === 'mlbb' ? renderMlbb(game) : activeGame === 'mecha' ? renderMecha(game) : activeGame === 'stumble' ? renderStumble(game) : activeGame === 'pubg' ? renderPubg(game) : activeGame === 'tetris' ? renderTetris(game) : renderTekken(game); $('publicBoard').innerHTML = body; }
 function renderTabs() { $('gameTabs').innerHTML = GAME_IDS.map(id => `<button class="ag-tab ${id === activeGame ? 'active' : ''}" data-game="${id}" type="button"><img src="${GAME_DEFS[id].logo}" alt="">${GAME_DEFS[id].short}</button>`).join(''); document.querySelectorAll('.ag-tab').forEach(button => { button.onclick = () => { activeGame = button.dataset.game; const url = new URL(location.href); url.searchParams.set('game', activeGame); history.replaceState({}, '', url); render(); }; }); }
 
 function inputTeamNames(game) { return `<div class="ag-form-section"><h3>Team setup</h3><div class="ag-form-grid">${game.teams.map(team => `<label class="ag-label">${esc(team.tag || team.id)}<input class="ag-input" data-team-name="${team.id}" value="${esc(team.name)}"></label>`).join('')}</div></div>`; }
@@ -180,7 +213,8 @@ function renderMechaEditor(game) { return `${inputTeamNames(game)}<div class="ag
 function renderStumbleEditor(game) { return `<div class="ag-form-section"><h3>Player points</h3><div class="ag-grid">${game.teams.map(team => `<div class="ag-form-section"><h3>${esc(team.name)}</h3><div class="ag-form-grid">${team.players.map(player => `<label class="ag-label">${esc(player.name)}<input class="ag-input" data-stumble-name="${player.id}" value="${esc(player.name)}"><input class="ag-input" type="number" min="0" data-stumble-points="${player.id}" value="${num(player.points)}"></label>`).join('')}</div></div>`).join('')}</div></div>`; }
 function renderPubgEditor(game) { return `${inputTeamNames(game)}<div class="ag-grid">${game.teams.map(team => `<div class="ag-form-section"><h3>${esc(team.name)}</h3><div class="ag-form-grid three">${team.maps.map((map, index) => `<div><label class="ag-label">${MAP_NAMES[index]} · Place<select class="ag-select" data-pubg="${team.id}" data-map="${index}" data-field="placement"><option value="">—</option>${[1,2,3,4,5,6].map(place => `<option value="${place}" ${String(place) === String(map.placement) ? 'selected' : ''}>${place}</option>`).join('')}</select></label><label class="ag-label" style="margin-top:8px">Kills<input class="ag-input" type="number" min="0" data-pubg="${team.id}" data-map="${index}" data-field="kills" value="${esc(map.kills)}"></label></div>`).join('')}</div></div>`).join('')}</div>`; }
 function renderTekkenEditor(game) { return `<div class="ag-form-section"><h3>Player results</h3><div class="ag-grid">${game.players.map(player => `<div class="ag-form-grid five"><label class="ag-label">Player<input class="ag-input" data-tekken="${player.id}" data-field="name" value="${esc(player.name)}"></label><label class="ag-label">Points<input class="ag-input" type="number" min="0" data-tekken="${player.id}" data-field="points" value="${num(player.points)}"></label><label class="ag-label">W<input class="ag-input" type="number" min="0" data-tekken="${player.id}" data-field="wins" value="${num(player.wins)}"></label><label class="ag-label">L<input class="ag-input" type="number" min="0" data-tekken="${player.id}" data-field="losses" value="${num(player.losses)}"></label><label class="ag-label">Game W/L<input class="ag-input" data-tekken="${player.id}" data-field="games" value="${num(player.gamesWon)}-${num(player.gamesLost)}"></label></div>`).join('')}</div></div>`; }
-function renderEditor() { const game = state.games[activeGame]; return activeGame === 'mlbb' ? renderMlEditor(game) : activeGame === 'mecha' ? renderMechaEditor(game) : activeGame === 'stumble' ? renderStumbleEditor(game) : activeGame === 'pubg' ? renderPubgEditor(game) : renderTekkenEditor(game); }
+function renderTetrisEditor(game) { return `${inputTeamNames(game)}${game.games.map(stage => `<div class="ag-form-section"><h3>${esc(stage.label)} · zone results</h3><div class="ag-grid two">${['A', 'B'].map(zone => `<div><h3>Zone ${zone}</h3>${stage.rows.filter(row => row.zone === zone).map(row => { const team = teamById(game, row.teamId); return `<div class="ag-tetris-edit-row"><b>${esc(team?.name || row.teamId)}</b><label class="ag-label">Wins<input class="ag-input" type="number" min="0" data-tetris-game="${stage.id}" data-tetris-team="${row.teamId}" data-field="wins" value="${num(row.wins)}"></label><label class="ag-label">Place<input class="ag-input" type="number" min="1" max="6" data-tetris-game="${stage.id}" data-tetris-team="${row.teamId}" data-field="place" value="${esc(row.place)}"></label></div>`; }).join('')}</div>`).join('')}</div></div>`).join('')}`; }
+function renderEditor() { const game = state.games[activeGame]; return activeGame === 'mlbb' ? renderMlEditor(game) : activeGame === 'mecha' ? renderMechaEditor(game) : activeGame === 'stumble' ? renderStumbleEditor(game) : activeGame === 'pubg' ? renderPubgEditor(game) : activeGame === 'tetris' ? renderTetrisEditor(game) : renderTekkenEditor(game); }
 
 function renderAdmin() { const logged = Boolean(authSession?.user); $('loggedOut').classList.toggle('ag-hidden', logged); $('loggedIn').classList.toggle('ag-hidden', !logged); if (logged) { $('userEmail').textContent = authSession.user.email || 'admin'; $('adminEditor').innerHTML = renderEditor(); } }
 function render() {
@@ -198,6 +232,7 @@ function saveFromEditor() {
   if (activeGame === 'mecha') document.querySelectorAll('[data-mecha]').forEach(input => { const team = game.teams.find(item => item.id === input.dataset.mecha); if (team) team[input.dataset.field] = num(input.value); });
   if (activeGame === 'stumble') game.teams.forEach(team => team.players.forEach(player => { const name = document.querySelector(`[data-stumble-name="${player.id}"]`); const points = document.querySelector(`[data-stumble-points="${player.id}"]`); if (name) player.name = name.value.trim() || player.name; if (points) player.points = num(points.value); }));
   if (activeGame === 'pubg') document.querySelectorAll('[data-pubg]').forEach(input => { const team = game.teams.find(item => item.id === input.dataset.pubg); const map = team?.maps[Number(input.dataset.map)]; if (map) map[input.dataset.field] = input.value; });
+  if (activeGame === 'tetris') document.querySelectorAll('[data-tetris-game]').forEach(input => { const stage = game.games.find(item => item.id === input.dataset.tetrisGame); const row = stage?.rows.find(item => item.teamId === input.dataset.tetrisTeam); if (row) row[input.dataset.field] = input.dataset.field === 'wins' ? num(input.value) : input.value; });
   if (activeGame === 'tekken') game.players.forEach(player => { document.querySelectorAll(`[data-tekken="${player.id}"]`).forEach(input => { if (input.dataset.field === 'name') player.name = input.value.trim() || player.name; else if (input.dataset.field === 'games') { const [won, lost] = input.value.split('-').map(num); player.gamesWon = won; player.gamesLost = lost; } else player[input.dataset.field] = num(input.value); }); });
   return next;
 }

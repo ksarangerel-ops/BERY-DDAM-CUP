@@ -30,6 +30,7 @@
     .hero[data-board="stumble"] { border-color: rgba(255,118,78,.44); background: linear-gradient(135deg, rgba(52,24,42,.97), rgba(17,18,36,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(255,105,78,.12); }
     .hero[data-board="pubg"] { border-color: rgba(65,218,183,.42); background: linear-gradient(135deg, rgba(13,47,48,.97), rgba(11,19,25,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(55,225,188,.12); }
     .hero[data-board="tekken"] { border-color: rgba(255,88,119,.44); background: linear-gradient(135deg, rgba(55,21,31,.97), rgba(16,14,24,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(255,65,104,.12); }
+    .hero[data-board="tetris"] { border-color: rgba(111,231,255,.48); background: linear-gradient(135deg, rgba(27,31,62,.97), rgba(10,14,28,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(63,222,255,.15); }
     .eyebrow { color: var(--hero-accent, #ff9999); font-size: 11px; font-weight: 900; letter-spacing: .3em; text-transform: uppercase; transition: color .25s ease; }
     h1 { margin: 12px 0 14px; font-size: clamp(40px, 7vw, 78px); line-height: .95; letter-spacing: -.04em; }
     .hero-game { color: #fff; }
@@ -95,8 +96,12 @@
     .game-card.tekken { --game-art: url('/game-backdrops/tekken-game.jpeg'); --card-accent: #ff9bae; border-color: rgba(255,88,119,.34); background: linear-gradient(145deg, rgba(52,20,29,.98), rgba(15,14,22,.98)); }
     .game-card.tekken:hover { border-color: rgba(255,116,145,.9); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(255,65,104,.17); }
     .game-card.tekken .status, .game-card.tekken .card-footer { color: #ff9bae; border-color: rgba(255,102,130,.5); }
+    .game-card.tetris { --game-art: url('/game-backdrops/tetris-effect.jpg'); --card-accent: #82eaff; border-color: rgba(111,231,255,.38); background: linear-gradient(145deg, rgba(25,30,59,.98), rgba(10,14,28,.98)); }
+    .game-card.tetris:hover { border-color: rgba(139,240,255,.94); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 38px rgba(63,222,255,.2); }
+    .game-card.tetris .game-logo { width: 176px; height: 88px; padding: 8px; border-radius: 18px; background: #05070e; border: 1px solid rgba(139,240,255,.72); box-shadow: 0 0 24px rgba(63,222,255,.24); }
+    .game-card.tetris .status, .game-card.tetris .card-footer { color: #82eaff; border-color: rgba(111,231,255,.55); }
     .footer { margin-top: 42px; color: #64726b; font-size: 10px; letter-spacing: .18em; text-align: center; text-transform: uppercase; }
-    @media (max-width: 700px) { .shell { width: min(100% - 24px, 560px); padding-top: 22px; } .topbar { margin-bottom: 34px; } .brand-subtitle { letter-spacing: .12em; } .hero { min-height: 290px; padding: 28px 24px; } .hero::after { background-position: center; background-size: cover; opacity: .42; } .hero p { font-size: 14px; } .board-toolbar { align-items: flex-end; } .board-hint { max-width: 170px; line-height: 1.35; } .cards { min-height: calc(100svh - 220px); } .game-card, .game-card.rules-card { flex-basis: 100%; min-height: calc(100svh - 220px); padding: 28px; } .game-logo { width: 82px; height: 82px; padding: 11px; border-radius: 20px; } .game-logo.wordmark { width: 138px; } .game-card.cs2 .game-logo { width: 150px; height: 76px; padding: 7px; } .game-card h2 { margin-top: 34px; font-size: clamp(30px, 10vw, 48px); } .game-card p { font-size: 14px; } }
+    @media (max-width: 700px) { .shell { width: min(100% - 24px, 560px); padding-top: 22px; } .topbar { margin-bottom: 34px; } .brand-subtitle { letter-spacing: .12em; } .hero { min-height: 290px; padding: 28px 24px; } .hero::after { background-position: center; background-size: cover; opacity: .42; } .hero p { font-size: 14px; } .board-toolbar { align-items: flex-end; } .board-hint { max-width: 170px; line-height: 1.35; } .cards { min-height: calc(100svh - 220px); } .game-card, .game-card.rules-card { flex-basis: 100%; min-height: calc(100svh - 220px); padding: 28px; } .game-logo { width: 82px; height: 82px; padding: 11px; border-radius: 20px; } .game-logo.wordmark { width: 138px; } .game-card.cs2 .game-logo, .game-card.tetris .game-logo { width: 150px; height: 76px; padding: 7px; } .game-card h2 { margin-top: 34px; font-size: clamp(30px, 10vw, 48px); } .game-card p { font-size: 14px; } }
   </style>
 </head>
 <body>
@@ -206,6 +211,17 @@
           <p>6 баг · 18 тоглогч · Group BO3 → 6-player round robin → Final 4 BO5 bracket.</p>
         </div>
         <div class="card-footer"><span>Open live board</span><span class="arrow">→</span></div>
+      </a>
+
+      <a id="game-tetris" class="game-card rules-card tetris" href="./additional-games.html?game=tetris" data-board="tetris" data-board-title="TETRIS" data-board-line="ZONE SHOWDOWN." data-board-copy="3 games · 2 zones per game · top 4 teams advance to the final bracket." data-board-format="3 GAMES → 2 ZONES → FINAL 4" data-accent="#82eaff" data-art="/game-backdrops/tetris-effect.jpg">
+        <span class="game-art" aria-hidden="true"></span>
+        <div>
+          <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/tetrio.png" alt="Tetris logo"></div><span class="status">RULES READY</span></div>
+          <span class="card-kicker">Official rules · live board</span>
+          <h2>TETRIS</h2>
+          <p>3 games · 2 zones per game · top 4 teams advance to the final bracket.</p>
+        </div>
+        <div class="card-footer"><span>Open Tetris board</span><span class="arrow">→</span></div>
       </a>
       </section>
     </div>
