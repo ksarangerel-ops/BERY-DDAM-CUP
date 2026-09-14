@@ -243,14 +243,14 @@ function renderRosters() {
     : null;
   $('mvpCard').innerHTML = champion
     ? `<div class="mvp-card rainbow-border h-full rounded-2xl border border-gold/60 bg-gradient-to-br from-gold/20 via-panel/85 to-ink/90 backdrop-blur-md p-5 flex flex-col justify-center text-center">
-        <img src="/ddam-logo.svg" alt="DDAM CUP" class="champion-logo mx-auto mb-3">
+        <img src="/cs2-logo.svg" alt="CS2" class="champion-logo mx-auto mb-3">
         <div class="text-[10px] uppercase tracking-[.35em] font-display font-black text-gold">CHAMPION · 1ST PLACE</div>
         <div class="font-display font-black text-2xl sm:text-3xl mt-2 text-white champ-name">${esc(champion.team.name)}</div>
         <div class="text-sm text-slate-300 mt-1"><span class="font-mono text-cyan">${esc(champion.team.tag)}</span> · Grand Final winner</div>
         <div class="mt-4 inline-flex self-center items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-[10px] uppercase tracking-[.2em] font-display font-black text-gold">${champion.finalPoints} final points</div>
       </div>`
     : `<div class="h-full rounded-2xl border border-cyan/40 bg-gradient-to-br from-cyan/10 via-panel/80 to-ink/90 backdrop-blur-md p-5 flex flex-col justify-center text-center">
-        <img src="/ddam-logo.svg" alt="DDAM CUP" class="champion-logo mx-auto mb-2 opacity-80">
+        <img src="/cs2-logo.svg" alt="CS2" class="champion-logo mx-auto mb-2 opacity-80">
         <div class="text-[10px] uppercase tracking-[.3em] font-display font-black text-cyan">CS2 CUP STATUS</div>
         <div class="font-display font-black text-xl sm:text-2xl mt-2 text-white">${state.teams.length} Teams</div>
         <div class="text-sm text-slate-400 mt-1">${groupPlayed}/15 Group Stage matches complete</div>
