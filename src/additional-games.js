@@ -9,11 +9,11 @@ const isConfigured = Boolean(SUPABASE_URL && SUPABASE_KEY);
 const client = isConfigured ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 const GAME_DEFS = {
-  mlbb: { label: 'Mobile Legends', short: 'MLBB', format: '2 groups · BO2 → BO3 playoff', rules: './mobile-legends.html', logo: '/game-logos/mlbb.webp', logoClass: 'wordmark' },
-  mecha: { label: 'Meccha Chameleon', short: 'MECHA', format: 'Seeker / Hider · 12 rounds', rules: './games.html#mecha', logo: '/game-logos/mecha.webp' },
-  stumble: { label: 'Stumble Guys', short: 'STUMBLE', format: '30 players · Grand Prix', rules: './games.html#stumble', logo: '/game-logos/stumble.svg', logoClass: 'wordmark light' },
-  pubg: { label: 'PUBG Mobile', short: 'PUBG', format: '3 maps · placement + kills', rules: './games.html#pubg', logo: '/game-logos/pubg-mobile.svg', logoClass: 'wordmark light' },
-  tekken: { label: 'Tekken 8', short: 'TEKKEN', format: '18 players · BO3 / BO5 playoff', rules: './games.html#tekken', logo: '/game-logos/tekken8.svg', logoClass: 'wordmark light' },
+  mlbb: { label: 'Mobile Legends', short: 'MLBB', format: '2 groups · BO2 → BO3 playoff', rules: './mobile-legends.html', logo: '/game-logos/mlbb.webp', logoClass: 'wordmark', art: '/game-backdrops/mlbb-game.png' },
+  mecha: { label: 'Meccha Chameleon', short: 'MECHA', format: 'Seeker / Hider · 12 rounds', rules: './games.html#mecha', logo: '/game-logos/mecha.webp', art: '/game-backdrops/mecha-game.webp' },
+  stumble: { label: 'Stumble Guys', short: 'STUMBLE', format: '30 players · Grand Prix', rules: './games.html#stumble', logo: '/game-logos/stumble.svg', logoClass: 'wordmark light', art: '/game-backdrops/stumble-game.jpg' },
+  pubg: { label: 'PUBG Mobile', short: 'PUBG', format: '3 maps · placement + kills', rules: './games.html#pubg', logo: '/game-logos/pubg-mobile.svg', logoClass: 'wordmark light', art: '/game-backdrops/pubg-game.jpg' },
+  tekken: { label: 'Tekken 8', short: 'TEKKEN', format: '18 players · BO3 / BO5 playoff', rules: './games.html#tekken', logo: '/game-logos/tekken8.svg', logoClass: 'wordmark light', art: '/game-backdrops/tekken-game.jpeg' },
 };
 const GAME_IDS = Object.keys(GAME_DEFS);
 const TEAM_NAMES = ['Team Alpha', 'Team Bravo', 'Team Charlie', 'Team Delta', 'Team Echo', 'Team Foxtrot'];
@@ -183,7 +183,13 @@ function renderTekkenEditor(game) { return `<div class="ag-form-section"><h3>Pla
 function renderEditor() { const game = state.games[activeGame]; return activeGame === 'mlbb' ? renderMlEditor(game) : activeGame === 'mecha' ? renderMechaEditor(game) : activeGame === 'stumble' ? renderStumbleEditor(game) : activeGame === 'pubg' ? renderPubgEditor(game) : renderTekkenEditor(game); }
 
 function renderAdmin() { const logged = Boolean(authSession?.user); $('loggedOut').classList.toggle('ag-hidden', logged); $('loggedIn').classList.toggle('ag-hidden', !logged); if (logged) { $('userEmail').textContent = authSession.user.email || 'admin'; $('adminEditor').innerHTML = renderEditor(); } }
-function render() { document.body.dataset.game = activeGame; renderTabs(); renderPublic(); renderAdmin(); }
+function render() {
+  document.body.dataset.game = activeGame;
+  document.body.style.setProperty('--ag-art', `url("${GAME_DEFS[activeGame].art}")`);
+  renderTabs();
+  renderPublic();
+  renderAdmin();
+}
 
 function saveFromEditor() {
   const next = clone(state); const game = next.games[activeGame];

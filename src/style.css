@@ -315,7 +315,7 @@
      soft purple glass treatment used by the DOTA board.
   ========================================================== */
   :root{
-    --bg-photo:url('https://images.unsplash.com/photo-1519669556878-63bdad8a1a49?auto=format&fit=crop&w=2400&q=80');
+    --bg-photo:url('/game-backdrops/cs2-game.png');
     --spectrum:linear-gradient(105deg,#b7f34a 0%,#d7ff74 30%,#ffb02e 68%,#f4f1d0 100%);
     --spectrum-soft:linear-gradient(105deg,rgba(183,243,74,.24),rgba(255,176,46,.22),rgba(244,241,208,.12));
   }
