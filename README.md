@@ -1,4 +1,4 @@
-# DDAM CUP — DOTA 2 & CS2 Tournament Hub
+# DDAM ESPORT CUP — DOTA 2 & CS2 Tournament Hub
 
 One Vercel website with separate real-time DOTA 2, CS2 and additional game
 tournament boards. The launcher is at `/`; the dedicated boards are

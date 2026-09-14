@@ -1,5 +1,5 @@
 /* ============================================================
-   DDAM CUP DOTA 2 — entry point
+   DDAM ESPORT CUP DOTA 2 — entry point
 ============================================================ */
 import './style.css';
 import html2canvas from 'html2canvas';
@@ -144,7 +144,7 @@ function renderFormatRules() {
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div class="text-[10px] uppercase tracking-[.3em] font-display font-black text-cyan">DOTA 2 TOURNAMENT FORMAT</div>
-          <h3 class="font-display font-black text-lg sm:text-xl text-white mt-1">DDAM CUP — 6 Team BO3 Bracket</h3>
+          <h3 class="font-display font-black text-lg sm:text-xl text-white mt-1">DDAM ESPORT CUP — 6 Team BO3 Bracket</h3>
         </div>
         <span class="text-[10px] uppercase tracking-widest font-display font-black px-2 py-1 rounded border ${assigned === 6 ? 'text-emerald-300 border-emerald-400/40 bg-emerald-400/10' : 'text-gold border-gold/40 bg-gold/10'}">${assigned}/6 teams assigned</span>
       </div>
@@ -246,14 +246,14 @@ function renderRosters() {
     : null;
   $('mvpCard').innerHTML = champion
     ? `<div class="mvp-card rainbow-border h-full rounded-2xl border border-gold/60 bg-gradient-to-br from-gold/20 via-panel/85 to-ink/90 backdrop-blur-md p-5 flex flex-col justify-center text-center">
-        <img src="/ddam-logo.svg" alt="DDAM CUP" class="champion-logo mx-auto mb-3">
+        <img src="/ddam-logo.svg" alt="DDAM ESPORT CUP" class="champion-logo mx-auto mb-3">
         <div class="text-[10px] uppercase tracking-[.35em] font-display font-black text-gold">CHAMPION · 1ST PLACE</div>
         <div class="font-display font-black text-2xl sm:text-3xl mt-2 text-white champ-name">${esc(champion.team.name)}</div>
         <div class="text-sm text-slate-300 mt-1"><span class="font-mono text-cyan">${esc(champion.team.tag)}</span> · Grand Final winner</div>
         <div class="mt-4 inline-flex self-center items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-[10px] uppercase tracking-[.2em] font-display font-black text-gold">${champion.finalPoints} final points</div>
       </div>`
     : `<div class="h-full rounded-2xl border border-cyan/40 bg-gradient-to-br from-cyan/10 via-panel/80 to-ink/90 backdrop-blur-md p-5 flex flex-col justify-center text-center">
-        <img src="/ddam-logo.svg" alt="DDAM CUP" class="champion-logo mx-auto mb-2 opacity-80">
+        <img src="/ddam-logo.svg" alt="DDAM ESPORT CUP" class="champion-logo mx-auto mb-2 opacity-80">
         <div class="text-[10px] uppercase tracking-[.3em] font-display font-black text-cyan">DOTA 2 CUP STATUS</div>
         <div class="font-display font-black text-xl sm:text-2xl mt-2 text-white">${state.teams.length} Teams</div>
         <div class="text-sm text-slate-400 mt-1">${assigned}/6 zone assignments complete</div>
@@ -654,7 +654,7 @@ $('btnPng').onclick = async () => {
 
 $('btnCopy').onclick = async () => {
   const teams = computeStandings(state), players = computePlayers(state).slice(0, 10);
-  const text = ['🏆 DDAM CUP — DOTA 2', '', 'FORMAT: 2 ZONES × 3 TEAMS · ZONE BO2 → A1 vs B2 / B1 vs A2 → BO3 PLACEMENT FINALS', '']
+  const text = ['🏆 DDAM ESPORT CUP — DOTA 2', '', 'FORMAT: 2 ZONES × 3 TEAMS · ZONE BO2 → A1 vs B2 / B1 vs A2 → BO3 PLACEMENT FINALS', '']
     .concat(teams.map(row => `${row.rank}. ${row.team.name} [${row.team.tag}] — ${row.total} pts (${row.wins}-${row.draws}-${row.losses}, ${row.team.zoneId ? `Zone ${row.team.zoneId}` : 'Unassigned'}${row.qualified ? ', finalist' : ''})`))
     .concat(['', 'PLAYERS', ''])
     .concat(players.map(row => `${row.player.name} — ${row.team.name}${row.zoneId ? ` [Zone ${row.zoneId}]` : ''}`))

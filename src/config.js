@@ -1,5 +1,5 @@
 /* ============================================================
-   DDAM CUP CS2 — single group BO1 → lower qualifiers → BO3 playoff bracket
+   DDAM ESPORT CUP CS2 — single group BO1 → lower qualifiers → BO3 playoff bracket
 
    Six teams play one BO1 against every other team (15 matches). Group seeds
    1 and 2 wait in the upper slot. Seeds 3–6 play two BO1 lower qualifiers;

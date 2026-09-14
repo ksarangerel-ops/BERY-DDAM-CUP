@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.0.0",
   "type": "module",
-  "description": "Real-time DDAM CUP DOTA 2 tournament scoreboard backed by Supabase Realtime",
+  "description": "Real-time DDAM ESPORT CUP DOTA 2 tournament scoreboard backed by Supabase Realtime",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

@@ -1,5 +1,5 @@
 /* ============================================================
-   DDAM CUP CS2 — entry point
+   DDAM ESPORT CUP CS2 — entry point
 ============================================================ */
 import './style.css';
 import html2canvas from 'html2canvas';
@@ -144,7 +144,7 @@ function renderFormatRules() {
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div class="text-[10px] uppercase tracking-[.3em] font-display font-black text-cyan">CS2 TOURNAMENT FORMAT</div>
-          <h3 class="font-display font-black text-lg sm:text-xl text-white mt-1">DDAM CUP — 6 Team CS2 Bracket</h3>
+          <h3 class="font-display font-black text-lg sm:text-xl text-white mt-1">DDAM ESPORT CUP — 6 Team CS2 Bracket</h3>
         </div>
         <span class="text-[10px] uppercase tracking-widest font-display font-black px-2 py-1 rounded border ${finalists.length === 4 ? 'text-emerald-300 border-emerald-400/40 bg-emerald-400/10' : 'text-gold border-gold/40 bg-gold/10'}">${finalists.length}/4 finalists ready</span>
       </div>
@@ -636,7 +636,7 @@ $('btnPng').onclick = async () => {
 
 $('btnCopy').onclick = async () => {
   const teams = computeStandings(state), players = computePlayers(state).slice(0, 10);
-  const text = ['🏆 DDAM CUP — CS2', '', 'FORMAT: 6 TEAMS · GROUP BO1 ROUND ROBIN (15) → LOWER BO1 QUALIFIERS (2) → FINAL FOUR BO3 ROUND ROBIN (6)', '']
+  const text = ['🏆 DDAM ESPORT CUP — CS2', '', 'FORMAT: 6 TEAMS · GROUP BO1 ROUND ROBIN (15) → LOWER BO1 QUALIFIERS (2) → FINAL FOUR BO3 ROUND ROBIN (6)', '']
     .concat(teams.map(row => `${row.rank}. ${row.team.name} [${row.team.tag}] — ${row.total} pts (${row.wins}-${row.draws}-${row.losses}${row.qualified ? ', finalist' : ''})`))
     .concat(['', 'PLAYERS', ''])
     .concat(players.map(row => `${row.player.name} — ${row.team.name}`))

@@ -1,5 +1,5 @@
 /* ============================================================
-   DDAM CUP DOTA 2 — tournament configuration
+   DDAM ESPORT CUP DOTA 2 — tournament configuration
 
    Six teams start in two editable zones. Each zone has three teams and
    plays a BO2 round robin. The bottom team is eliminated; the top two from

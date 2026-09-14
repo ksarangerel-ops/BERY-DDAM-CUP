@@ -1,4 +1,4 @@
--- DDAM CUP shared tournament state
+-- DDAM ESPORT CUP shared tournament state
 -- Run this in Supabase Dashboard → SQL Editor.
 --
 -- The board is publicly readable, but only a user listed in
