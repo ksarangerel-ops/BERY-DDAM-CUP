@@ -9,11 +9,11 @@ const isConfigured = Boolean(SUPABASE_URL && SUPABASE_KEY);
 const client = isConfigured ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 const GAME_DEFS = {
-  mlbb: { label: 'Mobile Legends', short: 'MLBB', format: '2 groups · BO2 → BO3 playoff', rules: './mobile-legends.html' },
-  mecha: { label: 'Meccha Chameleon', short: 'MECHA', format: 'Seeker / Hider · 12 rounds', rules: './games.html#mecha' },
-  stumble: { label: 'Stumble Guys', short: 'STUMBLE', format: '30 players · Grand Prix', rules: './games.html#stumble' },
-  pubg: { label: 'PUBG Mobile', short: 'PUBG', format: '3 maps · placement + kills', rules: './games.html#pubg' },
-  tekken: { label: 'Tekken 8', short: 'TEKKEN', format: '18 players · BO3 / BO5 playoff', rules: './games.html#tekken' },
+  mlbb: { label: 'Mobile Legends', short: 'MLBB', format: '2 groups · BO2 → BO3 playoff', rules: './mobile-legends.html', logo: '/game-logos/mlbb.webp', logoClass: 'wordmark' },
+  mecha: { label: 'Meccha Chameleon', short: 'MECHA', format: 'Seeker / Hider · 12 rounds', rules: './games.html#mecha', logo: '/game-logos/mecha.webp' },
+  stumble: { label: 'Stumble Guys', short: 'STUMBLE', format: '30 players · Grand Prix', rules: './games.html#stumble', logo: '/game-logos/stumble.svg', logoClass: 'wordmark light' },
+  pubg: { label: 'PUBG Mobile', short: 'PUBG', format: '3 maps · placement + kills', rules: './games.html#pubg', logo: '/game-logos/pubg-mobile.svg', logoClass: 'wordmark light' },
+  tekken: { label: 'Tekken 8', short: 'TEKKEN', format: '18 players · BO3 / BO5 playoff', rules: './games.html#tekken', logo: '/game-logos/tekken8.svg', logoClass: 'wordmark light' },
 };
 const GAME_IDS = Object.keys(GAME_DEFS);
 const TEAM_NAMES = ['Team Alpha', 'Team Bravo', 'Team Charlie', 'Team Delta', 'Team Echo', 'Team Foxtrot'];
@@ -138,7 +138,7 @@ function mlPlayoff(game) {
 function rankingTable(rows, columns) {
   return `<div class="ag-table-wrap"><table class="ag-table"><thead><tr><th>#</th><th>Team / Player</th>${columns.map(column => `<th class="num">${column.label}</th>`).join('')}</tr></thead><tbody>${rows.map((row, index) => `<tr><td><span class="ag-rank ${index < 3 ? 'top' : ''}">${index + 1}</span></td><td><span class="ag-team">${esc(row.name)}</span>${row.sub ? `<span class="ag-sub">${esc(row.sub)}</span>` : ''}</td>${columns.map(column => `<td class="num ${column.score ? 'score' : ''}">${esc(row[column.key] ?? 0)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
-function boardHead(def, subtitle, rules) { return `<div class="ag-card-head"><div><h2>${def.label}</h2><p>${subtitle}</p></div><a class="ag-pill" href="${rules}">Official rules ↗</a></div>`; }
+function boardHead(def, subtitle, rules) { return `<div class="ag-card-head"><div class="ag-title-lockup"><div class="ag-game-logo ${def.logoClass || ''}"><img src="${def.logo}" alt="${esc(def.label)} logo"></div><div><h2>${def.label}</h2><p>${subtitle}</p></div></div><a class="ag-pill" href="${rules}">Official rules ↗</a></div>`; }
 
 function renderMlbb(game) {
   const a = mlRows(game, 'A'); const b = mlRows(game, 'B'); const playoff = mlPlayoff(game); const played = game.groupResults.filter(match => match.series).length; const finalsPlayed = Object.values(game.playoff).filter(Boolean).length;
@@ -172,7 +172,7 @@ function renderTekken(game) {
 }
 
 function renderPublic() { const game = state.games[activeGame]; const body = activeGame === 'mlbb' ? renderMlbb(game) : activeGame === 'mecha' ? renderMecha(game) : activeGame === 'stumble' ? renderStumble(game) : activeGame === 'pubg' ? renderPubg(game) : renderTekken(game); $('publicBoard').innerHTML = body; }
-function renderTabs() { $('gameTabs').innerHTML = GAME_IDS.map(id => `<button class="ag-tab ${id === activeGame ? 'active' : ''}" data-game="${id}" type="button">${GAME_DEFS[id].short}</button>`).join(''); document.querySelectorAll('.ag-tab').forEach(button => { button.onclick = () => { activeGame = button.dataset.game; const url = new URL(location.href); url.searchParams.set('game', activeGame); history.replaceState({}, '', url); render(); }; }); }
+function renderTabs() { $('gameTabs').innerHTML = GAME_IDS.map(id => `<button class="ag-tab ${id === activeGame ? 'active' : ''}" data-game="${id}" type="button"><img src="${GAME_DEFS[id].logo}" alt="">${GAME_DEFS[id].short}</button>`).join(''); document.querySelectorAll('.ag-tab').forEach(button => { button.onclick = () => { activeGame = button.dataset.game; const url = new URL(location.href); url.searchParams.set('game', activeGame); history.replaceState({}, '', url); render(); }; }); }
 
 function inputTeamNames(game) { return `<div class="ag-form-section"><h3>Team setup</h3><div class="ag-form-grid">${game.teams.map(team => `<label class="ag-label">${esc(team.tag || team.id)}<input class="ag-input" data-team-name="${team.id}" value="${esc(team.name)}"></label>`).join('')}</div></div>`; }
 function renderMlEditor(game) { const name = id => teamName(game, id); return `${inputTeamNames(game)}<div class="ag-form-section"><h3>Group BO2 results</h3><div class="ag-form-grid">${game.groupResults.map(match => `<label class="ag-label">${match.group} · ${esc(name(match.a))} vs ${esc(name(match.b))}<select class="ag-select" data-ml-group="${match.id}">${seriesOptions(ML_SERIES, match.series)}</select></label>`).join('')}</div></div><div class="ag-form-section"><h3>Playoff BO3 results</h3><div class="ag-form-grid">${[['sf1','Semifinal 1'],['sf2','Semifinal 2'],['final','Grand Final'],['third','3rd Place Final']].map(([id, label]) => `<label class="ag-label">${label}<select class="ag-select" data-ml-playoff="${id}">${seriesOptions(BO3_SERIES, game.playoff[id])}</select></label>`).join('')}</div></div>`; }

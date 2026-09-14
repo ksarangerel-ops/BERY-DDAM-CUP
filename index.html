@@ -31,7 +31,9 @@
     .game-card.rules-card { min-height: 240px; border-color: rgba(113,217,255,.25); background: linear-gradient(145deg, rgba(18,31,39,.96), rgba(10,14,17,.97)); }
     .game-card.rules-card:hover { border-color: rgba(113,217,255,.75); box-shadow: 0 18px 50px rgba(0,0,0,.35), 0 0 30px rgba(113,217,255,.12); }
     .card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .game-logo { width: 64px; height: 64px; padding: 9px; border-radius: 16px; background: rgba(255,255,255,.06); }
+    .game-logo { width: 64px; height: 64px; padding: 9px; border-radius: 16px; background: rgba(255,255,255,.06); overflow: hidden; }
+    .game-logo.wordmark { width: 96px; }
+    .game-logo.light-logo { background: #edf1f4; }
     .game-card.dota .game-logo { background: rgba(255,55,55,.16); }
     .game-logo img { width: 100%; height: 100%; object-fit: contain; }
     .game-icon { display: grid; place-items: center; font-size: 27px; }
@@ -67,7 +69,7 @@
     <section class="cards" aria-label="Tournament selection">
       <a class="game-card dota" href="./dota2.html">
         <div>
-          <div class="card-top"><div class="game-logo"><img src="/ddam-logo.svg" alt="DOTA 2"></div><span class="status">DOTA 2</span></div>
+          <div class="card-top"><div class="game-logo"><img src="/game-logos/dota2.svg" alt="DOTA 2 logo"></div><span class="status">DOTA 2</span></div>
           <h2>DOTA 2 CUP</h2>
           <p>Zone BO2 round-robin → playoff BO3 bracket. Багуудын оноо, тоглолт, дүрмийг харах.</p>
         </div>
@@ -76,7 +78,7 @@
 
       <a class="game-card" href="./cs2.html">
         <div>
-          <div class="card-top"><div class="game-logo"><img src="/ddam-logo.svg" alt="CS2"></div><span class="status">CS2</span></div>
+          <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/cs2.svg" alt="Counter-Strike 2 logo"></div><span class="status">CS2</span></div>
           <h2>CS2 CUP</h2>
           <p>6 teams Group BO1 → Lower qualifiers → Final Four BO3 round-robin. Seed 1–4 байр шийднэ.</p>
         </div>
@@ -85,7 +87,7 @@
 
       <a class="game-card ml" href="./additional-games.html?game=mlbb">
         <div>
-          <div class="card-top"><div class="game-logo"><img src="/ddam-logo.svg" alt="Mobile Legends"></div><span class="status">MLBB RULES</span></div>
+          <div class="card-top"><div class="game-logo wordmark"><img src="/game-logos/mlbb.webp" alt="Mobile Legends logo"></div><span class="status">MLBB RULES</span></div>
           <h2>MOBILE LEGENDS</h2>
           <p>2 хэсэг BO2 → A1/B2, B1/A2 semifinal BO3 → Grand Final + 3rd Place. Official дүрэм.</p>
         </div>
@@ -94,7 +96,7 @@
 
       <a class="game-card rules-card" href="./additional-games.html?game=mecha">
         <div>
-          <div class="card-top"><div class="game-logo game-icon">🎭</div><span class="status">RULES READY</span></div>
+          <div class="card-top"><div class="game-logo"><img src="/game-logos/mecha.webp" alt="Meccha Chameleon logo"></div><span class="status">RULES READY</span></div>
           <h2>MECCHA CHAMELEON</h2>
           <p>6 баг · 2 lobby · 12 round. Seeker/Hider онооны системтэй official format.</p>
         </div>
@@ -103,7 +105,7 @@
 
       <a class="game-card rules-card" href="./additional-games.html?game=stumble">
         <div>
-          <div class="card-top"><div class="game-logo game-icon">🏃</div><span class="status">RULES READY</span></div>
+          <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/stumble.svg" alt="Stumble Guys logo"></div><span class="status">RULES READY</span></div>
           <h2>STUMBLE GUYS</h2>
           <p>6 баг · 30 тоглогч · Grand Prix 10 round. Solo leaderboard-оор багийн оноо бодно.</p>
         </div>
@@ -112,7 +114,7 @@
 
       <a class="game-card rules-card" href="./additional-games.html?game=pubg">
         <div>
-          <div class="card-top"><div class="game-logo game-icon">🎯</div><span class="status">RULES READY</span></div>
+          <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/pubg-mobile.svg" alt="PUBG Mobile logo"></div><span class="status">RULES READY</span></div>
           <h2>PUBG MOBILE</h2>
           <p>6 баг · Sanhok, Livik, Erangel. Placement + kill points-аар аварга тодорно.</p>
         </div>
@@ -121,7 +123,7 @@
 
       <a class="game-card rules-card" href="./additional-games.html?game=tekken">
         <div>
-          <div class="card-top"><div class="game-logo game-icon">🥊</div><span class="status">RULES READY</span></div>
+          <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/tekken8.svg" alt="Tekken 8 logo"></div><span class="status">RULES READY</span></div>
           <h2>TEKKEN 8</h2>
           <p>6 баг · 18 тоглогч · Group BO3 → 6-player round robin → Final 4 BO5 bracket.</p>
         </div>
