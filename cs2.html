@@ -55,7 +55,7 @@ tailwind.config = {
       <h1 class="font-display font-black text-base sm:text-2xl tracking-wider leading-none whitespace-nowrap">
         <span class="text-white drop-shadow-[0_0_14px_rgba(183,243,74,.55)]">DDAM</span> <span class="text-white">CUP</span> <span class="spectrum-text">CS2</span>
       </h1>
-      <p class="text-[9px] sm:text-xs uppercase tracking-[.2em] sm:tracking-[.25em] text-cyan/80 font-semibold mt-1 truncate">CS2 · Group BO1 → Lower Qualifier → Final BO3</p>
+      <p class="text-[9px] sm:text-xs uppercase tracking-[.2em] sm:tracking-[.25em] text-cyan/80 font-semibold mt-1 truncate">CS2 · Group BO1 → Lower BO1 → Playoff BO3</p>
     </div>
     <span id="syncBadge"></span>
     <nav class="flex gap-1 p-1 rounded-lg glass">
@@ -86,7 +86,7 @@ tailwind.config = {
       <div class="absolute -right-12 -top-12 w-60 h-60 rounded-full bg-gold/15 blur-3xl"></div>
       <div class="relative flex flex-wrap items-end gap-x-6 gap-y-3">
         <div>
-          <p class="text-[10px] sm:text-xs uppercase tracking-[.35em] text-cyan font-bold">6 Teams · Group Stage BO1 · Final Four BO3</p>
+          <p class="text-[10px] sm:text-xs uppercase tracking-[.35em] text-cyan font-bold">6 Teams · Group BO1 · 4-match Playoff BO3</p>
           <h2 class="font-display font-black text-2xl sm:text-4xl mt-1 text-white">DDAM CUP <span class="spectrum-text">CS2</span></h2>
         </div>
         <div class="flex gap-2 sm:gap-3 ml-auto text-center" id="mapChips"></div>
@@ -165,7 +165,7 @@ tailwind.config = {
     </div>
 
     <p class="text-center text-[10px] sm:text-xs text-slate-400 mt-6 pb-2 font-semibold tracking-wider">
-      DDAM CUP CS2 · Group BO1: Win = 1 pt, Loss = 0 pt · Lower BO1 → Final Four BO3 round robin · Generated <span id="genAt"></span>
+      DDAM CUP CS2 · Group BO1: Win = 1 pt, Loss = 0 pt · Lower BO1 → 2 Semifinal BO3 → Grand Final / 3rd Place · Generated <span id="genAt"></span>
     </p>
   </div>
 </section>
@@ -228,7 +228,7 @@ tailwind.config = {
       <div class="rounded-2xl glass p-5">
         <h3 class="font-display font-bold text-xs uppercase tracking-[.2em] text-cyan mb-3">CS2 Match Rules</h3>
         <ul class="text-sm font-semibold space-y-1.5" id="ptsLegend"></ul>
-        <p class="text-xs text-slate-400 mt-3 pt-3 border-t border-line">6 баг Group Stage-д бүгд BO1 тоглоно. Seed 1/2 Upper-д хүлээж, Seed 3–6 Lower BO1 тоглосны дараа ялагч 2 баг Final Four BO3 round robin-д орно.</p>
+        <p class="text-xs text-slate-400 mt-3 pt-3 border-t border-line">6 баг Group Stage-д бүгд BO1 тоглоно. Seed 1/2 Upper-д хүлээж, Seed 3–6 хоёр Lower BO1 тоглосны дараа ялагч 2 баг Seed 1/2-той тус бүр semifinal BO3 тоглоно. Semifinal-ийн ялагчид Grand Final, хожигдогсод 3rd Place Final тоглоно.</p>
       </div>
 
       <div class="rounded-2xl glass p-5">
@@ -262,7 +262,7 @@ tailwind.config = {
     <div class="rules-alert"><span class="rules-alert-icon">!</span><div><b>IMPORTANT NOTICE</b><p>Тоглолтын үеийн маргаантай асуудлыг зөвхөн зохион байгуулагч / шүүгчид мэдэгдэнэ. Тэдний гаргасан эцсийн шийдвэрийг бүх баг, тоглогч хүндэтгэн дагана.</p></div></div>
 
     <div class="rules-facts">
-       <div><b>06</b><span>БАГ</span></div><div><b>15</b><span>GROUP BO1</span></div><div><b>02</b><span>UPPER</span></div><div><b>06</b><span>FINAL BO3</span></div>
+       <div><b>06</b><span>БАГ</span></div><div><b>15</b><span>GROUP BO1</span></div><div><b>02</b><span>UPPER</span></div><div><b>04</b><span>FINAL BO3</span></div>
     </div>
 
     <div class="rules-dossier-grid">
@@ -272,7 +272,7 @@ tailwind.config = {
 
       <article class="rules-section"><div class="rules-section-no">03</div><div><div class="rules-section-head"><h3>Map Ban / Pick</h3><span>MAP POOL PROTOCOL</span></div><p>Map-уудыг зохион байгуулагчийн урьдчилан зарласан CS2 Map Pool-оос сонгоно.</p><div class="ban-sequence"><span class="ban">A · BAN</span><span class="ban">B · BAN</span><span class="ban">A · BAN</span><span class="ban">B · BAN</span><span class="ban">A · BAN</span><span class="ban">B · BAN</span><span class="decider">REMAINING · PLAY</span></div><ol class="dossier-list" start="12"><li>Ban хийсэн map тухайн тоглолтод дахин тоглогдохгүй.</li><li>Бүх ban дууссаны дараа үлдсэн map-ыг өөрчлөх боломжгүй.</li><li>Ban-ийн дарааллыг тоглолтоос өмнө зохион байгуулагч мэдэгдэнэ.</li><li>BO3-д эсрэг талын сонгосон map дээр тоглох талаа сонгоно.</li><li>BO1 болон BO3-ын decider map дээр сүүлд ban хийсэн багийн эсрэг тал T эсвэл CT сонгоно.</li><li>Map сонголтын маргааныг зохион байгуулагч эцэслэн шийдвэрлэнэ.</li></ol></div></article>
 
-      <article class="rules-section featured"><div class="rules-section-no">04</div><div><div class="rules-section-head"><h3>Upper → Lower → Final Four</h3><span>SEED → PODIUM</span></div><div class="playoff-path"><div><b>UPPER</b><span>Seed 1–2<br>WAIT</span></div><i>→</i><div><b>LOWER</b><span>Seed 3–6<br>BO1</span></div><i>→</i><div><b>FINAL 4</b><span>2 Winners<br>+ Upper 2</span></div><i>→</i><div><b>1–4</b><span>Round Robin<br>BO3</span></div></div><ul class="dossier-bullets"><li>Seed 1, 2 нь Upper-д шууд орж, Lower шатны тоглолтыг хүлээнэ.</li><li>Seed 3 vs Seed 6, Seed 4 vs Seed 5 гэсэн хоёр Lower BO1 тоглолт болно.</li><li>Lower-ийн хоёр ялагч нь Upper-ийн хоёр багтай нийлж Final Four болно.</li><li>Final Four-ийн 4 баг хоорондоо BO3 round-robin тоглож, нийт 6 тоглолтын дараа 1–4-р байр тодорно.</li></ul><div class="format-strip"><span>Upper · 2 teams</span><span>Lower · 2 BO1</span><span>Final Four · 6 BO3</span><span>Places · 1–4</span></div></div></article>
+      <article class="rules-section featured"><div class="rules-section-no">04</div><div><div class="rules-section-head"><h3>Upper → Lower → Playoff</h3><span>SEED → PODIUM</span></div><div class="playoff-path"><div><b>UPPER</b><span>Seed 1–2<br>WAIT</span></div><i>→</i><div><b>LOWER</b><span>Seed 3–6<br>2 × BO1</span></div><i>→</i><div><b>SEMIS</b><span>2 matches<br>BO3</span></div><i>→</i><div><b>1–4</b><span>Grand + 3rd<br>BO3</span></div></div><ul class="dossier-bullets"><li>Seed 1, 2 нь Upper-д шууд орж, Lower шатны тоглолтыг хүлээнэ.</li><li>Seed 3 vs Seed 6, Seed 4 vs Seed 5 гэсэн хоёр Lower BO1 тоглолт болно.</li><li>Lower-ийн 1-р ялагч Seed 1-тэй, 2-р ялагч Seed 2-той semifinal BO3 тоглоно.</li><li>Semifinal-ийн 2 ялагч Grand Final-д 1/2-р байрны төлөө, 2 хожигдогч 3rd Place Final-д 3/4-р байрны төлөө тоглоно.</li></ul><div class="format-strip"><span>Upper · 2 teams</span><span>Lower · 2 BO1</span><span>Semifinal · 2 BO3</span><span>Grand + 3rd · 2 BO3</span></div></div></article>
 
       <article class="rules-section"><div class="rules-section-no">05</div><div><div class="rules-section-head"><h3>BO3 map дараалал</h3><span>BEST OF THREE</span></div><div class="map-order"><div><b>MAP 1</b><span>Team A-ийн сонгосон map</span></div><div><b>MAP 2</b><span>Team B-ийн сонгосон map</span></div><div><b>MAP 3</b><span>Үлдсэн decider map</span></div></div><p class="rules-note">Аль нэг баг эхний 2 map-ыг дараалан хожвол Map 3 тоглогдохгүй. Decider Map дээр сүүлд ban хийсэн багийн эсрэг тал тоглох талаа сонгоно.</p></div></article>
 

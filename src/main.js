@@ -151,9 +151,9 @@ function renderFormatRules() {
       <div class="grid gap-3 md:grid-cols-3 mt-4 text-sm">
         <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-gold">1. Group Stage · BO1</b><br><span class="text-slate-400">All 6 teams play each other once. There are 15 BO1 matches and the results create Seed 1–6.</span></div>
         <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-cyan">2. Upper / Lower</b><br><span class="text-slate-400">Seed 1/2 wait in Upper. Seeds 3/6 and 4/5 play two Lower BO1 qualifiers; the winners advance.</span></div>
-        <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-white">3. Final Four · BO3</b><br><span class="text-slate-400">The 2 Upper seeds and 2 Lower winners play six BO3 round-robin matches for places 1–4.</span></div>
+        <div class="rounded-xl bg-ink/50 border border-line p-3"><b class="text-white">3. Playoff · 4 BO3</b><br><span class="text-slate-400">Two semifinal BO3 matches decide the Grand Final and 3rd Place Final. Winners play for 1st/2nd; losers play for 3rd/4th.</span></div>
       </div>
-      <p class="text-xs text-slate-500 mt-4">Current status: ${finalists.length ? 'Final Four is ready.' : !groupDone ? 'Complete all 15 Group Stage matches first.' : !lowerDone ? 'Group seeds are ready; complete both Lower BO1 qualifiers.' : 'Complete the qualification stage.'}</p>
+      <p class="text-xs text-slate-500 mt-4">Current status: ${finalists.length ? 'The 4-team playoff is ready.' : !groupDone ? 'Complete all 15 Group Stage matches first.' : !lowerDone ? 'Group seeds are ready; complete both Lower BO1 qualifiers.' : 'Complete the qualification stage.'}</p>
     </div>`;
 }
 
@@ -178,20 +178,27 @@ function renderBracket() {
   const finals = finalMatches();
   const matchCard = match => {
     const teams = matchTeams(state, match);
-    const names = teams.length === 2 ? teams.map(team => esc(team.name)) : [`Finalist ${match.pair[0] + 1}`, `Finalist ${match.pair[1] + 1}`];
+    const fallbackNames = match.bracket === 'semi'
+      ? [`Seed ${match.semi}`, `Lower Q${match.semi}`]
+      : match.bracket === 'grand'
+        ? ['Semifinal 1 winner', 'Semifinal 2 winner']
+        : ['Semifinal 1 loser', 'Semifinal 2 loser'];
+    const names = teams.length === 2 ? teams.map(team => esc(team.name)) : fallbackNames;
     const complete = matchComplete(state, match);
     const status = complete ? 'Saved' : (teams.length === 2 ? 'Open' : 'Locked');
-    return `<div class="bracket-match ${complete ? 'is-saved' : ''}"><div class="px-3 py-2 border-b border-gold/20 flex items-center justify-between"><span class="bracket-round-title">M${match.id} · ${esc(match.label.split(' · ')[0])}</span><span class="text-[9px] uppercase tracking-widest ${complete ? 'text-gold' : 'text-slate-500'}">${status}</span></div><span>${names[0]}</span><span>${names[1]}</span><div class="px-3 py-2 text-[9px] uppercase tracking-widest text-slate-500">BO3 · Final Four round robin</div></div>`;
+    const footer = match.bracket === 'semi' ? 'SEMIFINAL · BO3' : match.bracket === 'grand' ? 'GRAND FINAL · BO3 · 1ST / 2ND' : '3RD PLACE · BO3 · 3RD / 4TH';
+    return `<div class="bracket-match ${complete ? 'is-saved' : ''}"><div class="px-3 py-2 border-b border-gold/20 flex items-center justify-between"><span class="bracket-round-title">M${match.id} · ${esc(match.label.split(' · ')[0])}</span><span class="text-[9px] uppercase tracking-widest ${complete ? 'text-gold' : 'text-slate-500'}">${status}</span></div><span>${names[0]}</span><span>${names[1]}</span><div class="px-3 py-2 text-[9px] uppercase tracking-widest text-slate-500">${footer}</div></div>`;
   };
   const groupRows = computeGroupStandings(state);
   $('bracket').innerHTML = `<div class="rounded-2xl glass overflow-hidden border border-gold/25">
-    <div class="px-4 sm:px-5 py-3 glass-2 border-b border-gold/20 flex items-center justify-between gap-3"><div class="flex items-center gap-2.5"><span class="w-1.5 h-5 rounded-full bg-gold"></span><h3 class="font-display font-black text-xs sm:text-sm uppercase tracking-[.2em] text-white">Upper → Lower → Final Four</h3></div><span class="text-[9px] uppercase tracking-widest font-display font-black ${ready ? 'text-gold' : 'text-slate-500'}">${ready ? '4 finalists ready' : 'Waiting for qualification'}</span></div>
+    <div class="px-4 sm:px-5 py-3 glass-2 border-b border-gold/20 flex items-center justify-between gap-3"><div class="flex items-center gap-2.5"><span class="w-1.5 h-5 rounded-full bg-gold"></span><h3 class="font-display font-black text-xs sm:text-sm uppercase tracking-[.2em] text-white">Upper → Lower → Playoff BO3</h3></div><span class="text-[9px] uppercase tracking-widest font-display font-black ${ready ? 'text-gold' : 'text-slate-500'}">${ready ? '4 finalists ready' : 'Waiting for qualification'}</span></div>
     <div class="grid items-start gap-4 lg:grid-cols-3 p-4 sm:p-5">
       <div class="rounded-xl border border-gold/30 bg-gold/5 p-3"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-gold mb-3">Upper · waiting slots</div><div class="grid gap-2"><div class="bracket-match"><span>Seed 1 · ${groupRows[0] ? esc(groupRows[0].team.name) : 'Waiting'}</span><span>Upper slot</span></div><div class="bracket-match"><span>Seed 2 · ${groupRows[1] ? esc(groupRows[1].team.name) : 'Waiting'}</span><span>Upper slot</span></div></div></div>
       <div class="rounded-xl border border-cyan/30 bg-cyan/5 p-3"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-cyan mb-3">Lower · BO1 qualifiers</div><div class="grid gap-3">${lowerMatches().map(match => { const teams = matchTeams(state, match); const winner = matchWinner(state, match); return `<div class="bracket-match"><div class="px-3 py-2 text-[9px] uppercase tracking-widest text-slate-500">${esc(match.label)}</div><span>${teams[0] ? esc(teams[0].name) : `Seed ${match.seedPair[0]}`}</span><span>${teams[1] ? esc(teams[1].name) : `Seed ${match.seedPair[1]}`}</span><div class="px-3 py-2 text-[9px] uppercase tracking-widest ${winner ? 'text-gold' : 'text-slate-500'}">${winner ? `Advances: ${esc(winner.name)}` : 'BO1 winner advances'}</div></div>`; }).join('')}</div></div>
-      <div class="rounded-xl border border-line bg-ink/30 p-3 lg:col-span-1"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-white mb-3">Final Four · BO3 round robin</div><div class="grid gap-2">${finals.map(matchCard).join('')}</div></div>
+      <div class="rounded-xl border border-line bg-ink/30 p-3 lg:col-span-1"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-white mb-3">Final playoff · 4 BO3 matches</div><div class="grid gap-2">${finals.map(matchCard).join('')}</div></div>
     </div>
-    <p class="px-4 pb-4 text-[11px] text-slate-500">All 6 teams play 15 Group Stage BO1 matches. Seed 1/2 wait Upper; Seeds 3/6 and 4/5 play Lower BO1. The two Lower winners join the Upper two for six BO3 matches that decide places 1–4.</p>
+    <div class="bracket-rail mx-4 sm:mx-5 mb-4"><div class="flex items-center justify-between gap-3"><div><div class="text-[10px] uppercase tracking-[.25em] font-display font-black text-cyan">Road to the podium</div><div class="text-xs text-slate-400 mt-1">Хоосон зайг шат бүрийн дараалал, хожигчдын замаар харууллаа.</div></div><span class="text-[9px] uppercase tracking-widest font-display font-black text-gold">4 BO3 FINALS</span></div><div class="relative grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4"><div class="absolute hidden sm:block left-[12%] right-[12%] top-4 h-px bg-gradient-to-r from-cyan/40 via-gold/70 to-gold/40"></div><div class="bracket-rail"><span class="bracket-rail-node">01</span><b>SEED 1 / 2</b><small>UPPER WAIT</small></div><div class="bracket-rail"><span class="bracket-rail-node">02</span><b>LOWER WINNERS</b><small>2 × BO1</small></div><div class="bracket-rail"><span class="bracket-rail-node is-gold">03</span><b>SEMIFINALS</b><small>2 × BO3</small></div><div class="bracket-rail"><span class="bracket-rail-node is-gold">04</span><b>GRAND + 3RD</b><small>2 × BO3 · 1–4</small></div></div></div>
+    <p class="px-4 pb-4 text-[11px] text-slate-500">All 6 teams play 15 Group Stage BO1 matches. Seed 1/2 wait Upper; Seeds 3/6 and 4/5 play Lower BO1. The two Lower winners meet the Upper seeds in 2 BO3 semifinals; winners play the Grand Final and losers play the 3rd Place Final.</p>
   </div>`;
 }
 
@@ -209,7 +216,7 @@ function renderStandings() {
       <td class="py-3.5 px-2"><div class="flex items-center gap-2.5">
         <span class="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-ink/70 border border-line text-cyan">${esc(row.team.tag)}</span>
         <span class="font-display font-bold text-sm sm:text-base whitespace-nowrap ${row.rank === 1 && active ? 'champ-name' : 'text-white'}">${esc(row.team.name)}</span>
-        <span class="text-[9px] uppercase tracking-widest font-bold ${row.qualified ? 'text-gold' : 'text-slate-500'}">${row.qualified ? 'Final Four' : completedGroupStage(state) ? (row.rank <= 2 ? 'Upper' : 'Lower') : 'Group Stage'}</span>
+        <span class="text-[9px] uppercase tracking-widest font-bold ${row.qualified ? 'text-gold' : 'text-slate-500'}">${row.qualified ? 'Playoff' : completedGroupStage(state) ? (row.rank <= 2 ? 'Upper' : 'Lower') : 'Group Stage'}</span>
         ${row.qualified ? `<span class="text-[8px] uppercase tracking-widest font-display font-black px-1.5 py-0.5 rounded bg-gold/15 text-gold border border-gold/30">Qualified</span>` : ''}
       </div></td>
       <td class="py-3.5 px-2 text-center font-mono font-bold text-slate-300">${row.series}</td>
@@ -235,7 +242,7 @@ function renderRosters() {
         <img src="/ddam-logo.svg" alt="DDAM CUP" class="champion-logo mx-auto mb-3">
         <div class="text-[10px] uppercase tracking-[.35em] font-display font-black text-gold">CHAMPION · 1ST PLACE</div>
         <div class="font-display font-black text-2xl sm:text-3xl mt-2 text-white champ-name">${esc(champion.team.name)}</div>
-        <div class="text-sm text-slate-300 mt-1"><span class="font-mono text-cyan">${esc(champion.team.tag)}</span> · Final Four winner</div>
+        <div class="text-sm text-slate-300 mt-1"><span class="font-mono text-cyan">${esc(champion.team.tag)}</span> · Grand Final winner</div>
         <div class="mt-4 inline-flex self-center items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-[10px] uppercase tracking-[.2em] font-display font-black text-gold">${champion.finalPoints} final points</div>
       </div>`
     : `<div class="h-full rounded-2xl border border-cyan/40 bg-gradient-to-br from-cyan/10 via-panel/80 to-ink/90 backdrop-blur-md p-5 flex flex-col justify-center text-center">
@@ -245,7 +252,7 @@ function renderRosters() {
         <div class="text-sm text-slate-400 mt-1">${groupPlayed}/15 Group Stage matches complete</div>
         <div class="grid grid-cols-2 gap-2 mt-4">
           <div class="rounded-xl bg-ink/70 border border-line py-2.5"><div class="font-display font-black text-2xl text-gold">15</div><div class="text-[9px] uppercase tracking-[.2em] font-bold text-slate-500">Group BO1</div></div>
-          <div class="rounded-xl bg-ink/70 border border-line py-2.5"><div class="font-display font-black text-2xl text-cyan">6</div><div class="text-[9px] uppercase tracking-[.2em] font-bold text-slate-500">Final BO3</div></div>
+          <div class="rounded-xl bg-ink/70 border border-line py-2.5"><div class="font-display font-black text-2xl text-cyan">4</div><div class="text-[9px] uppercase tracking-[.2em] font-bold text-slate-500">Final BO3</div></div>
         </div>
       </div>`;
   $('mvpTable').innerHTML = list.map(row => `<tr class="hover:bg-white/[.04] transition">
@@ -299,7 +306,7 @@ function renderSavedAt() {
 function renderMatchTabs() {
   const groupTabs = `<div class="w-full mt-1"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-cyan mb-2">Group Stage · 15 matches · BO1</div><div class="flex flex-wrap gap-2">${groupMatches().map(renderMatchTab).join('')}</div></div>`;
   const lowerTabs = `<div class="w-full mt-3 pt-3 border-t border-line/70"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-cyan mb-2">Lower Qualifier · 2 matches · BO1</div><div class="flex flex-wrap gap-2">${lowerMatches().map(renderMatchTab).join('')}</div></div>`;
-  const finalTabs = `<div class="w-full mt-3 pt-3 border-t border-line/70"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-gold mb-2">Final Four · 6 matches · BO3</div><div class="flex flex-wrap gap-2">${finalMatches().map(renderMatchTab).join('')}</div></div>`;
+  const finalTabs = `<div class="w-full mt-3 pt-3 border-t border-line/70"><div class="text-[10px] uppercase tracking-[.2em] font-display font-black text-gold mb-2">Final Playoff · 4 matches · BO3</div><div class="flex flex-wrap gap-2">${finalMatches().map(renderMatchTab).join('')}</div></div>`;
   $('matchTabs').innerHTML = groupTabs + lowerTabs + finalTabs;
   document.querySelectorAll('.mtab').forEach(button => {
     button.onclick = () => {
@@ -342,7 +349,7 @@ function renderTeamCards() {
   if (!teams.length) {
     const title = match.stage === 'group'
       ? 'Group Stage'
-      : match.stage === 'lower' ? 'Lower Qualifier is locked' : 'Final Four is locked';
+      : match.stage === 'lower' ? 'Lower Qualifier is locked' : 'Final Playoff is locked';
     const message = match.stage === 'group'
       ? 'This Group Stage BO1 uses the six registered teams.'
       : match.stage === 'lower'
@@ -460,7 +467,7 @@ function renderTeamEditorValues() {
 }
 
 function renderRulesLegend() {
-  $('ptsLegend').innerHTML = `<li class="flex justify-between items-center"><span class="text-gold font-bold">Group / Lower BO1 win</span><span class="font-mono font-extrabold text-white">1 pt</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Group / Lower BO1 loss</span><span class="font-mono font-extrabold text-white">0 pts</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Final BO3 win</span><span class="font-mono font-extrabold text-white">3 pts</span></li><li class="flex justify-between items-center pt-2 mt-2 border-t border-line text-cyan"><span>Group Stage</span><span class="font-mono font-extrabold">15 BO1</span></li><li class="flex justify-between items-center text-cyan"><span>Lower Qualifier</span><span class="font-mono font-extrabold">2 BO1</span></li><li class="flex justify-between items-center text-gold"><span>Final Four</span><span class="font-mono font-extrabold">6 BO3</span></li><li class="flex justify-between items-center text-gold"><span>Placement</span><span class="font-mono font-extrabold">1st–4th</span></li>`;
+  $('ptsLegend').innerHTML = `<li class="flex justify-between items-center"><span class="text-gold font-bold">Group / Lower BO1 win</span><span class="font-mono font-extrabold text-white">1 pt</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Group / Lower BO1 loss</span><span class="font-mono font-extrabold text-white">0 pts</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Final BO3 win</span><span class="font-mono font-extrabold text-white">3 pts</span></li><li class="flex justify-between items-center pt-2 mt-2 border-t border-line text-cyan"><span>Group Stage</span><span class="font-mono font-extrabold">15 BO1</span></li><li class="flex justify-between items-center text-cyan"><span>Lower Qualifier</span><span class="font-mono font-extrabold">2 BO1</span></li><li class="flex justify-between items-center text-gold"><span>Final Playoff</span><span class="font-mono font-extrabold">4 BO3</span></li><li class="flex justify-between items-center text-gold"><span>Placement</span><span class="font-mono font-extrabold">1st–4th</span></li>`;
 }
 
 function renderBoard() { renderMapChips(); renderFormatRules(); renderStageCards(); renderBracket(); renderStandings(); renderRosters(); renderMatchCards(); renderSavedAt(); }

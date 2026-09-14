@@ -1,13 +1,14 @@
 /* ============================================================
-   DDAM CUP CS2 — single group BO1 → lower qualifier → BO3 final round robin
+   DDAM CUP CS2 — single group BO1 → lower qualifiers → BO3 playoff bracket
 
    Six teams play one BO1 against every other team (15 matches). Group seeds
    1 and 2 wait in the upper slot. Seeds 3–6 play two BO1 lower qualifiers;
-   the two winners join seeds 1 and 2 for a six-match BO3 final round robin.
+   the two winners join seeds 1 and 2 for two BO3 semifinals. The semifinal
+   winners play the Grand Final and the semifinal losers play for 3rd place.
 ============================================================ */
 export const GROUP_MATCHES = 15;
 export const LOWER_MATCHES = 2;
-export const FINAL_MATCHES = 6;
+export const FINAL_MATCHES = 4;
 export const FINALISTS = 4;
 export const SQUAD_SIZE = 5;
 
@@ -38,14 +39,10 @@ export const MATCHES = [
   })),
   { id: 16, stage: 'lower', bracket: 'lower', seedPair: [3, 6], format: 'BO1', label: 'Lower Qualifier 1 · Seed 3 vs Seed 6' },
   { id: 17, stage: 'lower', bracket: 'lower', seedPair: [4, 5], format: 'BO1', label: 'Lower Qualifier 2 · Seed 4 vs Seed 5' },
-  ...[[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]].map((pair, index) => ({
-    id: index + 18,
-    stage: 'final',
-    bracket: 'round-robin',
-    pair,
-    format: 'BO3',
-    label: `Final Round Robin · Match ${index + 1}`,
-  })),
+  { id: 18, stage: 'final', bracket: 'semi', semi: 1, format: 'BO3', label: 'Semifinal 1 · Seed 1 vs Lower Q1' },
+  { id: 19, stage: 'final', bracket: 'semi', semi: 2, format: 'BO3', label: 'Semifinal 2 · Seed 2 vs Lower Q2' },
+  { id: 20, stage: 'final', bracket: 'grand', source: [18, 19], format: 'BO3', label: 'Grand Final · 1st / 2nd' },
+  { id: 21, stage: 'final', bracket: 'third', source: [18, 19], format: 'BO3', label: '3rd Place Final · 3rd / 4th' },
 ];
 
 export const NUM_MATCHES = MATCHES.length;

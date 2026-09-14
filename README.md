@@ -11,7 +11,7 @@ but separate tournament IDs.
 - **DOTA 2:** two editable zones with BO2 round-robin matches followed by the
   existing BO3 playoff bracket.
 - **CS2:** six-team Group BO1 round robin (15 matches), two Lower BO1 qualifiers,
-  then a Final Four BO3 round robin (6 matches) for places 1–4.
+  then two BO3 semifinals, a Grand Final and a 3rd Place Final (4 matches) for places 1–4.
 - **Additional rules hub:** Meccha Chameleon, Stumble Guys, PUBG Mobile and
   Tekken 8 formats from the official rules document.
 
@@ -23,10 +23,11 @@ but separate tournament IDs.
 3. Group Stage results create **Seed 1–6**. Seed 1 and Seed 2 wait in the
    **Upper** slot.
 4. Seed 3 vs Seed 6 and Seed 4 vs Seed 5 play two **Lower BO1 qualifiers**.
-5. The two Lower winners join the two Upper seeds, creating the **Final Four**.
-6. The Final Four play a **BO3 round robin**: every finalist plays the other
-   three finalists once, for six matches total.
-7. Final Four results determine **1st–4th place**.
+5. The two Lower winners join the two Upper seeds in two **BO3 semifinals**:
+   Lower Qualifier 1 winner vs Seed 1, and Lower Qualifier 2 winner vs Seed 2.
+6. The semifinal winners play the **Grand Final** for 1st/2nd; the semifinal
+   losers play the **3rd Place Final** for 3rd/4th.
+7. The four playoff results determine **1st–4th place**.
 
 ## Tie-break order
 
@@ -52,8 +53,8 @@ When two or more teams have the same points:
 - Six editable seeded teams: Team Alpha, Team Bravo, Team Charlie, Team Delta,
   Team Echo and Team Foxtrot.
 - Five-player roster editing per team.
-- Six-team Group Stage standings, Upper/Lower qualification and Final Four BO3
-  round robin.
+- Six-team Group Stage standings, Upper/Lower qualification and a four-match BO3
+  playoff bracket.
 - Supabase live sync with localStorage fallback.
 
 ## Run locally
@@ -112,7 +113,7 @@ Tournament settings are in `src/config.js`:
 ```js
 export const GROUP_MATCHES = 15;
 export const LOWER_MATCHES = 2;
-export const FINAL_MATCHES = 6;
+export const FINAL_MATCHES = 4;
 export const NUM_TEAMS = 6;
 export const SQUAD_SIZE = 5;
 ```

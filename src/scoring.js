@@ -1,5 +1,5 @@
 /* ============================================================
-   CS2 scoring — 6-team BO1 group → BO1 lower qualifiers → BO3 final four
+   CS2 scoring — 6-team BO1 group → BO1 lower qualifiers → BO3 playoff bracket
 ============================================================ */
 import {
   MATCHES, groupMatches, lowerMatches, finalMatches, pointsForSeries,
@@ -39,8 +39,17 @@ export function matchTeams(state, matchNoOrConfig) {
     return (match.seedPair || []).map(seed => rows[seed - 1]?.team).filter(Boolean);
   }
   if (match.stage === 'final') {
-    const finalists = qualifiedTeams(state);
-    return (match.pair || []).map(index => finalists[index]).filter(Boolean);
+    if (!completedLowerStage(state)) return [];
+    if (match.bracket === 'semi') {
+      const groupRows = computeGroupStandings(state);
+      const upper = groupRows[match.semi - 1]?.team;
+      const lowerMatch = lowerMatches()[match.semi - 1];
+      const lower = lowerMatch ? matchWinner(state, lowerMatch) : null;
+      return [upper, lower].filter(Boolean);
+    }
+    const source = match.source || [];
+    const resolver = match.bracket === 'third' ? matchLoser : matchWinner;
+    return source.map(matchId => resolver(state, matchId)).filter(Boolean);
   }
   return [];
 }
@@ -164,6 +173,24 @@ export function qualifiedTeams(state) {
   return [...computeGroupStandings(state).slice(0, 2).map(row => row.team), ...lowerWinners(state)];
 }
 
+function finalPlacement(state, team) {
+  const grand = matchConfig(20);
+  const third = matchConfig(21);
+  if (matchComplete(state, grand)) {
+    const winner = matchWinner(state, grand);
+    const loser = matchLoser(state, grand);
+    if (winner?.id === team.id) return 1;
+    if (loser?.id === team.id) return 2;
+  }
+  if (matchComplete(state, third)) {
+    const winner = matchWinner(state, third);
+    const loser = matchLoser(state, third);
+    if (winner?.id === team.id) return 3;
+    if (loser?.id === team.id) return 4;
+  }
+  return null;
+}
+
 export function isFinalist(state, teamId) {
   return qualifiedTeams(state).some(team => team.id === teamId);
 }
@@ -181,10 +208,16 @@ export function computeStandings(state) {
       groupPoints: group?.points || 0,
       finalPoints: final.points,
       qualified: true,
+      placement: finalPlacement(state, team),
       total: final.series ? final.points : (group?.points || 0),
     };
   });
-  const orderedFinal = finalRows.length ? sortRows(finalRows, state, finalMatches()) : [];
+  const finalComplete = matchComplete(state, 20) && matchComplete(state, 21);
+  const orderedFinal = finalRows.length
+    ? finalComplete
+      ? finalRows.sort((a, b) => a.placement - b.placement)
+      : sortRows(finalRows, state, finalMatches())
+    : [];
   const nonFinal = groupRows.filter(row => !finalistIds.has(row.team.id)).map(row => ({
     ...row,
     groupPoints: row.points,
