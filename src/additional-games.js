@@ -183,7 +183,7 @@ function renderTekkenEditor(game) { return `<div class="ag-form-section"><h3>Pla
 function renderEditor() { const game = state.games[activeGame]; return activeGame === 'mlbb' ? renderMlEditor(game) : activeGame === 'mecha' ? renderMechaEditor(game) : activeGame === 'stumble' ? renderStumbleEditor(game) : activeGame === 'pubg' ? renderPubgEditor(game) : renderTekkenEditor(game); }
 
 function renderAdmin() { const logged = Boolean(authSession?.user); $('loggedOut').classList.toggle('ag-hidden', logged); $('loggedIn').classList.toggle('ag-hidden', !logged); if (logged) { $('userEmail').textContent = authSession.user.email || 'admin'; $('adminEditor').innerHTML = renderEditor(); } }
-function render() { renderTabs(); renderPublic(); renderAdmin(); }
+function render() { document.body.dataset.game = activeGame; renderTabs(); renderPublic(); renderAdmin(); }
 
 function saveFromEditor() {
   const next = clone(state); const game = next.games[activeGame];

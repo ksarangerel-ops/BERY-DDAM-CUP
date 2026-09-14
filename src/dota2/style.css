@@ -268,6 +268,26 @@
   .podium-card{display:flex;align-items:center;justify-content:center;gap:.45rem;border:1px solid rgba(139,92,246,.3);border-radius:.65rem;padding:.7rem .5rem;color:#e2e8f0;font-size:.8rem;font-weight:800}
   .podium-card.first{background:rgba(139,92,246,.2);color:#ddd6fe}.podium-card.second{background:rgba(148,163,184,.12)}.podium-card.third{background:rgba(180,83,9,.15)}.podium-card.fourth{background:rgba(15,23,42,.55)}
   .rules-list{margin-top:.75rem;display:grid;gap:.45rem;color:#cbd5e1;font-size:.88rem;font-weight:600;list-style:none;counter-reset:rules}
+
+  /* ---------- DOTA 2 red identity ---------- */
+  :root{
+    --spectrum:linear-gradient(105deg,#ff3434 0%,#ff6868 34%,#ff9c45 70%,#ffd7ad 100%);
+    --spectrum-soft:linear-gradient(105deg,rgba(255,52,52,.25),rgba(255,104,104,.2),rgba(255,156,69,.18));
+  }
+  html{background:#100708}
+  body::before{background:linear-gradient(rgba(20,5,8,.84),rgba(20,7,10,.94)),var(--bg-photo) center/cover no-repeat;background-color:#100708}
+  body::after{background-image:radial-gradient(900px 520px at 8% 8%,rgba(255,52,52,.18),transparent 62%),radial-gradient(900px 480px at 92% 4%,rgba(255,156,69,.14),transparent 62%),radial-gradient(800px 460px at 50% 45%,rgba(150,28,40,.16),transparent 64%),linear-gradient(rgba(143,67,72,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(143,67,72,.18) 1px,transparent 1px);background-size:auto,auto,auto,46px 46px,46px 46px}
+  ::-webkit-scrollbar-track{background:#100708}::-webkit-scrollbar-thumb{background:#71343d}::-webkit-scrollbar-thumb:hover{background:#ff6868}
+  .glass{background:rgba(29,11,16,.78);border-color:rgba(255,74,74,.3);box-shadow:0 0 0 1px rgba(255,74,74,.08),0 22px 48px -26px rgba(0,0,0,.95),inset 0 1px 0 rgba(255,255,255,.05)}
+  .glass-2{background:rgba(42,16,21,.82)}
+  .glow-gold{border-color:rgba(255,74,74,.64);box-shadow:0 0 0 1px rgba(255,74,74,.2),0 0 34px -12px rgba(255,52,52,.62),0 22px 48px -26px rgba(0,0,0,.95)}
+  .rainbow-fill{background-image:var(--spectrum)!important}
+  .spectrum-text{background:var(--spectrum);background-size:220% auto}
+  .row-champ{background:linear-gradient(90deg,rgba(255,52,52,.28),rgba(255,52,52,.08) 45%,transparent);box-shadow:inset 3px 0 0 0 #ff3434}
+  .champ-name{background:linear-gradient(100deg,#ffb0a9 10%,#ff4646 30%,#fff3ee 46%,#ff8a4d 62%,#ffb0a9 90%);background-size:220% auto}
+  .tabbtn.active{background-image:var(--spectrum);box-shadow:0 0 24px -6px rgba(255,52,52,.8)}
+  #btnPng{background-image:linear-gradient(105deg,#ff6b35,#ffb347)!important;color:#241007!important;box-shadow:0 0 0 1px rgba(255,151,74,.5),0 10px 24px -14px rgba(255,92,39,.82)!important}
+  #btnCopy{border-color:rgba(116,214,255,.62)!important;color:#9ceaff!important;background:rgba(33,112,148,.18)!important}
   .rules-list li{counter-increment:rules;display:flex;gap:.6rem;align-items:flex-start}.rules-list li::before{content:counter(rules);display:grid;place-items:center;flex:none;width:1.35rem;height:1.35rem;border-radius:50%;background:rgba(139,92,246,.2);color:#a5f3fc;font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:800}
   .rules-summary{display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:wrap;border:1px solid rgba(139,92,246,.35);border-radius:1rem;padding:1rem;background:linear-gradient(90deg,rgba(139,92,246,.12),rgba(7,8,22,.35),rgba(34,211,238,.12));color:#ddd6fe;font-size:.8rem;font-weight:800;text-align:center}
   .rules-summary i{color:#22d3ee;font-style:normal;font-size:1.1rem}.rules-summary b{color:#fff}

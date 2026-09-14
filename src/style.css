@@ -503,3 +503,24 @@
   header .rainbow-fill{background:#101810!important;border:1px solid rgba(183,243,74,.62);box-shadow:0 0 22px -8px rgba(183,243,74,.72)!important}
   header .rainbow-fill img{display:block;opacity:1;filter:drop-shadow(0 0 6px rgba(183,243,74,.38))}
   @media(max-width:800px){.rules-masthead{padding:1rem;flex-direction:column}.rules-stamp{align-self:flex-start}.rules-dossier-grid{grid-template-columns:1fr}.rules-section.full{grid-column:auto}.rules-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.playoff-path{grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}.playoff-path i{display:none}.map-order{grid-template-columns:1fr}.danger-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.penalty-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+  /* ---------- CS2 yellow identity / action controls ---------- */
+  body::before{background:linear-gradient(112deg,rgba(10,8,4,.93),rgba(36,27,8,.78) 48%,rgba(8,10,7,.95)),var(--bg-photo) center/cover no-repeat}
+  body::after{background-image:radial-gradient(800px 450px at 8% 4%,rgba(255,212,71,.16),transparent 64%),radial-gradient(700px 420px at 92% 8%,rgba(255,150,61,.16),transparent 62%),radial-gradient(700px 500px at 56% 86%,rgba(145,104,30,.15),transparent 68%),linear-gradient(rgba(190,158,72,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(190,158,72,.15) 1px,transparent 1px);background-size:auto,auto,auto,60px 60px,60px 60px}
+  header{border-bottom-color:rgba(255,212,71,.55)!important;box-shadow:0 12px 34px -20px rgba(255,212,71,.4),0 14px 34px -22px #000!important}
+  .glass{border-color:rgba(255,212,71,.28);box-shadow:0 0 0 1px rgba(255,212,71,.05),0 18px 42px -24px #000,inset 0 1px 0 rgba(255,255,255,.045)}
+  .glass-2{border-color:rgba(255,212,71,.2)}
+  .glow-gold{border-color:rgba(255,212,71,.7);box-shadow:0 0 0 1px rgba(255,212,71,.16),0 0 36px -14px rgba(255,212,71,.6),0 24px 54px -28px #000}
+  .rainbow-fill{background-image:linear-gradient(105deg,#ffd447,#fff09a 34%,#ff963d 72%,#fff8d1)!important}
+  .spectrum-text{background:none!important;color:#ffe46b!important;-webkit-text-fill-color:#ffe46b!important}
+  .tabbtn.active{background-image:linear-gradient(105deg,#ffd447,#ff963d)!important;box-shadow:0 0 22px -8px rgba(255,212,71,.78)}
+  .row-champ{background:linear-gradient(90deg,rgba(255,212,71,.25),rgba(255,212,71,.06) 46%,transparent);box-shadow:inset 3px 0 #ffd447}
+  .champ-name{background:linear-gradient(100deg,#fff09a 10%,#ffd447 34%,#fffbe1 48%,#ff963d 66%,#fff09a 92%);background-size:220% auto}
+  .select-esports,.sel-trigger{border-color:#725f2f}
+  .select-esports:hover,.sel-trigger:hover{border-color:rgba(255,212,71,.82)}
+  .select-esports:focus,.select-esports:focus-visible,.sel-trigger:focus-visible,.sel-trigger.is-open{border-color:#ffd447;box-shadow:0 0 0 1px #ffd447,0 0 18px -7px rgba(255,212,71,.78)}
+  .select-esports option:checked{background:#ffd447;color:#090b09}
+  #btnPng{background-image:linear-gradient(105deg,#ff7a2f,#ffb547)!important;color:#201307!important;box-shadow:0 0 0 1px rgba(255,150,61,.52),0 10px 24px -14px rgba(255,111,40,.85)!important}
+  #btnPng:hover{filter:brightness(1.08)}
+  #btnCopy{border-color:rgba(92,210,255,.62)!important;color:#8feaff!important;background:rgba(32,117,152,.18)!important}
+  #btnCopy:hover{border-color:#8feaff!important;background:rgba(32,117,152,.3)!important}
