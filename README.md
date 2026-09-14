@@ -1,10 +1,11 @@
 # DDAM CUP — DOTA 2 & CS2 Tournament Hub
 
-One Vercel website with separate real-time DOTA 2 and CS2 tournament boards.
-The launcher is at `/`; the dedicated boards are `/dota2.html`, `/cs2.html` and
-`/mobile-legends.html`. Additional rules are summarized at `/games.html` for
-Mobile Legends, Meccha Chameleon, Stumble Guys, PUBG Mobile and Tekken 8. Both
-live boards use the same Supabase project but separate tournament IDs.
+One Vercel website with separate real-time DOTA 2, CS2 and additional game
+tournament boards. The launcher is at `/`; the dedicated boards are
+`/dota2.html`, `/cs2.html` and `/additional-games.html`. The additional board
+contains live scorecards for Mobile Legends, Meccha Chameleon, Stumble Guys,
+PUBG Mobile and Tekken 8. Rules are summarized at `/games.html`, with the full
+Mobile Legends rules at `/mobile-legends.html`.
 
 ## Tournament boards
 
@@ -12,8 +13,9 @@ live boards use the same Supabase project but separate tournament IDs.
   existing BO3 playoff bracket.
 - **CS2:** six-team Group BO1 round robin (15 matches), two Lower BO1 qualifiers,
   then two BO3 semifinals, a Grand Final and a 3rd Place Final (4 matches) for places 1–4.
-- **Additional rules hub:** Meccha Chameleon, Stumble Guys, PUBG Mobile and
-  Tekken 8 formats plus the Mobile Legends official rule set.
+- **Additional live boards:** one public realtime page with tabs for Mobile
+  Legends, Meccha Chameleon, Stumble Guys, PUBG Mobile and Tekken 8. Admins can
+  edit team names, series results, player points and map scores from the page.
 - **Mobile Legends:** six teams split into two BO2 groups, then A1 vs B2 and
   B1 vs A2 BO3 semifinals, Grand Final and 3rd Place Final.
 
@@ -48,8 +50,8 @@ When two or more teams have the same points:
 
 ## Features
 
-- One launcher with DOTA 2 / CS2 / Mobile Legends selection, board navigation
-  and an additional rules hub.
+- One launcher with DOTA 2 / CS2 / all additional game board selection and a
+  rules hub.
 - DOTA 2 branding with the original board layout and scoring.
 - CS2 branding with a tactical HUD styling.
 - Six editable seeded teams: Team Alpha, Team Bravo, Team Charlie, Team Delta,
@@ -70,7 +72,8 @@ npm run dev
 
 The launcher opens at `http://localhost:5173`. Direct board pages are
 `http://localhost:5173/dota2.html`, `http://localhost:5173/cs2.html` and
-`http://localhost:5173/mobile-legends.html`.
+`http://localhost:5173/additional-games.html?game=mlbb` (change `game` to
+`mecha`, `stumble`, `pubg` or `tekken`).
 
 ## Vercel deployment
 

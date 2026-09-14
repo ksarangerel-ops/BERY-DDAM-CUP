@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090a12">
+  <title>DDAM CUP · Additional Game Boards</title>
+</head>
+<body>
+  <main class="ag-shell">
+    <nav class="ag-nav">
+      <a class="ag-brand" href="./"><img src="/ddam-logo.svg" alt="DDAM CUP"><span>DDAM CUP</span></a>
+      <a href="./dota2.html">DOTA 2</a><a href="./cs2.html">CS2</a><a href="./mobile-legends.html">MLBB RULES</a><a href="./games.html">RULES HUB</a>
+    </nav>
+
+    <header class="ag-hero">
+      <div><div class="ag-kicker">Live scoreboard · 5 additional games</div><h1>ADDITIONAL GAME BOARDS</h1><p>Mobile Legends, Meccha Chameleon, Stumble Guys, PUBG Mobile, Tekken 8 — оноо, ranking болон admin засвар бүгд нэг public board дээр.</p></div>
+      <span id="syncBadge" class="ag-sync">SYNC</span>
+    </header>
+
+    <div id="gameTabs" class="ag-tabs" role="tablist"></div>
+    <div class="ag-layout">
+      <section id="publicBoard" class="ag-card"></section>
+      <aside class="ag-card">
+        <div class="ag-card-head"><div><h2>ADMIN CONTROL</h2><p>Зөвхөн tournament admin оноо өөрчилнө.</p></div><span class="ag-pill">PRIVATE EDIT</span></div>
+        <div class="ag-pad">
+          <div id="loggedOut">
+            <p class="ag-help">Нийтийн board-г хүн бүр харна. Оноо, тоглогч, багийн нэр засахын тулд admin account-аар нэвтэрнэ.</p>
+            <form id="loginForm" class="ag-form" style="margin-top:14px"><label class="ag-label">Email<input id="email" class="ag-input" type="email" autocomplete="username" required></label><label class="ag-label">Password<input id="password" class="ag-input" type="password" autocomplete="current-password" required></label><button id="loginBtn" class="ag-button" type="submit">Sign in</button></form>
+            <div id="authNote" class="ag-auth-note"></div>
+          </div>
+          <div id="loggedIn" class="ag-hidden"><div class="ag-help">Signed in: <b id="userEmail"></b></div><div id="adminEditor" style="margin-top:14px"></div><div class="ag-actions" style="margin-top:12px"><button id="saveBtn" class="ag-button" type="button">Save current game</button><button id="logoutBtn" class="ag-button secondary" type="button">Sign out</button></div><div id="saveNote" class="ag-auth-note"></div></div>
+        </div>
+      </aside>
+    </div>
+    <div id="toast" class="ag-toast"></div>
+    <footer class="ag-footer">Public leaderboard · Supabase realtime · Admin editing protected</footer>
+  </main>
+  <script type="module" src="/src/additional-games.js"></script>
+</body>
+</html>
