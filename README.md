@@ -2,7 +2,9 @@
 
 One Vercel website with separate real-time DOTA 2 and CS2 tournament boards.
 The launcher is at `/`; the dedicated boards are `/dota2.html` and `/cs2.html`.
-Both boards use the same Supabase project but separate tournament IDs.
+Additional rules are summarized at `/games.html` for Meccha Chameleon, Stumble
+Guys, PUBG Mobile and Tekken 8. Both live boards use the same Supabase project
+but separate tournament IDs.
 
 ## Tournament boards
 
@@ -10,6 +12,8 @@ Both boards use the same Supabase project but separate tournament IDs.
   existing BO3 playoff bracket.
 - **CS2:** six-team Group BO1 round robin (15 matches), two Lower BO1 qualifiers,
   then a Final Four BO3 round robin (6 matches) for places 1–4.
+- **Additional rules hub:** Meccha Chameleon, Stumble Guys, PUBG Mobile and
+  Tekken 8 formats from the official rules document.
 
 ## CS2 tournament format
 
@@ -41,7 +45,8 @@ When two or more teams have the same points:
 
 ## Features
 
-- One launcher with DOTA 2 / CS2 selection and board-to-board navigation.
+- One launcher with DOTA 2 / CS2 selection, board navigation and an additional
+  rules hub.
 - DOTA 2 branding with the original board layout and scoring.
 - CS2 branding with a tactical HUD styling.
 - Six editable seeded teams: Team Alpha, Team Bravo, Team Charlie, Team Delta,

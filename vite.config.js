@@ -14,6 +14,7 @@ export default defineConfig({
         home: resolve(process.cwd(), 'index.html'),
         dota2: resolve(process.cwd(), 'dota2.html'),
         cs2: resolve(process.cwd(), 'cs2.html'),
+        games: resolve(process.cwd(), 'games.html'),
       },
     },
   },

@@ -6,6 +6,7 @@
   "rewrites": [
     { "source": "/dota2", "destination": "/dota2.html" },
     { "source": "/cs2", "destination": "/cs2.html" },
+    { "source": "/games", "destination": "/games.html" },
     { "source": "/(.*)", "destination": "/" }
   ]
 }
