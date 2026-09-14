@@ -81,7 +81,7 @@
     .arrow { font-size: 22px; line-height: 1; }
     .game-card.cs2 { --game-art: url('/game-backdrops/cs2-game.png'); --card-accent: #ffe06b; border-color: rgba(255,210,61,.36); background: linear-gradient(145deg, rgba(50,39,12,.98), rgba(13,15,14,.98)); }
     .game-card.cs2:hover { border-color: rgba(255,226,75,.9); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 38px rgba(255,194,31,.2); }
-    .game-card.cs2 .game-logo { background: linear-gradient(145deg, #fff064, #f4a62b); border: 1px solid rgba(255,240,114,.72); box-shadow: 0 0 24px rgba(255,192,35,.27); }
+    .game-card.cs2 .game-logo { width: 176px; height: 88px; padding: 8px; border-radius: 18px; background: #ed8a08; border: 1px solid rgba(255,214,101,.85); box-shadow: 0 0 24px rgba(255,192,35,.27); }
     .game-card.cs2 .status, .game-card.cs2 .card-footer { color: #ffe06b; border-color: rgba(255,211,73,.55); }
     .game-card.mecha { --game-art: url('/game-backdrops/mecha-chameleon-hero.jpg'); --card-accent: #ffc66a; border-color: rgba(255,180,72,.34); background: linear-gradient(145deg, rgba(47,33,23,.96), rgba(12,18,22,.98)); }
     .game-card.mecha:hover { border-color: rgba(255,198,95,.9); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(255,156,54,.16); }
@@ -96,7 +96,7 @@
     .game-card.tekken:hover { border-color: rgba(255,116,145,.9); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(255,65,104,.17); }
     .game-card.tekken .status, .game-card.tekken .card-footer { color: #ff9bae; border-color: rgba(255,102,130,.5); }
     .footer { margin-top: 42px; color: #64726b; font-size: 10px; letter-spacing: .18em; text-align: center; text-transform: uppercase; }
-    @media (max-width: 700px) { .shell { width: min(100% - 24px, 560px); padding-top: 22px; } .topbar { margin-bottom: 34px; } .brand-subtitle { letter-spacing: .12em; } .hero { min-height: 290px; padding: 28px 24px; } .hero::after { background-position: center; background-size: cover; opacity: .42; } .hero p { font-size: 14px; } .board-toolbar { align-items: flex-end; } .board-hint { max-width: 170px; line-height: 1.35; } .cards { min-height: calc(100svh - 220px); } .game-card, .game-card.rules-card { flex-basis: 100%; min-height: calc(100svh - 220px); padding: 28px; } .game-logo { width: 82px; height: 82px; padding: 11px; border-radius: 20px; } .game-logo.wordmark { width: 138px; } .game-card h2 { margin-top: 34px; font-size: clamp(30px, 10vw, 48px); } .game-card p { font-size: 14px; } }
+    @media (max-width: 700px) { .shell { width: min(100% - 24px, 560px); padding-top: 22px; } .topbar { margin-bottom: 34px; } .brand-subtitle { letter-spacing: .12em; } .hero { min-height: 290px; padding: 28px 24px; } .hero::after { background-position: center; background-size: cover; opacity: .42; } .hero p { font-size: 14px; } .board-toolbar { align-items: flex-end; } .board-hint { max-width: 170px; line-height: 1.35; } .cards { min-height: calc(100svh - 220px); } .game-card, .game-card.rules-card { flex-basis: 100%; min-height: calc(100svh - 220px); padding: 28px; } .game-logo { width: 82px; height: 82px; padding: 11px; border-radius: 20px; } .game-logo.wordmark { width: 138px; } .game-card.cs2 .game-logo { width: 150px; height: 76px; padding: 7px; } .game-card h2 { margin-top: 34px; font-size: clamp(30px, 10vw, 48px); } .game-card p { font-size: 14px; } }
   </style>
 </head>
 <body>
@@ -145,7 +145,7 @@
       <a id="game-cs2" class="game-card cs2" href="./cs2.html" data-board="cs2" data-board-title="CS2" data-board-line="TACTICAL PLAYOFF." data-board-copy="6 teams Group BO1 → Lower qualifiers → Final Four BO3 round-robin. Seed 1–4 байр шийднэ." data-board-format="GROUP BO1 → FINAL FOUR BO3" data-accent="#ffe06b" data-art="/game-backdrops/cs2-game.png">
         <span class="game-art" aria-hidden="true"></span>
         <div>
-          <div class="card-top"><div class="game-logo"><img src="/game-logos/cs2.svg" alt="Counter-Strike 2 logo"></div><span class="status">CS2</span></div>
+          <div class="card-top"><div class="game-logo"><img src="/game-logos/counter-strike-2.png" alt="Counter-Strike 2 logo"></div><span class="status">CS2</span></div>
           <span class="card-kicker">Official rules · live board</span>
           <h2>CS2</h2>
           <p>6 teams Group BO1 → Lower qualifiers → Final Four BO3 round-robin. Seed 1–4 байр шийднэ.</p>
