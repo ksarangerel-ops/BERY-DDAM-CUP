@@ -247,6 +247,18 @@
   .bracket-arrow{font-size:2rem;color:#22d3ee;text-shadow:0 0 16px rgba(34,211,238,.8)}
   .bracket-final .bracket-match{border-color:rgba(99,102,241,.8);box-shadow:0 0 30px -12px rgba(139,92,246,.95)}
   .bracket-champion{margin-top:.6rem;text-align:center;padding:.55rem;border:1px solid rgba(139,92,246,.45);border-radius:.55rem;background:rgba(139,92,246,.12);font-family:'Orbitron',sans-serif;font-size:.62rem;font-weight:900;letter-spacing:.12em;color:#ddd6fe}
+  .bracket-stage{display:flex;flex-direction:column;min-height:100%}
+  .bracket-stage-art{position:relative;display:flex;flex:1;flex-direction:column;justify-content:center;align-items:center;min-height:9rem;margin-top:1rem;padding:1rem;border:1px solid rgba(165,243,252,.14);border-radius:.65rem;overflow:hidden;text-align:center;background:radial-gradient(circle at 50% 45%,rgba(34,211,238,.12),transparent 48%),linear-gradient(145deg,rgba(34,211,238,.05),rgba(7,8,22,.25))}
+  .bracket-stage-art::before{content:'';position:absolute;inset:15% 18%;border:1px dashed rgba(165,243,252,.16);border-radius:50%;transform:rotate(-15deg);pointer-events:none}
+  .stage-art-kicker,.bracket-stage-art b,.bracket-stage-art>span:last-child{position:relative;z-index:1}
+  .stage-art-kicker{color:#a5f3fc;font-family:'Orbitron',sans-serif;font-size:.5rem;font-weight:900;letter-spacing:.18em}
+  .bracket-stage-art b{margin-top:.55rem;color:#f8fafc;font-family:'Rajdhani',sans-serif;font-size:1rem;letter-spacing:.1em}
+  .bracket-stage-art>span:last-child{margin-top:.2rem;color:#64748b;font-family:'Orbitron',sans-serif;font-size:.44rem;font-weight:900;letter-spacing:.1em}
+  .stage-art-lane{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;width:100%;max-width:12rem;gap:.6rem;margin:.35rem 0;color:#f8fafc;font-family:'JetBrains Mono',monospace;font-size:.7rem;font-weight:800}
+  .stage-art-lane span{display:grid;place-items:center;width:2.25rem;height:2.25rem;border:1px solid rgba(165,243,252,.35);border-radius:50%;background:rgba(7,8,22,.8);box-shadow:0 0 18px -8px rgba(34,211,238,.75)}
+  .stage-art-lane i{color:#a5f3fc;font-size:.52rem;font-style:normal}
+  .stage-art-line{position:relative;z-index:1;width:1px;height:1.1rem;background:linear-gradient(#22d3ee,#8b5cf6)}
+  .lower-art b{margin-top:1rem;color:#a5f3fc;font-size:.62rem}
   .qualifier-visual{position:relative;min-height:15rem;padding:1.1rem .75rem .75rem;border:1px solid rgba(165,243,252,.2);border-radius:.75rem;overflow:hidden;text-align:center;background:radial-gradient(circle at 50% 25%,rgba(34,211,238,.15),transparent 35%),linear-gradient(160deg,rgba(34,211,238,.08),rgba(7,8,22,.5))}
   .qualifier-visual::before{content:'';position:absolute;inset:10% 12%;border:1px dashed rgba(165,243,252,.16);border-radius:50%;transform:rotate(-18deg);pointer-events:none}
   .qualifier-visual::after{content:'';position:absolute;left:8%;right:8%;bottom:-40%;height:11rem;background:radial-gradient(ellipse,rgba(139,92,246,.28),transparent 68%);pointer-events:none}
@@ -378,6 +390,13 @@
   .bracket-rail-node.is-gold{border-color:rgba(255,176,46,.9);background:rgba(255,176,46,.16);color:#ffcf72;box-shadow:0 0 22px -7px rgba(255,176,46,.75)}
   .bracket-final .bracket-match{border-color:rgba(255,176,46,.82);box-shadow:0 0 30px -12px rgba(255,176,46,.68)}
   .bracket-champion{border-color:rgba(183,243,74,.5);background:rgba(183,243,74,.11);color:#d7ff74}
+  .bracket-stage-art{border-color:rgba(183,243,74,.18);background:radial-gradient(circle at 50% 45%,rgba(183,243,74,.12),transparent 48%),linear-gradient(145deg,rgba(183,243,74,.05),rgba(8,12,8,.25))}
+  .bracket-stage-art::before{border-color:rgba(183,243,74,.15)}
+  .stage-art-kicker{color:#d7ff74}
+  .stage-art-lane span{border-color:rgba(183,243,74,.4);background:rgba(8,13,8,.82);box-shadow:0 0 18px -8px rgba(183,243,74,.72)}
+  .stage-art-lane i{color:#ffcf72}
+  .stage-art-line{background:linear-gradient(#b7f34a,#ffb02e)}
+  .lower-art b{color:#d7ff74}
   .qualifier-visual{border-color:rgba(183,243,74,.22);background:radial-gradient(circle at 50% 25%,rgba(183,243,74,.16),transparent 35%),linear-gradient(160deg,rgba(183,243,74,.07),rgba(8,12,8,.5))}
   .qualifier-visual::before{border-color:rgba(183,243,74,.16)}
   .qualifier-visual::after{background:radial-gradient(ellipse,rgba(255,176,46,.22),transparent 68%)}
