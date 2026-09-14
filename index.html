@@ -16,13 +16,28 @@
     .brand-mark img { width: 100%; height: 100%; object-fit: contain; }
     .brand-title { margin: 0; font-size: clamp(20px, 4vw, 34px); letter-spacing: .12em; font-weight: 950; }
     .brand-subtitle { margin: 5px 0 0; color: #97a7a0; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; }
-    .hero { max-width: 740px; margin-bottom: 28px; }
-    .eyebrow { color: #bcff62; font-size: 11px; font-weight: 900; letter-spacing: .3em; text-transform: uppercase; }
-    h1 { margin: 12px 0 14px; font-size: clamp(36px, 7vw, 72px); line-height: .95; letter-spacing: -.04em; }
-    .hero p { max-width: 620px; margin: 0; color: #a5b5ad; line-height: 1.7; }
-    .game-switcher { display: flex; gap: 8px; margin: 28px 0 12px; overflow-x: auto; padding: 2px 2px 8px; scrollbar-width: thin; scrollbar-color: rgba(202,255,101,.5) transparent; }
-    .game-switch { flex: 0 0 auto; padding: 10px 13px; border: 1px solid rgba(255,255,255,.14); border-radius: 999px; color: #9eaca5; background: rgba(15,20,18,.82); font-size: 10px; font-weight: 900; letter-spacing: .15em; text-decoration: none; text-transform: uppercase; transition: .2s ease; }
-    .game-switch:hover, .game-switch.active { border-color: rgba(202,255,101,.72); color: #caff65; background: rgba(202,255,101,.08); box-shadow: 0 0 22px rgba(202,255,101,.1); }
+    .hero { position: relative; isolation: isolate; max-width: none; min-height: 250px; margin-bottom: 18px; overflow: hidden; padding: 34px 38px; border: 1px solid rgba(255,89,89,.38); border-radius: 28px; background: linear-gradient(135deg, rgba(53,22,25,.97), rgba(14,12,14,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(255,73,73,.1); transition: border-color .25s ease, background .25s ease, box-shadow .25s ease; }
+    .hero::after { content: ''; position: absolute; inset: 0; z-index: -1; background-image: var(--hero-logo); background-repeat: no-repeat; background-position: right 7% center; background-size: min(42vw, 480px); opacity: .09; filter: saturate(1.2); pointer-events: none; }
+    .hero > * { position: relative; z-index: 1; }
+    .hero[data-board="cs2"] { border-color: rgba(255,210,61,.46); background: linear-gradient(135deg, rgba(57,43,11,.97), rgba(15,15,12,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(255,194,31,.14); }
+    .hero[data-board="mlbb"] { border-color: rgba(255,107,214,.42); background: linear-gradient(135deg, rgba(52,24,56,.97), rgba(18,12,24,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(255,107,214,.12); }
+    .hero[data-board="mecha"] { border-color: rgba(255,180,72,.44); background: linear-gradient(135deg, rgba(53,35,22,.97), rgba(13,19,21,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(255,156,54,.12); }
+    .hero[data-board="stumble"] { border-color: rgba(255,118,78,.44); background: linear-gradient(135deg, rgba(52,24,42,.97), rgba(17,18,36,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(255,105,78,.12); }
+    .hero[data-board="pubg"] { border-color: rgba(65,218,183,.42); background: linear-gradient(135deg, rgba(13,47,48,.97), rgba(11,19,25,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(55,225,188,.12); }
+    .hero[data-board="tekken"] { border-color: rgba(255,88,119,.44); background: linear-gradient(135deg, rgba(55,21,31,.97), rgba(16,14,24,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(255,65,104,.12); }
+    .eyebrow { color: var(--hero-accent, #ff9999); font-size: 11px; font-weight: 900; letter-spacing: .3em; text-transform: uppercase; transition: color .25s ease; }
+    h1 { margin: 12px 0 14px; font-size: clamp(40px, 7vw, 78px); line-height: .95; letter-spacing: -.04em; }
+    .hero-game { color: #fff; }
+    .hero-line { color: var(--hero-accent, #ff9999); transition: color .25s ease; }
+    .hero p { max-width: 700px; margin: 0; color: #b1bbb5; line-height: 1.7; font-size: 16px; }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 22px; }
+    .hero-meta span { padding: 8px 11px; border: 1px solid color-mix(in srgb, var(--hero-accent, #ff9999) 50%, transparent); border-radius: 999px; color: var(--hero-accent, #ff9999); background: rgba(0,0,0,.18); font-size: 9px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+    .board-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 18px 0 10px; }
+    .board-label { display: block; color: var(--hero-accent, #ff9999); font-size: 11px; font-weight: 900; letter-spacing: .2em; text-transform: uppercase; }
+    .board-hint { display: block; margin-top: 5px; color: #66746c; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+    .carousel-actions { display: flex; gap: 8px; }
+    .carousel-arrow { display: grid; place-items: center; width: 44px; height: 38px; border: 1px solid rgba(255,255,255,.17); border-radius: 10px; color: #eef5ee; background: rgba(16,21,19,.9); font-size: 22px; line-height: 1; cursor: pointer; transition: .2s ease; }
+    .carousel-arrow:hover, .carousel-arrow:focus-visible { border-color: var(--hero-accent, #ff9999); color: var(--hero-accent, #ff9999); background: rgba(255,255,255,.06); box-shadow: 0 0 20px color-mix(in srgb, var(--hero-accent, #ff9999) 18%, transparent); outline: none; }
     .cards { display: flex; gap: 18px; overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x mandatory; scroll-padding: 2px; padding: 4px 2px 30px; counter-reset: game-card; scrollbar-width: thin; scrollbar-color: rgba(202,255,101,.55) rgba(255,255,255,.04); }
     .game-card { position: relative; isolation: isolate; display: flex; flex: 0 0 100%; min-height: 470px; flex-direction: column; justify-content: space-between; overflow: hidden; scroll-snap-align: start; padding: 44px; border: 1px solid rgba(255,255,255,.14); border-radius: 28px; background: linear-gradient(145deg, rgba(24,31,27,.96), rgba(11,14,14,.97)); text-decoration: none; color: inherit; counter-increment: game-card; transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease, background .25s ease; }
     .game-card::before { content: '0' counter(game-card); position: absolute; top: 4px; right: 18px; z-index: 0; color: rgba(255,255,255,.08); font-size: 80px; font-weight: 950; letter-spacing: -.08em; line-height: 1; pointer-events: none; }
@@ -69,7 +84,7 @@
     .game-card.tekken:hover { border-color: rgba(255,116,145,.9); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(255,65,104,.17); }
     .game-card.tekken .status, .game-card.tekken .card-footer { color: #ff9bae; border-color: rgba(255,102,130,.5); }
     .footer { margin-top: 42px; color: #64726b; font-size: 10px; letter-spacing: .18em; text-align: center; text-transform: uppercase; }
-    @media (max-width: 700px) { .shell { width: min(100% - 24px, 560px); padding-top: 22px; } .topbar { margin-bottom: 34px; } .brand-subtitle { letter-spacing: .12em; } .game-card, .game-card.rules-card { flex-basis: 100%; min-height: 470px; padding: 28px; } .game-logo { width: 82px; height: 82px; padding: 11px; border-radius: 20px; } .game-logo.wordmark { width: 138px; } .game-card h2 { margin-top: 34px; font-size: clamp(30px, 10vw, 48px); } .game-card p { font-size: 14px; } }
+    @media (max-width: 700px) { .shell { width: min(100% - 24px, 560px); padding-top: 22px; } .topbar { margin-bottom: 34px; } .brand-subtitle { letter-spacing: .12em; } .hero { min-height: 290px; padding: 28px 24px; } .hero::after { background-position: right 10% bottom 12%; background-size: 230px; opacity: .075; } .hero p { font-size: 14px; } .board-toolbar { align-items: flex-end; } .board-hint { max-width: 170px; line-height: 1.35; } .game-card, .game-card.rules-card { flex-basis: 100%; min-height: 470px; padding: 28px; } .game-logo { width: 82px; height: 82px; padding: 11px; border-radius: 20px; } .game-logo.wordmark { width: 138px; } .game-card h2 { margin-top: 34px; font-size: clamp(30px, 10vw, 48px); } .game-card p { font-size: 14px; } }
   </style>
 </head>
 <body>
@@ -82,24 +97,27 @@
       </div>
     </header>
 
-    <section class="hero">
-      <div class="eyebrow">Choose your tournament</div>
-      <h1>ONE CUP.<br><span style="color:#caff65">SEVEN BATTLEGROUNDS.</span></h1>
-      <p>Нэг website-ээс DOTA 2, CS2, Mobile Legends болон бусад тэмцээний format, оноо, дүрмийг сонгож үзнэ.</p>
+    <section class="hero" id="hero" data-board="dota" style="--hero-accent:#ff9999; --hero-logo:url('/game-logos/dota2.svg');">
+      <div class="eyebrow" id="heroKicker">Featured board · DOTA 2</div>
+      <h1><span id="heroGame" class="hero-game">DOTA 2</span><br><span id="heroLine" class="hero-line">ZONE PLAYOFF.</span></h1>
+      <p id="heroCopy">Zone BO2 round-robin → playoff BO3 bracket. Багуудын оноо, тоглолт, дүрмийг харах.</p>
+      <div class="hero-meta"><span id="heroFormat">BO2 → BO3 PLAYOFF</span><span>PUBLIC LIVE BOARD</span></div>
     </section>
 
-    <nav class="game-switcher" aria-label="Game sections">
-      <a class="game-switch active" href="#game-dota">01 · DOTA 2</a>
-      <a class="game-switch" href="#game-cs2">02 · CS2</a>
-      <a class="game-switch" href="#game-mlbb">03 · MLBB</a>
-      <a class="game-switch" href="#game-mecha">04 · MECHA</a>
-      <a class="game-switch" href="#game-stumble">05 · STUMBLE</a>
-      <a class="game-switch" href="#game-pubg">06 · PUBG</a>
-      <a class="game-switch" href="#game-tekken">07 · TEKKEN</a>
-    </nav>
+    <div class="board-toolbar">
+      <div>
+        <span class="board-label" id="activeBoardLabel">01 · DOTA 2</span>
+        <span class="board-hint">Use arrows or swipe sideways</span>
+      </div>
+      <div class="carousel-actions" aria-label="Choose a game board">
+        <button id="prevBoard" class="carousel-arrow" type="button" aria-label="Previous game">←</button>
+        <button id="nextBoard" class="carousel-arrow" type="button" aria-label="Next game">→</button>
+      </div>
+    </div>
 
-    <section class="cards" aria-label="Tournament selection">
-      <a id="game-dota" class="game-card dota" href="./dota2.html">
+    <div class="carousel-wrap">
+      <section class="cards" aria-label="Tournament selection">
+      <a id="game-dota" class="game-card dota" href="./dota2.html" data-board="dota" data-board-title="DOTA 2" data-board-line="ZONE PLAYOFF." data-board-copy="Zone BO2 round-robin → playoff BO3 bracket. Багуудын оноо, тоглолт, дүрмийг харах." data-board-format="BO2 → BO3 PLAYOFF" data-accent="#ff9999" data-logo="/game-logos/dota2.svg">
         <div>
           <div class="card-top"><div class="game-logo"><img src="/game-logos/dota2.svg" alt="DOTA 2 logo"></div><span class="status">DOTA 2</span></div>
           <h2>DOTA 2</h2>
@@ -108,7 +126,7 @@
         <div class="card-footer"><span>Open DOTA board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-cs2" class="game-card cs2" href="./cs2.html">
+      <a id="game-cs2" class="game-card cs2" href="./cs2.html" data-board="cs2" data-board-title="CS2" data-board-line="TACTICAL PLAYOFF." data-board-copy="6 teams Group BO1 → Lower qualifiers → Final Four BO3 round-robin. Seed 1–4 байр шийднэ." data-board-format="GROUP BO1 → FINAL FOUR BO3" data-accent="#ffe06b" data-logo="/game-logos/cs2.svg">
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/cs2.svg" alt="Counter-Strike 2 logo"></div><span class="status">CS2</span></div>
           <h2>CS2</h2>
@@ -117,7 +135,7 @@
         <div class="card-footer"><span>Open CS2 board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-mlbb" class="game-card ml" href="./additional-games.html?game=mlbb">
+      <a id="game-mlbb" class="game-card ml" href="./additional-games.html?game=mlbb" data-board="mlbb" data-board-title="MOBILE LEGENDS" data-board-line="GROUPS TO FINALS." data-board-copy="2 хэсэг BO2 → A1/B2, B1/A2 semifinal BO3 → Grand Final + 3rd Place. Official дүрэм." data-board-format="BO2 GROUPS → BO3 PLAYOFF" data-accent="#ff9be1" data-logo="/game-logos/mlbb.webp">
         <div>
           <div class="card-top"><div class="game-logo wordmark"><img src="/game-logos/mlbb.webp" alt="Mobile Legends logo"></div><span class="status">MLBB RULES</span></div>
           <h2>MOBILE LEGENDS</h2>
@@ -126,7 +144,7 @@
           <div class="card-footer"><span>Open MLBB board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-mecha" class="game-card rules-card mecha" href="./additional-games.html?game=mecha">
+      <a id="game-mecha" class="game-card rules-card mecha" href="./additional-games.html?game=mecha" data-board="mecha" data-board-title="MECCHA CHAMELEON" data-board-line="HIDE. PAINT. SEEK." data-board-copy="6 баг · 2 lobby · 12 round. Seeker/Hider онооны системтэй official format." data-board-format="12 ROUNDS · SEEKER / HIDER" data-accent="#ffc66a" data-logo="/game-logos/mecha.webp">
         <div>
           <div class="card-top"><div class="game-logo"><img src="/game-logos/mecha.webp" alt="Meccha Chameleon logo"></div><span class="status">RULES READY</span></div>
           <h2>MECCHA CHAMELEON</h2>
@@ -135,7 +153,7 @@
         <div class="card-footer"><span>Open live board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-stumble" class="game-card rules-card stumble" href="./additional-games.html?game=stumble">
+      <a id="game-stumble" class="game-card rules-card stumble" href="./additional-games.html?game=stumble" data-board="stumble" data-board-title="STUMBLE GUYS" data-board-line="GRAND PRIX RUN." data-board-copy="6 баг · 30 тоглогч · Grand Prix 10 round. Solo leaderboard-оор багийн оноо бодно." data-board-format="30 PLAYERS · 10 ROUNDS" data-accent="#ffb276" data-logo="/game-logos/stumble.svg">
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/stumble.svg" alt="Stumble Guys logo"></div><span class="status">RULES READY</span></div>
           <h2>STUMBLE GUYS</h2>
@@ -144,7 +162,7 @@
         <div class="card-footer"><span>Open live board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-pubg" class="game-card rules-card pubg" href="./additional-games.html?game=pubg">
+      <a id="game-pubg" class="game-card rules-card pubg" href="./additional-games.html?game=pubg" data-board="pubg" data-board-title="PUBG MOBILE" data-board-line="DROP TO WIN." data-board-copy="6 баг · Sanhok, Livik, Erangel. Placement + kill points-аар аварга тодорно." data-board-format="3 MAPS · PLACEMENT + KILLS" data-accent="#76f1cf" data-logo="/game-logos/pubg-mobile.svg">
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/pubg-mobile.svg" alt="PUBG Mobile logo"></div><span class="status">RULES READY</span></div>
           <h2>PUBG MOBILE</h2>
@@ -153,7 +171,7 @@
         <div class="card-footer"><span>Open live board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-tekken" class="game-card rules-card tekken" href="./additional-games.html?game=tekken">
+      <a id="game-tekken" class="game-card rules-card tekken" href="./additional-games.html?game=tekken" data-board="tekken" data-board-title="TEKKEN 8" data-board-line="FIGHT FOR FINAL 4." data-board-copy="6 баг · 18 тоглогч · Group BO3 → 6-player round robin → Final 4 BO5 bracket." data-board-format="18 PLAYERS · BO3 / BO5" data-accent="#ff9bae" data-logo="/game-logos/tekken8.svg">
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/tekken8.svg" alt="Tekken 8 logo"></div><span class="status">RULES READY</span></div>
           <h2>TEKKEN 8</h2>
@@ -161,23 +179,50 @@
         </div>
         <div class="card-footer"><span>Open live board</span><span class="arrow">→</span></div>
       </a>
-    </section>
+      </section>
+    </div>
 
     <footer class="footer">Public leaderboard · Admin editing is protected</footer>
   </main>
   <script>
-    const gameRail = document.querySelector('.game-switcher');
-    const gamePanels = document.querySelectorAll('.game-card');
-    const gameLinks = document.querySelectorAll('.game-switch');
-    const gameObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+    const rail = document.querySelector('.cards');
+    const panels = [...document.querySelectorAll('.game-card')];
+    const hero = document.getElementById('hero');
+    const heroKicker = document.getElementById('heroKicker');
+    const heroGame = document.getElementById('heroGame');
+    const heroLine = document.getElementById('heroLine');
+    const heroCopy = document.getElementById('heroCopy');
+    const heroFormat = document.getElementById('heroFormat');
+    const activeBoardLabel = document.getElementById('activeBoardLabel');
+    const previous = document.getElementById('prevBoard');
+    const next = document.getElementById('nextBoard');
+    let activeIndex = 0;
+
+    function selectBoard(index, move = true) {
+      activeIndex = (index + panels.length) % panels.length;
+      const panel = panels[activeIndex];
+      hero.dataset.board = panel.dataset.board;
+      hero.style.setProperty('--hero-accent', panel.dataset.accent);
+      hero.style.setProperty('--hero-logo', `url("${panel.dataset.logo}")`);
+      heroKicker.textContent = `Featured board · ${panel.dataset.boardTitle}`;
+      heroGame.textContent = panel.dataset.boardTitle;
+      heroLine.textContent = panel.dataset.boardLine;
+      heroCopy.textContent = panel.dataset.boardCopy;
+      heroFormat.textContent = panel.dataset.boardFormat;
+      activeBoardLabel.textContent = `${String(activeIndex + 1).padStart(2, '0')} · ${panel.dataset.boardTitle}`;
+      if (move) rail.scrollTo({ left: panel.offsetLeft - rail.offsetLeft, behavior: 'smooth' });
+    }
+
+    previous.addEventListener('click', () => selectBoard(activeIndex - 1));
+    next.addEventListener('click', () => selectBoard(activeIndex + 1));
+
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => {
       if (!entry.isIntersecting) return;
-      gameLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === `#${entry.target.id}`));
-    }), { root: document.querySelector('.cards'), threshold: .65 });
-    gamePanels.forEach(panel => gameObserver.observe(panel));
-    gameLinks.forEach(link => link.addEventListener('click', () => {
-      gameLinks.forEach(item => item.classList.remove('active'));
-      link.classList.add('active');
-    }));
+      const index = panels.indexOf(entry.target);
+      if (index >= 0 && index !== activeIndex) selectBoard(index, false);
+    }), { root: rail, threshold: .65 });
+    panels.forEach(panel => observer.observe(panel));
+    selectBoard(0, false);
   </script>
 </body>
 </html>
