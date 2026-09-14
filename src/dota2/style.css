@@ -275,7 +275,7 @@
     --spectrum-soft:linear-gradient(105deg,rgba(255,52,52,.25),rgba(255,104,104,.2),rgba(255,156,69,.18));
   }
   html{background:#100708}
-  body::before{background:linear-gradient(rgba(20,5,8,.84),rgba(20,7,10,.94)),var(--bg-photo) center/cover no-repeat;background-color:#100708}
+  body::before{background:linear-gradient(rgba(20,5,8,.68),rgba(20,7,10,.84)),var(--bg-photo) center/cover no-repeat;background-color:#100708;filter:brightness(1.16) saturate(1.1)}
   body::after{background-image:radial-gradient(900px 520px at 8% 8%,rgba(255,52,52,.18),transparent 62%),radial-gradient(900px 480px at 92% 4%,rgba(255,156,69,.14),transparent 62%),radial-gradient(800px 460px at 50% 45%,rgba(150,28,40,.16),transparent 64%),linear-gradient(rgba(143,67,72,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(143,67,72,.18) 1px,transparent 1px);background-size:auto,auto,auto,46px 46px,46px 46px}
   ::-webkit-scrollbar-track{background:#100708}::-webkit-scrollbar-thumb{background:#71343d}::-webkit-scrollbar-thumb:hover{background:#ff6868}
   .glass{background:rgba(29,11,16,.78);border-color:rgba(255,74,74,.3);box-shadow:0 0 0 1px rgba(255,74,74,.08),0 22px 48px -26px rgba(0,0,0,.95),inset 0 1px 0 rgba(255,255,255,.05)}

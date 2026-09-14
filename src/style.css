@@ -505,7 +505,7 @@
   @media(max-width:800px){.rules-masthead{padding:1rem;flex-direction:column}.rules-stamp{align-self:flex-start}.rules-dossier-grid{grid-template-columns:1fr}.rules-section.full{grid-column:auto}.rules-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.playoff-path{grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}.playoff-path i{display:none}.map-order{grid-template-columns:1fr}.danger-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.penalty-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
   /* ---------- CS2 yellow identity / action controls ---------- */
-  body::before{background:linear-gradient(112deg,rgba(10,8,4,.93),rgba(36,27,8,.78) 48%,rgba(8,10,7,.95)),var(--bg-photo) center/cover no-repeat}
+  body::before{background:linear-gradient(112deg,rgba(10,8,4,.72),rgba(36,27,8,.58) 48%,rgba(8,10,7,.82)),var(--bg-photo) center/cover no-repeat;filter:brightness(1.14) saturate(1.1)}
   body::after{background-image:radial-gradient(800px 450px at 8% 4%,rgba(255,212,71,.16),transparent 64%),radial-gradient(700px 420px at 92% 8%,rgba(255,150,61,.16),transparent 62%),radial-gradient(700px 500px at 56% 86%,rgba(145,104,30,.15),transparent 68%),linear-gradient(rgba(190,158,72,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(190,158,72,.15) 1px,transparent 1px);background-size:auto,auto,auto,60px 60px,60px 60px}
   header{border-bottom-color:rgba(255,212,71,.55)!important;box-shadow:0 12px 34px -20px rgba(255,212,71,.4),0 14px 34px -22px #000!important}
   .glass{border-color:rgba(255,212,71,.28);box-shadow:0 0 0 1px rgba(255,212,71,.05),0 18px 42px -24px #000,inset 0 1px 0 rgba(255,255,255,.045)}
