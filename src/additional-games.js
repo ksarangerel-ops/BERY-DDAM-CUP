@@ -14,7 +14,7 @@ const GAME_DEFS = {
   stumble: { label: 'Stumble Guys', short: 'STUMBLE', format: '30 players · Grand Prix', rules: './games.html#stumble', logo: '/game-logos/stumble.svg', logoClass: 'wordmark light', art: '/game-backdrops/stumble-game.png' },
   pubg: { label: 'PUBG Mobile', short: 'PUBG', format: '3 maps · placement + kills', rules: './games.html#pubg', logo: '/game-logos/pubg-mobile.svg', logoClass: 'wordmark light', art: '/game-backdrops/pubg-game.jpg' },
   tekken: { label: 'Tekken 8', short: 'TEKKEN', format: '18 players · BO3 / BO5 playoff', rules: './games.html#tekken', logo: '/game-logos/tekken8.svg', logoClass: 'wordmark light', art: '/game-backdrops/tekken-game.jpeg' },
-  tetris: { label: 'Tetris', short: 'TETRIS', format: '3 games · 2 zones · final 4', rules: './games.html#tetris', logo: '/game-logos/tetrio.webp', logoClass: 'wordmark tetris-logo', art: '/game-backdrops/tetris-gamer.webp' },
+  tetris: { label: 'Tetris', short: 'TETRIS', format: '3 games · 2 zones · final 4', rules: './games.html#tetris', logo: '/game-logos/tetris-logo.jpg', logoClass: 'wordmark tetris-logo', art: '/game-backdrops/tetris-gamer.webp' },
 };
 const GAME_IDS = Object.keys(GAME_DEFS);
 const REQUIRED_GAME_IDS = GAME_IDS.filter(id => id !== 'tetris');
