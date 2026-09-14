@@ -17,7 +17,8 @@
     .brand-title { margin: 0; font-size: clamp(20px, 4vw, 34px); letter-spacing: .12em; font-weight: 950; }
     .brand-subtitle { margin: 5px 0 0; color: #97a7a0; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; }
     .hero { position: relative; isolation: isolate; max-width: none; min-height: 250px; margin-bottom: 18px; overflow: hidden; padding: 34px 38px; border: 1px solid rgba(255,89,89,.38); border-radius: 28px; background: linear-gradient(135deg, rgba(53,22,25,.97), rgba(14,12,14,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(255,73,73,.1); transition: border-color .25s ease, background .25s ease, box-shadow .25s ease; }
-    .hero::after { content: ''; position: absolute; inset: 0; z-index: -1; background-image: var(--hero-logo); background-repeat: no-repeat; background-position: right 7% center; background-size: min(42vw, 480px); opacity: .09; filter: saturate(1.2); pointer-events: none; }
+    .hero::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(17,10,13,.94), rgba(17,10,13,.64) 48%, rgba(17,10,13,.2)); pointer-events: none; }
+    .hero::after { content: ''; position: absolute; inset: 0; z-index: -2; background-image: var(--hero-art); background-repeat: no-repeat; background-position: center; background-size: cover; opacity: .38; filter: saturate(1.2) contrast(1.04); pointer-events: none; }
     .hero > * { position: relative; z-index: 1; }
     .hero[data-board="cs2"] { border-color: rgba(255,210,61,.46); background: linear-gradient(135deg, rgba(57,43,11,.97), rgba(15,15,12,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(255,194,31,.14); }
     .hero[data-board="mlbb"] { border-color: rgba(255,107,214,.42); background: linear-gradient(135deg, rgba(52,24,56,.97), rgba(18,12,24,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(255,107,214,.12); }
@@ -42,11 +43,14 @@
     .game-card { position: relative; isolation: isolate; display: flex; flex: 0 0 100%; min-height: 470px; flex-direction: column; justify-content: space-between; overflow: hidden; scroll-snap-align: start; padding: 44px; border: 1px solid rgba(255,255,255,.14); border-radius: 28px; background: linear-gradient(145deg, rgba(24,31,27,.96), rgba(11,14,14,.97)); text-decoration: none; color: inherit; counter-increment: game-card; transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease, background .25s ease; }
     .game-card::before { content: '0' counter(game-card); position: absolute; top: 4px; right: 18px; z-index: 0; color: rgba(255,255,255,.08); font-size: 80px; font-weight: 950; letter-spacing: -.08em; line-height: 1; pointer-events: none; }
     .game-card::after { content: ''; position: absolute; right: -74px; bottom: -92px; z-index: 0; width: 210px; height: 210px; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; box-shadow: 0 0 0 16px rgba(255,255,255,.025), 0 0 0 34px rgba(255,255,255,.018); pointer-events: none; }
+    .game-art { position: absolute; inset: 0; z-index: 0; background-image: var(--game-art); background-position: center; background-size: cover; opacity: .27; filter: saturate(1.15) contrast(1.05); pointer-events: none; transition: opacity .25s ease, transform .45s ease; }
+    .game-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,10,11,.2), rgba(8,10,11,.56) 72%, rgba(8,10,11,.28)); }
     .game-card > div { position: relative; z-index: 1; }
     .game-card:hover { transform: translateY(-6px); border-color: rgba(192,255,102,.8); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(192,255,102,.14); }
-    .game-card.dota { border-color: rgba(255,89,89,.32); background: linear-gradient(145deg, rgba(53,22,25,.96), rgba(14,12,14,.97)); }
+    .game-card:hover .game-art { opacity: .39; transform: scale(1.04); }
+    .game-card.dota { --game-art: url('/game-backdrops/dota.svg'); border-color: rgba(255,89,89,.32); background: linear-gradient(145deg, rgba(53,22,25,.96), rgba(14,12,14,.97)); }
     .game-card.dota:hover { border-color: rgba(255,101,101,.8); box-shadow: 0 18px 50px rgba(0,0,0,.35), 0 0 30px rgba(255,73,73,.14); }
-    .game-card.ml { border-color: rgba(255,107,214,.3); background: linear-gradient(145deg, rgba(49,25,54,.96), rgba(15,12,22,.97)); }
+    .game-card.ml { --game-art: url('/game-backdrops/mlbb.svg'); border-color: rgba(255,107,214,.3); background: linear-gradient(145deg, rgba(49,25,54,.96), rgba(15,12,22,.97)); }
     .game-card.ml:hover { border-color: rgba(255,143,226,.82); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(255,107,214,.18); }
     .game-card.ml .game-logo { background: linear-gradient(145deg, rgba(167,139,250,.24), rgba(255,107,214,.14)); }
     .game-card.rules-card { min-height: 470px; border-color: rgba(113,217,255,.25); background: linear-gradient(145deg, rgba(18,31,39,.96), rgba(10,14,17,.97)); }
@@ -67,20 +71,20 @@
     .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 38px; padding-top: 17px; border-top: 1px solid rgba(255,255,255,.1); color: #caff65; font-size: 11px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
     .dota .card-footer { color: #ff9999; }
     .arrow { font-size: 22px; line-height: 1; }
-    .game-card.cs2 { border-color: rgba(255,210,61,.36); background: linear-gradient(145deg, rgba(50,39,12,.98), rgba(13,15,14,.98)); }
+    .game-card.cs2 { --game-art: url('/game-backdrops/cs2.svg'); border-color: rgba(255,210,61,.36); background: linear-gradient(145deg, rgba(50,39,12,.98), rgba(13,15,14,.98)); }
     .game-card.cs2:hover { border-color: rgba(255,226,75,.9); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 38px rgba(255,194,31,.2); }
     .game-card.cs2 .game-logo { background: linear-gradient(145deg, #fff064, #f4a62b); border: 1px solid rgba(255,240,114,.72); box-shadow: 0 0 24px rgba(255,192,35,.27); }
     .game-card.cs2 .status, .game-card.cs2 .card-footer { color: #ffe06b; border-color: rgba(255,211,73,.55); }
-    .game-card.mecha { border-color: rgba(255,180,72,.34); background: linear-gradient(145deg, rgba(47,33,23,.96), rgba(12,18,22,.98)); }
+    .game-card.mecha { --game-art: url('/game-backdrops/mecha.svg'); border-color: rgba(255,180,72,.34); background: linear-gradient(145deg, rgba(47,33,23,.96), rgba(12,18,22,.98)); }
     .game-card.mecha:hover { border-color: rgba(255,198,95,.9); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(255,156,54,.16); }
     .game-card.mecha .status, .game-card.mecha .card-footer { color: #ffc66a; border-color: rgba(255,190,84,.5); }
-    .game-card.stumble { border-color: rgba(255,118,78,.38); background: linear-gradient(145deg, rgba(47,24,38,.98), rgba(16,18,36,.98)); }
+    .game-card.stumble { --game-art: url('/game-backdrops/stumble.svg'); border-color: rgba(255,118,78,.38); background: linear-gradient(145deg, rgba(47,24,38,.98), rgba(16,18,36,.98)); }
     .game-card.stumble:hover { border-color: rgba(255,151,86,.92); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(255,105,78,.18); }
     .game-card.stumble .status, .game-card.stumble .card-footer { color: #ffb276; border-color: rgba(255,137,81,.52); }
-    .game-card.pubg { border-color: rgba(65,218,183,.3); background: linear-gradient(145deg, rgba(13,43,45,.98), rgba(11,18,24,.98)); }
+    .game-card.pubg { --game-art: url('/game-backdrops/pubg.svg'); border-color: rgba(65,218,183,.3); background: linear-gradient(145deg, rgba(13,43,45,.98), rgba(11,18,24,.98)); }
     .game-card.pubg:hover { border-color: rgba(93,240,201,.9); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(55,225,188,.16); }
     .game-card.pubg .status, .game-card.pubg .card-footer { color: #76f1cf; border-color: rgba(87,228,193,.5); }
-    .game-card.tekken { border-color: rgba(255,88,119,.34); background: linear-gradient(145deg, rgba(52,20,29,.98), rgba(15,14,22,.98)); }
+    .game-card.tekken { --game-art: url('/game-backdrops/tekken.svg'); border-color: rgba(255,88,119,.34); background: linear-gradient(145deg, rgba(52,20,29,.98), rgba(15,14,22,.98)); }
     .game-card.tekken:hover { border-color: rgba(255,116,145,.9); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(255,65,104,.17); }
     .game-card.tekken .status, .game-card.tekken .card-footer { color: #ff9bae; border-color: rgba(255,102,130,.5); }
     .footer { margin-top: 42px; color: #64726b; font-size: 10px; letter-spacing: .18em; text-align: center; text-transform: uppercase; }
@@ -97,7 +101,7 @@
       </div>
     </header>
 
-    <section class="hero" id="hero" data-board="dota" style="--hero-accent:#ff9999; --hero-logo:url('/game-logos/dota2.svg');">
+    <section class="hero" id="hero" data-board="dota" style="--hero-accent:#ff9999; --hero-art:url('/game-backdrops/dota.svg');">
       <div class="eyebrow" id="heroKicker">Featured board · DOTA 2</div>
       <h1><span id="heroGame" class="hero-game">DOTA 2</span><br><span id="heroLine" class="hero-line">ZONE PLAYOFF.</span></h1>
       <p id="heroCopy">Zone BO2 round-robin → playoff BO3 bracket. Багуудын оноо, тоглолт, дүрмийг харах.</p>
@@ -117,7 +121,8 @@
 
     <div class="carousel-wrap">
       <section class="cards" aria-label="Tournament selection">
-      <a id="game-dota" class="game-card dota" href="./dota2.html" data-board="dota" data-board-title="DOTA 2" data-board-line="ZONE PLAYOFF." data-board-copy="Zone BO2 round-robin → playoff BO3 bracket. Багуудын оноо, тоглолт, дүрмийг харах." data-board-format="BO2 → BO3 PLAYOFF" data-accent="#ff9999" data-logo="/game-logos/dota2.svg">
+      <a id="game-dota" class="game-card dota" href="./dota2.html" data-board="dota" data-board-title="DOTA 2" data-board-line="ZONE PLAYOFF." data-board-copy="Zone BO2 round-robin → playoff BO3 bracket. Багуудын оноо, тоглолт, дүрмийг харах." data-board-format="BO2 → BO3 PLAYOFF" data-accent="#ff9999" data-art="/game-backdrops/dota.svg">
+        <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo"><img src="/game-logos/dota2.svg" alt="DOTA 2 logo"></div><span class="status">DOTA 2</span></div>
           <h2>DOTA 2</h2>
@@ -126,7 +131,8 @@
         <div class="card-footer"><span>Open DOTA board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-cs2" class="game-card cs2" href="./cs2.html" data-board="cs2" data-board-title="CS2" data-board-line="TACTICAL PLAYOFF." data-board-copy="6 teams Group BO1 → Lower qualifiers → Final Four BO3 round-robin. Seed 1–4 байр шийднэ." data-board-format="GROUP BO1 → FINAL FOUR BO3" data-accent="#ffe06b" data-logo="/game-logos/cs2.svg">
+      <a id="game-cs2" class="game-card cs2" href="./cs2.html" data-board="cs2" data-board-title="CS2" data-board-line="TACTICAL PLAYOFF." data-board-copy="6 teams Group BO1 → Lower qualifiers → Final Four BO3 round-robin. Seed 1–4 байр шийднэ." data-board-format="GROUP BO1 → FINAL FOUR BO3" data-accent="#ffe06b" data-art="/game-backdrops/cs2.svg">
+        <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/cs2.svg" alt="Counter-Strike 2 logo"></div><span class="status">CS2</span></div>
           <h2>CS2</h2>
@@ -135,7 +141,8 @@
         <div class="card-footer"><span>Open CS2 board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-mlbb" class="game-card ml" href="./additional-games.html?game=mlbb" data-board="mlbb" data-board-title="MOBILE LEGENDS" data-board-line="GROUPS TO FINALS." data-board-copy="2 хэсэг BO2 → A1/B2, B1/A2 semifinal BO3 → Grand Final + 3rd Place. Official дүрэм." data-board-format="BO2 GROUPS → BO3 PLAYOFF" data-accent="#ff9be1" data-logo="/game-logos/mlbb.webp">
+      <a id="game-mlbb" class="game-card ml" href="./additional-games.html?game=mlbb" data-board="mlbb" data-board-title="MOBILE LEGENDS" data-board-line="GROUPS TO FINALS." data-board-copy="2 хэсэг BO2 → A1/B2, B1/A2 semifinal BO3 → Grand Final + 3rd Place. Official дүрэм." data-board-format="BO2 GROUPS → BO3 PLAYOFF" data-accent="#ff9be1" data-art="/game-backdrops/mlbb.svg">
+        <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark"><img src="/game-logos/mlbb.webp" alt="Mobile Legends logo"></div><span class="status">MLBB RULES</span></div>
           <h2>MOBILE LEGENDS</h2>
@@ -144,7 +151,8 @@
           <div class="card-footer"><span>Open MLBB board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-mecha" class="game-card rules-card mecha" href="./additional-games.html?game=mecha" data-board="mecha" data-board-title="MECCHA CHAMELEON" data-board-line="HIDE. PAINT. SEEK." data-board-copy="6 баг · 2 lobby · 12 round. Seeker/Hider онооны системтэй official format." data-board-format="12 ROUNDS · SEEKER / HIDER" data-accent="#ffc66a" data-logo="/game-logos/mecha.webp">
+      <a id="game-mecha" class="game-card rules-card mecha" href="./additional-games.html?game=mecha" data-board="mecha" data-board-title="MECCHA CHAMELEON" data-board-line="HIDE. PAINT. SEEK." data-board-copy="6 баг · 2 lobby · 12 round. Seeker/Hider онооны системтэй official format." data-board-format="12 ROUNDS · SEEKER / HIDER" data-accent="#ffc66a" data-art="/game-backdrops/mecha.svg">
+        <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo"><img src="/game-logos/mecha.webp" alt="Meccha Chameleon logo"></div><span class="status">RULES READY</span></div>
           <h2>MECCHA CHAMELEON</h2>
@@ -153,7 +161,8 @@
         <div class="card-footer"><span>Open live board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-stumble" class="game-card rules-card stumble" href="./additional-games.html?game=stumble" data-board="stumble" data-board-title="STUMBLE GUYS" data-board-line="GRAND PRIX RUN." data-board-copy="6 баг · 30 тоглогч · Grand Prix 10 round. Solo leaderboard-оор багийн оноо бодно." data-board-format="30 PLAYERS · 10 ROUNDS" data-accent="#ffb276" data-logo="/game-logos/stumble.svg">
+      <a id="game-stumble" class="game-card rules-card stumble" href="./additional-games.html?game=stumble" data-board="stumble" data-board-title="STUMBLE GUYS" data-board-line="GRAND PRIX RUN." data-board-copy="6 баг · 30 тоглогч · Grand Prix 10 round. Solo leaderboard-оор багийн оноо бодно." data-board-format="30 PLAYERS · 10 ROUNDS" data-accent="#ffb276" data-art="/game-backdrops/stumble.svg">
+        <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/stumble.svg" alt="Stumble Guys logo"></div><span class="status">RULES READY</span></div>
           <h2>STUMBLE GUYS</h2>
@@ -162,7 +171,8 @@
         <div class="card-footer"><span>Open live board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-pubg" class="game-card rules-card pubg" href="./additional-games.html?game=pubg" data-board="pubg" data-board-title="PUBG MOBILE" data-board-line="DROP TO WIN." data-board-copy="6 баг · Sanhok, Livik, Erangel. Placement + kill points-аар аварга тодорно." data-board-format="3 MAPS · PLACEMENT + KILLS" data-accent="#76f1cf" data-logo="/game-logos/pubg-mobile.svg">
+      <a id="game-pubg" class="game-card rules-card pubg" href="./additional-games.html?game=pubg" data-board="pubg" data-board-title="PUBG MOBILE" data-board-line="DROP TO WIN." data-board-copy="6 баг · Sanhok, Livik, Erangel. Placement + kill points-аар аварга тодорно." data-board-format="3 MAPS · PLACEMENT + KILLS" data-accent="#76f1cf" data-art="/game-backdrops/pubg.svg">
+        <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/pubg-mobile.svg" alt="PUBG Mobile logo"></div><span class="status">RULES READY</span></div>
           <h2>PUBG MOBILE</h2>
@@ -171,7 +181,8 @@
         <div class="card-footer"><span>Open live board</span><span class="arrow">→</span></div>
       </a>
 
-      <a id="game-tekken" class="game-card rules-card tekken" href="./additional-games.html?game=tekken" data-board="tekken" data-board-title="TEKKEN 8" data-board-line="FIGHT FOR FINAL 4." data-board-copy="6 баг · 18 тоглогч · Group BO3 → 6-player round robin → Final 4 BO5 bracket." data-board-format="18 PLAYERS · BO3 / BO5" data-accent="#ff9bae" data-logo="/game-logos/tekken8.svg">
+      <a id="game-tekken" class="game-card rules-card tekken" href="./additional-games.html?game=tekken" data-board="tekken" data-board-title="TEKKEN 8" data-board-line="FIGHT FOR FINAL 4." data-board-copy="6 баг · 18 тоглогч · Group BO3 → 6-player round robin → Final 4 BO5 bracket." data-board-format="18 PLAYERS · BO3 / BO5" data-accent="#ff9bae" data-art="/game-backdrops/tekken.svg">
+        <span class="game-art" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/tekken8.svg" alt="Tekken 8 logo"></div><span class="status">RULES READY</span></div>
           <h2>TEKKEN 8</h2>
@@ -203,7 +214,7 @@
       const panel = panels[activeIndex];
       hero.dataset.board = panel.dataset.board;
       hero.style.setProperty('--hero-accent', panel.dataset.accent);
-      hero.style.setProperty('--hero-logo', `url("${panel.dataset.logo}")`);
+      hero.style.setProperty('--hero-art', `url("${panel.dataset.art}")`);
       heroKicker.textContent = `Featured board · ${panel.dataset.boardTitle}`;
       heroGame.textContent = panel.dataset.boardTitle;
       heroLine.textContent = panel.dataset.boardLine;

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17120a"/><stop offset=".55" stop-color="#49320b"/><stop offset="1" stop-color="#101719"/></linearGradient>
+    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse"><path d="M44 0H0V44" fill="none" stroke="#ffe36c" stroke-opacity=".16"/></pattern>
+  </defs>
+  <rect width="1200" height="700" fill="url(#night)"/>
+  <rect width="1200" height="700" fill="url(#grid)"/>
+  <path d="M0 550 205 320l165 86 152-164 190 89 195-168 293 212v325H0Z" fill="#080f12" opacity=".88"/>
+  <path d="M80 570h1040M160 505h880M250 435h720" stroke="#ffc928" stroke-opacity=".42" stroke-width="5"/>
+  <path d="M210 290h220v260H210zm280 45h250v215H490zm315-90h190v310H805z" fill="#11191a" stroke="#ffe06b" stroke-opacity=".4" stroke-width="5"/>
+  <path d="M320 290v260m280-215v215m300-310v310" stroke="#ffe06b" stroke-opacity=".23" stroke-width="8"/>
+  <circle cx="890" cy="205" r="112" fill="none" stroke="#ffe06b" stroke-opacity=".28" stroke-width="8"/>
+  <path d="M890 130v150m-75-75h150" stroke="#ffe06b" stroke-opacity=".45" stroke-width="6"/>
+  <path d="m50 80 110 60M1060 100l100 75M760 80l95 48" stroke="#ffe06b" stroke-opacity=".45" stroke-width="4"/>
+</svg>

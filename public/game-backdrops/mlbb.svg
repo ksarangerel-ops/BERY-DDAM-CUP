@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="magic" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17133b"/><stop offset=".5" stop-color="#67286b"/><stop offset="1" stop-color="#17172f"/></linearGradient>
+    <radialGradient id="moon"><stop stop-color="#ffdfff"/><stop offset=".45" stop-color="#ff9de9"/><stop offset="1" stop-color="#7732a7"/></radialGradient>
+  </defs>
+  <rect width="1200" height="700" fill="url(#magic)"/>
+  <circle cx="845" cy="180" r="126" fill="url(#moon)" opacity=".82"/>
+  <circle cx="845" cy="180" r="165" fill="none" stroke="#ffb6f1" stroke-opacity=".28" stroke-width="5"/>
+  <path d="M0 590q180-145 340 0t340 0 520 0v110H0Z" fill="#110d26" stroke="#ff93df" stroke-opacity=".35" stroke-width="5"/>
+  <path d="M110 530 250 390l120 95 130-190 144 186 130-125 130 130 116-81 110 133" fill="none" stroke="#ffb2ed" stroke-opacity=".5" stroke-width="8"/>
+  <path d="M470 500v-160l48-65 48 65v160m-70-105h44m-44 56h44" fill="#281c4f" stroke="#ffd6fa" stroke-opacity=".55" stroke-width="5"/>
+  <g fill="#ffb0ec" opacity=".7"><circle cx="185" cy="210" r="5"/><circle cx="320" cy="125" r="8"/><circle cx="520" cy="105" r="5"/><circle cx="1030" cy="315" r="7"/><circle cx="1080" cy="160" r="4"/></g>
+</svg>

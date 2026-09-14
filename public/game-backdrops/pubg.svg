@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice">
+  <defs><linearGradient id="drop" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#0c5e6c"/><stop offset=".56" stop-color="#1b9e8b"/><stop offset="1" stop-color="#102434"/></linearGradient></defs>
+  <rect width="1200" height="700" fill="url(#drop)"/>
+  <circle cx="870" cy="145" r="118" fill="#f4e5a1" opacity=".52"/>
+  <path d="M0 470 190 360l130 88 150-155 170 128 180-99 135 95 245-126v409H0Z" fill="#0a2730" opacity=".84"/>
+  <path d="M0 615q190-75 350 0t350 0 500 0" fill="none" stroke="#77e8cb" stroke-opacity=".42" stroke-width="12"/>
+  <path d="M585 30v200m-100-100h200" stroke="#effff4" stroke-opacity=".35" stroke-width="5"/>
+  <path d="M585 230 530 355h110Z" fill="#d8f4db" opacity=".34"/>
+  <path d="M530 355 460 520m180-165 80 165" stroke="#dbfff0" stroke-opacity=".3" stroke-width="7"/>
+  <g fill="#b9ffe6" opacity=".65"><circle cx="160" cy="170" r="5"/><circle cx="270" cy="120" r="8"/><circle cx="1020" cy="210" r="6"/><circle cx="1100" cy="100" r="4"/></g>
+</svg>
