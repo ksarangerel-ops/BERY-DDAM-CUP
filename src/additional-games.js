@@ -18,8 +18,9 @@ const GAME_DEFS = {
 };
 const GAME_IDS = Object.keys(GAME_DEFS);
 const REQUIRED_GAME_IDS = GAME_IDS.filter(id => id !== 'tetris');
-const TEAM_NAMES = ['Team Alpha', 'Team Bravo', 'Team Charlie', 'Team Delta', 'Team Echo', 'Team Foxtrot'];
+const TEAM_NAMES = ['Team Gegeenee', 'Team Ganaa', 'Team Garidaa', 'Team Amaraa', 'Team Bery', 'Team Bagaa'];
 const TAGS = ['ALP', 'BRV', 'CHR', 'DLT', 'ECH', 'FOX'];
+const TEAM_NAME_VERSION = 'ganaa-team-names-v1';
 const ML_SERIES = ['', '2-0', '1-1', '0-2'];
 const BO3_SERIES = ['', '2-0', '2-1', '1-2', '0-2'];
 const MAP_NAMES = ['Sanhok', 'Livik', 'Erangel'];
@@ -55,6 +56,7 @@ function defaultState() {
   }));
   return {
     version: 1,
+    teamNameVersion: TEAM_NAME_VERSION,
     updated: null,
     games: {
       mlbb: { teams: mlTeams, groupResults: groupMatches().map(match => ({ ...match, series: '' })), playoff: { sf1: '', sf2: '', final: '', third: '' } },
@@ -78,6 +80,13 @@ function normalizeState(value) {
   }
   if (!Array.isArray(value.games.tekken.teams) || value.games.tekken.teams.length !== 6) {
     value.games.tekken.teams = TEAM_NAMES.map((name, index) => ({ id: `t${index + 1}`, name, tag: TAGS[index] }));
+  }
+  if (value.teamNameVersion !== TEAM_NAME_VERSION) {
+    ['mecha', 'stumble', 'pubg', 'tekken', 'tetris'].forEach(id => {
+      value.games[id]?.teams?.forEach((team, index) => { team.name = TEAM_NAMES[index] || team.name; });
+    });
+    value.games.mlbb?.teams?.forEach((team, index) => { team.name = TEAM_NAMES[index] || team.name; });
+    value.teamNameVersion = TEAM_NAME_VERSION;
   }
   return value;
 }

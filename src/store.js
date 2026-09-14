@@ -15,8 +15,20 @@
 import { TEAM_SEED, SQUAD_SIZE, NUM_TEAMS, CACHE_KEY } from './config.js';
 import * as realtime from './supabase.js';
 
+const TEAM_NAME_VERSION = 'ganaa-team-names-v1';
+
+function migrateTeamNames(state) {
+  if (!state || state.teamNameVersion === TEAM_NAME_VERSION) return state;
+  return {
+    ...state,
+    teamNameVersion: TEAM_NAME_VERSION,
+    teams: state.teams.map((team, index) => ({ ...team, name: TEAM_SEED[index]?.[0] || team.name })),
+  };
+}
+
 export function blankState() {
   return {
+    teamNameVersion: TEAM_NAME_VERSION,
     teams: TEAM_SEED.map(([name, tag], i) => ({
       id: 't' + (i + 1), name, tag,
       players: Array.from({ length: SQUAD_SIZE }, (_, p) => ({
@@ -58,7 +70,7 @@ export function writeCache(state) {
 export const MODE = { LIVE: 'live', SYNCING: 'syncing', LOCAL: 'local' };
 
 export function createStore({ onState, onMode }) {
-  let state = readCache() || blankState();
+  let state = migrateTeamNames(readCache() || blankState());
   let mode = realtime.isLive() ? MODE.SYNCING : MODE.LOCAL;
   let unsubData = () => {};
   let unsubConn = () => {};
@@ -84,7 +96,7 @@ export function createStore({ onState, onMode }) {
           console.warn('[store] ignoring unusable remote snapshot');
           return;
         }
-        state = remote;
+        state = migrateTeamNames(remote);
         writeCache(state);
         onState(state, { fromRemote: true });
       },

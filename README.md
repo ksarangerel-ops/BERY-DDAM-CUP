@@ -54,8 +54,8 @@ When two or more teams have the same points:
   rules hub.
 - DOTA 2 branding with the original board layout and scoring.
 - CS2 branding with a tactical HUD styling.
-- Six editable seeded teams: Team Alpha, Team Bravo, Team Charlie, Team Delta,
-  Team Echo and Team Foxtrot.
+- Six editable seeded teams: Team Gegeenee, Team Ganaa, Team Garidaa, Team Amaraa,
+  Team Bery and Team Bagaa.
 - Five-player roster editing per team.
 - Six-team Group Stage standings, Upper/Lower qualification and a four-match BO3
   playoff bracket.

@@ -49,12 +49,12 @@ export const NUM_MATCHES = MATCHES.length;
 export const NUM_TEAMS = 6;
 
 export const TEAM_SEED = [
-  ['Team Alpha',   'ALP', null],
-  ['Team Bravo',   'BRV', null],
-  ['Team Charlie', 'CHR', null],
-  ['Team Delta',   'DLT', null],
-  ['Team Echo',    'ECH', null],
-  ['Team Foxtrot', 'FOX', null],
+  ['Team Gegeenee', 'ALP', null],
+  ['Team Ganaa',    'BRV', null],
+  ['Team Garidaa',  'CHR', null],
+  ['Team Amaraa',   'DLT', null],
+  ['Team Bery',     'ECH', null],
+  ['Team Bagaa',    'FOX', null],
 ];
 
 export const matchById = id => MATCHES.find(match => match.id === Number(id));
