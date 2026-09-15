@@ -72,6 +72,13 @@
     .game-card.cs2:hover.is-video-ready .game-video { filter: brightness(1.06) saturate(1.26) contrast(1.1); }
     .game-card.cs2:hover.is-video-ready .game-video { transform: scale(1.13) translateZ(0); }
     .game-card.cs2:hover.is-video-ready .game-video-shade { background: linear-gradient(90deg, rgba(8,10,11,.42), rgba(8,10,11,.1) 55%, rgba(8,10,11,.28)); }
+    .game-card.ml .game-video { display: block; position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; filter: brightness(.9) saturate(1.18) contrast(1.06); transform: translateZ(0); backface-visibility: hidden; pointer-events: none; transition: opacity .35s ease, filter .35s ease; }
+    .game-card.ml .game-video-shade { display: block; position: absolute; inset: 0; z-index: 0; background: linear-gradient(90deg, rgba(26,8,24,.6), rgba(26,8,24,.18) 55%, rgba(26,8,24,.42)); opacity: 0; pointer-events: none; transition: opacity .35s ease, background .35s ease; }
+    .game-card.ml.is-video-ready .game-art { opacity: 0; }
+    .game-card.ml.is-video-ready .game-video, .game-card.ml.is-video-ready .game-video-shade { opacity: 1; }
+    .game-card.ml.is-video-ready .game-video { transform: scale(1.1) translateZ(0); }
+    .game-card.ml:hover.is-video-ready .game-video { filter: brightness(1.06) saturate(1.28) contrast(1.1); transform: scale(1.13) translateZ(0); }
+    .game-card.ml:hover.is-video-ready .game-video-shade { background: linear-gradient(90deg, rgba(26,8,24,.42), rgba(26,8,24,.1) 55%, rgba(26,8,24,.28)); }
     .game-card > div { position: relative; z-index: 1; }
     .game-card > div:first-of-type { width: min(820px, 100%); padding: 0; }
     .game-card .card-top { padding-bottom: 14px; border-bottom: 1px solid color-mix(in srgb, var(--card-accent, #fff) 34%, transparent); }
@@ -201,6 +208,10 @@
 
       <a id="game-mlbb" class="game-card reference-card ml" href="./additional-games.html?game=mlbb" data-board="mlbb" data-board-title="MOBILE LEGENDS" data-board-line="GROUPS TO FINALS." data-board-copy="2 хэсэг BO2 → A1/B2, B1/A2 semifinal BO3 → Grand Final + 3rd Place. Official дүрэм." data-board-format="BO2 GROUPS → BO3 PLAYOFF" data-accent="#ff9be1" data-art="/game-backdrops/mlbb-game.jpg">
         <span class="game-art" aria-hidden="true"></span>
+        <video class="game-video hover-game-video" playsinline preload="auto" poster="/game-backdrops/mlbb-game.jpg" data-trim-start="0" data-trim-end="0" aria-hidden="true">
+          <source src="/game-videos/mobile-legends-theme.mp4" type="video/mp4">
+        </video>
+        <span class="game-video-shade" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark mlbb-logo"><img src="/game-logos/mlbb-official.jpg" alt="Mobile Legends logo"></div><span class="status">MLBB RULES</span></div>
           <span class="card-kicker">Official rules · live board</span>
