@@ -93,6 +93,13 @@
     .game-card.stumble.is-video-ready .game-video { transform: scale(1.1) translateZ(0); }
     .game-card.stumble:hover.is-video-ready .game-video { filter: brightness(1.06) saturate(1.28) contrast(1.1); transform: scale(1.13) translateZ(0); }
     .game-card.stumble:hover.is-video-ready .game-video-shade { background: linear-gradient(90deg, rgba(30,9,22,.42), rgba(30,9,22,.1) 55%, rgba(30,9,22,.28)); }
+    .game-card.pubg .game-video { display: block; position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; filter: brightness(.9) saturate(1.18) contrast(1.06); transform: translateZ(0); backface-visibility: hidden; pointer-events: none; transition: opacity .35s ease, filter .35s ease; }
+    .game-card.pubg .game-video-shade { display: block; position: absolute; inset: 0; z-index: 0; background: linear-gradient(90deg, rgba(5,20,22,.62), rgba(5,20,22,.18) 55%, rgba(5,20,22,.42)); opacity: 0; pointer-events: none; transition: opacity .35s ease, background .35s ease; }
+    .game-card.pubg.is-video-ready .game-art { opacity: 0; }
+    .game-card.pubg.is-video-ready .game-video, .game-card.pubg.is-video-ready .game-video-shade { opacity: 1; }
+    .game-card.pubg.is-video-ready .game-video { transform: scale(1.1) translateZ(0); }
+    .game-card.pubg:hover.is-video-ready .game-video { filter: brightness(1.06) saturate(1.28) contrast(1.1); transform: scale(1.13) translateZ(0); }
+    .game-card.pubg:hover.is-video-ready .game-video-shade { background: linear-gradient(90deg, rgba(5,20,22,.42), rgba(5,20,22,.1) 55%, rgba(5,20,22,.28)); }
     .game-card > div { position: relative; z-index: 1; }
     .game-card > div:first-of-type { width: min(820px, 100%); padding: 0; }
     .game-card .card-top { padding-bottom: 14px; border-bottom: 1px solid color-mix(in srgb, var(--card-accent, #fff) 34%, transparent); }
@@ -222,7 +229,7 @@
 
       <a id="game-mlbb" class="game-card reference-card ml" href="./additional-games.html?game=mlbb" data-board="mlbb" data-board-title="MOBILE LEGENDS" data-board-line="GROUPS TO FINALS." data-board-copy="2 хэсэг BO2 → A1/B2, B1/A2 semifinal BO3 → Grand Final + 3rd Place. Official дүрэм." data-board-format="BO2 GROUPS → BO3 PLAYOFF" data-accent="#ff9be1" data-art="/game-backdrops/mlbb-game.jpg">
         <span class="game-art" aria-hidden="true"></span>
-        <video class="game-video hover-game-video" playsinline preload="auto" poster="/game-backdrops/mlbb-game.jpg" data-trim-start="4" data-trim-end="0" aria-hidden="true">
+        <video class="game-video hover-game-video" playsinline preload="auto" poster="/game-backdrops/mlbb-game.jpg" data-trim-start="0" data-trim-end="0" aria-hidden="true">
           <source src="/game-videos/mobile-legends-theme.mp4" type="video/mp4">
         </video>
         <span class="game-video-shade" aria-hidden="true"></span>
@@ -267,6 +274,10 @@
 
       <a id="game-pubg" class="game-card reference-card rules-card pubg" href="./additional-games.html?game=pubg" data-board="pubg" data-board-title="PUBG MOBILE" data-board-line="DROP TO WIN." data-board-copy="6 баг · Sanhok, Livik, Erangel. Placement + kill points-аар аварга тодорно." data-board-format="3 MAPS · PLACEMENT + KILLS" data-accent="#76f1cf" data-art="/game-backdrops/pubg-game.jpg">
         <span class="game-art" aria-hidden="true"></span>
+        <video class="game-video hover-game-video" playsinline preload="auto" poster="/game-backdrops/pubg-game.jpg" data-trim-start="0" data-trim-end="0" aria-hidden="true">
+          <source src="/game-videos/pubg-mobile-theme.mp4" type="video/mp4">
+        </video>
+        <span class="game-video-shade" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/pubg-mobile.svg" alt="PUBG Mobile logo"></div><span class="status">RULES READY</span></div>
           <span class="card-kicker">Official rules · live board</span>
