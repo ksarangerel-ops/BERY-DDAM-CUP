@@ -1,23 +1,20 @@
 import './additional-games.css';
-import { createClient } from '@supabase/supabase-js';
+import { supabase as client, isConfigured } from './shared/supabase-client.ts';
 
 const TOURNAMENT_ID = 'ddam-cup-additional-games-v1';
 const CACHE_KEY = `ddam-cup-cache:${TOURNAMENT_ID}`;
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
-const isConfigured = Boolean(SUPABASE_URL && SUPABASE_KEY);
-const client = isConfigured ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 const GAME_DEFS = {
   mlbb: { label: 'Mobile Legends', short: 'MLBB', format: '2 groups · BO2 → BO3 playoff', rules: './mobile-legends.html', logo: '/game-logos/mlbb-official.jpg', logoClass: 'wordmark', art: '/game-backdrops/mlbb-game.jpg' },
   mecha: { label: 'Meccha Chameleon', short: 'MECHA', format: '2 lobbies · 6 rounds/lobby · 4 players/team', rules: './games.html#mecha', logo: '/game-logos/mecha.webp', art: '/game-backdrops/mecha-chameleon-hero.jpg' },
   stumble: { label: 'Stumble Guys', short: 'STUMBLE', format: '30 players · Grand Prix', rules: './games.html#stumble', logo: '/game-logos/stumble.svg', logoClass: 'wordmark light', art: '/game-backdrops/stumble-game.png' },
   pubg: { label: 'PUBG Mobile', short: 'PUBG', format: '3 maps · placement + kills', rules: './games.html#pubg', logo: '/game-logos/pubg-mobile.svg', logoClass: 'wordmark light', art: '/game-backdrops/pubg-game.jpg' },
-  tekken: { label: 'Tekken 8', short: 'TEKKEN', format: '18 players · BO3 / BO5 playoff', rules: './games.html#tekken', logo: '/game-logos/tekken8.svg', logoClass: 'wordmark light', art: '/game-backdrops/tekken-game.jpeg' },
+  tekken: { label: 'Tekken 7', short: 'TEKKEN', format: '24 players · 4 groups → double elimination', rules: './games.html#tekken', logo: '/game-logos/tekken7.png', logoClass: 'wordmark light', art: '/game-backdrops/tekken7-game.jpg' },
   tetris: { label: 'Tetris', short: 'TETRIS', format: '3 games · 2 zones · final 4', rules: './games.html#tetris', logo: '/game-logos/tetris-logo.jpg', logoClass: 'wordmark tetris-logo', art: '/game-backdrops/tetris-gamer.webp' },
 };
 const GAME_IDS = Object.keys(GAME_DEFS);
-const REQUIRED_GAME_IDS = GAME_IDS.filter(id => id !== 'tetris');
+// Tekken keeps its own Supabase row and full app (src/tekken); it is not part of this shared state.
+const REQUIRED_GAME_IDS = GAME_IDS.filter(id => id !== 'tetris' && id !== 'tekken');
 const TEAM_NAMES = ['Team Gegeenee', 'Team Ganaa', 'Team Garidaa', 'Team Amaraa', 'Team Bery', 'Team Bagaa'];
 const TAGS = ['ALP', 'BRV', 'CHR', 'DLT', 'ECH', 'FOX'];
 const TEAM_NAME_VERSION = 'ganaa-team-names-v1';
@@ -45,9 +42,6 @@ function defaultState() {
     ['a1', 'A', 0], ['a2', 'A', 1], ['a3', 'A', 2], ['b1', 'B', 3], ['b2', 'B', 4], ['b3', 'B', 5],
   ].map(([id, group, index]) => ({ id, group, name: TEAM_NAMES[index], tag: TAGS[index] }));
   const makeTeams = () => TEAM_NAMES.map((name, index) => ({ id: `t${index + 1}`, name, tag: TAGS[index] }));
-  const makePlayers = (count, perTeam, prefix) => makeTeams().flatMap((team, teamIndex) => Array.from({ length: perTeam }, (_, playerIndex) => ({
-    id: `${prefix}${teamIndex + 1}p${playerIndex + 1}`, teamId: team.id, name: `${team.tag} Player ${playerIndex + 1}`, points: 0, wins: 0, losses: 0, gamesWon: 0, gamesLost: 0,
-  }))).slice(0, count);
   const tetrisTeams = makeTeams();
   const tetrisGames = Array.from({ length: 3 }, (_, index) => ({
     id: `game${index + 1}`,
@@ -63,7 +57,6 @@ function defaultState() {
       mecha: { teams: makeTeams().map(team => ({ ...team, hider: 0, topMissedSpot: 0, seekersCaught: 0, cleanSweeps: 0 })) },
       stumble: { teams: makeTeams().map(team => ({ ...team, players: Array.from({ length: 5 }, (_, index) => ({ id: `${team.id}p${index + 1}`, name: `${team.tag} Player ${index + 1}`, points: 0 })) })) },
       pubg: { teams: makeTeams().map(team => ({ ...team, maps: MAP_NAMES.map(() => ({ placement: '', kills: '' })) })) },
-      tekken: { teams: makeTeams(), players: makePlayers(18, 3, 'k') },
       tetris: { teams: tetrisTeams, games: tetrisGames },
     },
   };
@@ -78,9 +71,6 @@ function normalizeState(value) {
       value.games.tetris.teams = value.games.tetris.teams.map((team, index) => ({ ...team, name: referenceTeams[index]?.name || team.name, tag: referenceTeams[index]?.tag || team.tag }));
     }
   }
-  if (!Array.isArray(value.games.tekken.teams) || value.games.tekken.teams.length !== 6) {
-    value.games.tekken.teams = TEAM_NAMES.map((name, index) => ({ id: `t${index + 1}`, name, tag: TAGS[index] }));
-  }
   value.games.mecha?.teams?.forEach(team => {
     if (team.hider == null) team.hider = 0;
     if (team.topMissedSpot == null) team.topMissedSpot = 0;
@@ -88,7 +78,7 @@ function normalizeState(value) {
     if (team.cleanSweeps == null) team.cleanSweeps = Math.round(num(team.bonus) / 2);
   });
   if (value.teamNameVersion !== TEAM_NAME_VERSION) {
-    ['mecha', 'stumble', 'pubg', 'tekken', 'tetris'].forEach(id => {
+    ['mecha', 'stumble', 'pubg', 'tetris'].forEach(id => {
       value.games[id]?.teams?.forEach((team, index) => { team.name = TEAM_NAMES[index] || team.name; });
     });
     value.games.mlbb?.teams?.forEach((team, index) => { team.name = TEAM_NAMES[index] || team.name; });
@@ -223,14 +213,6 @@ function renderPubg(game) {
   return `${boardHead(GAME_DEFS.pubg, '6 баг · Sanhok / Livik / Erangel · placement + kills', GAME_DEFS.pubg.rules)}<div class="ag-pad"><div class="ag-status-grid"><div class="ag-status"><b>3</b><span>Maps</span></div><div class="ag-status"><b>2</b><span>Points / kill</span></div><div class="ag-status"><b>${rows.reduce((sum, row) => sum + row.points, 0)}</b><span>Total points</span></div></div><div class="ag-form-section" style="margin-top:16px"><h3>Team ranking</h3>${rankingTable(rows, [{ key: 'placement', label: 'Placement' }, { key: 'kills', label: 'Kills' }, { key: 'points', label: 'Total', score: true }])}</div><p class="ag-help" style="margin:14px 0 0">Нийт оноо = placement points + kills × 2. Tie-break: WWCD → нийт kill → Erangel placement → Erangel kill.</p></div>`;
 }
 
-function renderTekken(game) {
-  const teamsById = new Map((game.teams || TEAM_NAMES.map((name, index) => ({ id: `t${index + 1}`, name, tag: TAGS[index] })) ).map(team => [team.id, team]));
-  const playerRows = game.players.map(player => ({ name: player.name, sub: teamsById.get(player.teamId)?.name || player.teamId, points: num(player.points), record: `${num(player.wins)}-${num(player.losses)}`, games: `${num(player.gamesWon)}-${num(player.gamesLost)}` })).sort((a, b) => b.points - a.points);
-  const teamMap = new Map(); game.players.forEach(player => { const key = player.teamId; const row = teamMap.get(key) || { name: teamsById.get(key)?.name || `Team ${key.replace('t', '')}`, sub: teamsById.get(key)?.tag || 'Team total', points: 0, wins: 0, games: 0 }; row.points += num(player.points); row.wins += num(player.wins); row.games += num(player.gamesWon); teamMap.set(key, row); });
-  const teams = [...teamMap.values()].sort((a, b) => b.points - a.points);
-  return `${boardHead(GAME_DEFS.tekken, '6 баг · 18 тоглогч · player leaderboard · team total', GAME_DEFS.tekken.rules)}<div class="ag-pad"><div class="ag-status-grid"><div class="ag-status"><b>18</b><span>Players</span></div><div class="ag-status"><b>3</b><span>Players / team</span></div><div class="ag-status"><b>${playerRows.reduce((sum, row) => sum + row.points, 0)}</b><span>Player points</span></div></div><div class="ag-grid two" style="margin-top:16px"><div class="ag-form-section"><h3>Player leaderboard</h3>${rankingTable(playerRows, [{ key: 'points', label: 'Points', score: true }, { key: 'record', label: 'W-L' }, { key: 'games', label: 'Game W-L' }])}</div><div class="ag-form-section"><h3>Team total</h3>${rankingTable(teams, [{ key: 'points', label: 'Points', score: true }, { key: 'wins', label: 'Match wins' }, { key: 'games', label: 'Game wins' }])}</div></div><p class="ag-help" style="margin:14px 0 0">Tie-break: нийт оноо → head-to-head → game differential → нийт хожсон game → нэмэлт BO1.</p></div>`;
-}
-
 function tetrisPlacePoints(place) { return ({ 1: 10, 2: 7, 3: 5, 4: 3, 5: 1, 6: 0 })[num(place)] || 0; }
 function tetrisAggregate(game) {
   return game.teams.map(team => {
@@ -318,7 +300,27 @@ function renderTetrisClassic(game) {
   return classicBoard(GAME_DEFS.tetris, '6 баг · 3 games · 2 zones / game · final 4', [{ value: '6', label: 'Teams' }, { value: '3', label: 'Games' }, { value: '2', label: 'Zones / game' }, { value: '4', label: 'Final teams' }], [{ title: '1. Zone progression', body: 'Game бүрт Zone A/B тусдаа тоглож, zone бүрийн top 2 Final 4-д орно.' }, { title: '2. Scoring', body: 'Game win = 3 оноо. Final place: 10 / 7 / 5 / 3 / 1.' }, { title: '3. Final ranking', body: '3 game-ийн нийт оноо → нийт win → final place points.' }], stage, standings, roster, breakdown, 'Zone A/B-ийн үр дүнг Game 1, Game 2, Game 3 дарааллаар бүртгэнэ. Final 4 bracket нь шилдэг багуудаар үргэлжилнэ.');
 }
 
-function renderPublic() { const game = state.games[activeGame]; const body = activeGame === 'mlbb' ? renderMlbbClassic(game) : activeGame === 'mecha' ? renderMechaClassic(game) : activeGame === 'stumble' ? renderStumbleClassic(game) : activeGame === 'pubg' ? renderPubgClassic(game) : activeGame === 'tetris' ? renderTetrisClassic(game) : renderTekken(game); $('publicBoard').innerHTML = body; }
+function renderPublic() {
+  if (activeGame === 'tekken') { mountTekkenTab(); return; }
+  unmountTekkenTab();
+  const game = state.games[activeGame]; const body = activeGame === 'mecha' ? renderMechaClassic(game) : activeGame === 'stumble' ? renderStumbleClassic(game) : activeGame === 'pubg' ? renderPubgClassic(game) : activeGame === 'tetris' ? renderTetrisClassic(game) : renderMlbbClassic(game); $('publicBoard').innerHTML = body;
+}
+
+/* Tekken is a full app of its own (src/tekken): groups, tie-breakers, double-elimination
+   bracket, live scoring, photos and streams, stored in its own Supabase row. It is loaded
+   on first use and mounted once, so updates to the shared board above never wipe it. */
+let tekkenApp = null;
+let tekkenLoading = null;
+function mountTekkenTab() {
+  if (tekkenApp || tekkenLoading) return;
+  const host = $('publicBoard');
+  host.innerHTML = '<div class="ag-dash-empty">Loading Tekken…</div>';
+  tekkenLoading = import('./tekken/mount.ts')
+    .then(({ mountTekken }) => { if (activeGame === 'tekken') tekkenApp = mountTekken(host, client); })
+    .catch(error => { console.error('[tekken] failed to load', error); if (activeGame === 'tekken') host.innerHTML = '<div class="ag-dash-empty">Tekken board failed to load. Refresh the page.</div>'; })
+    .finally(() => { tekkenLoading = null; });
+}
+function unmountTekkenTab() { if (tekkenApp) { tekkenApp.unmount(); tekkenApp = null; } }
 function renderMlbbDashboard(game) {
   const a = mlRows(game, 'A'); const b = mlRows(game, 'B'); const playoff = mlPlayoff(game);
   const groupRows = rows => rows.map(row => ({ name: row.team.name, sub: `${row.team.tag} · ${row.played}/2 series · ${row.gamesWon}-${row.gamesLost}`, points: `${row.points} pts` }));
@@ -364,9 +366,8 @@ function renderMlEditor(game) { const name = id => teamName(game, id); return `$
 function renderMechaEditor(game) { return `${inputTeamNames(game)}<div class="ag-form-section"><h3>Official Meccha scoring input</h3><p class="ag-help">Hider points-ийг Missed Spot Ranking-ийн эцсийн дэлгэцээс 0.1 нарийвчлалтайгаар нийлбэрлэн оруулна. Seeker оноо автоматаар бодогдоно.</p><div class="ag-grid">${game.teams.map(team => { const score = mechaStats(team); return `<div class="ag-form-section"><h3>${esc(team.name)} · ${esc(team.tag)}</h3><div class="ag-form-grid three"><label class="ag-label">Hider points<input class="ag-input" type="number" min="0" step="0.1" data-mecha="${team.id}" data-field="hider" value="${score.hider}"></label><label class="ag-label">Highest Missed Spot rounds<input class="ag-input" type="number" min="0" max="12" step="1" data-mecha="${team.id}" data-field="topMissedSpot" value="${score.topMissedSpot}"></label><label class="ag-label">Hiders caught<input class="ag-input" type="number" min="0" max="20" step="1" data-mecha="${team.id}" data-field="seekersCaught" value="${score.seekersCaught}"></label><label class="ag-label">10/10 clean-sweep rounds<input class="ag-input" type="number" min="0" max="2" step="1" data-mecha="${team.id}" data-field="cleanSweeps" value="${score.cleanSweeps}"></label><div class="ag-mecha-total">Seeker ${score.seeker.toFixed(1)} + bonus ${score.bonus.toFixed(1)} = <b>${score.points.toFixed(1)} total</b></div></div></div>`; }).join('')}</div></div>`; }
 function renderStumbleEditor(game) { return `<div class="ag-form-section"><h3>Player points</h3><div class="ag-grid">${game.teams.map(team => `<div class="ag-form-section"><h3>${esc(team.name)}</h3><div class="ag-form-grid">${team.players.map(player => `<label class="ag-label">${esc(player.name)}<input class="ag-input" data-stumble-name="${player.id}" value="${esc(player.name)}"><input class="ag-input" type="number" min="0" data-stumble-points="${player.id}" value="${num(player.points)}"></label>`).join('')}</div></div>`).join('')}</div></div>`; }
 function renderPubgEditor(game) { return `${inputTeamNames(game)}<div class="ag-grid">${game.teams.map(team => `<div class="ag-form-section"><h3>${esc(team.name)}</h3><div class="ag-form-grid three">${team.maps.map((map, index) => `<div><label class="ag-label">${MAP_NAMES[index]} · Place<select class="ag-select" data-pubg="${team.id}" data-map="${index}" data-field="placement"><option value="">—</option>${[1,2,3,4,5,6].map(place => `<option value="${place}" ${String(place) === String(map.placement) ? 'selected' : ''}>${place}</option>`).join('')}</select></label><label class="ag-label" style="margin-top:8px">Kills<input class="ag-input" type="number" min="0" data-pubg="${team.id}" data-map="${index}" data-field="kills" value="${esc(map.kills)}"></label></div>`).join('')}</div></div>`).join('')}</div>`; }
-function renderTekkenEditor(game) { return `<div class="ag-form-section"><h3>Player results</h3><div class="ag-grid">${game.players.map(player => `<div class="ag-form-grid five"><label class="ag-label">Player<input class="ag-input" data-tekken="${player.id}" data-field="name" value="${esc(player.name)}"></label><label class="ag-label">Points<input class="ag-input" type="number" min="0" data-tekken="${player.id}" data-field="points" value="${num(player.points)}"></label><label class="ag-label">W<input class="ag-input" type="number" min="0" data-tekken="${player.id}" data-field="wins" value="${num(player.wins)}"></label><label class="ag-label">L<input class="ag-input" type="number" min="0" data-tekken="${player.id}" data-field="losses" value="${num(player.losses)}"></label><label class="ag-label">Game W/L<input class="ag-input" data-tekken="${player.id}" data-field="games" value="${num(player.gamesWon)}-${num(player.gamesLost)}"></label></div>`).join('')}</div></div>`; }
 function renderTetrisEditor(game) { return `${inputTeamNames(game)}${game.games.map(stage => `<div class="ag-form-section"><h3>${esc(stage.label)} · zone results</h3><div class="ag-grid two">${['A', 'B'].map(zone => `<div><h3>Zone ${zone}</h3>${stage.rows.filter(row => row.zone === zone).map(row => { const team = teamById(game, row.teamId); return `<div class="ag-tetris-edit-row"><b>${esc(team?.name || row.teamId)}</b><label class="ag-label">Wins<input class="ag-input" type="number" min="0" data-tetris-game="${stage.id}" data-tetris-team="${row.teamId}" data-field="wins" value="${num(row.wins)}"></label><label class="ag-label">Place<input class="ag-input" type="number" min="1" max="6" data-tetris-game="${stage.id}" data-tetris-team="${row.teamId}" data-field="place" value="${esc(row.place)}"></label></div>`; }).join('')}</div>`).join('')}</div></div>`).join('')}`; }
-function renderEditor() { const game = state.games[activeGame]; return activeGame === 'mlbb' ? renderMlEditor(game) : activeGame === 'mecha' ? renderMechaEditor(game) : activeGame === 'stumble' ? renderStumbleEditor(game) : activeGame === 'pubg' ? renderPubgEditor(game) : activeGame === 'tetris' ? renderTetrisEditor(game) : renderTekkenEditor(game); }
+function renderEditor() { const game = state.games[activeGame]; return activeGame === 'tekken' ? '' : activeGame === 'mecha' ? renderMechaEditor(game) : activeGame === 'stumble' ? renderStumbleEditor(game) : activeGame === 'pubg' ? renderPubgEditor(game) : activeGame === 'tetris' ? renderTetrisEditor(game) : renderMlEditor(game); }
 
 function renderAdmin() { const logged = Boolean(authSession?.user); $('loggedOut').classList.toggle('ag-hidden', logged); $('loggedIn').classList.toggle('ag-hidden', !logged); if (logged) { $('userEmail').textContent = authSession.user.email || 'admin'; $('adminEditor').innerHTML = renderEditor(); } }
 function render() {
@@ -385,7 +386,6 @@ function saveFromEditor() {
   if (activeGame === 'stumble') game.teams.forEach(team => team.players.forEach(player => { const name = document.querySelector(`[data-stumble-name="${player.id}"]`); const points = document.querySelector(`[data-stumble-points="${player.id}"]`); if (name) player.name = name.value.trim() || player.name; if (points) player.points = num(points.value); }));
   if (activeGame === 'pubg') document.querySelectorAll('[data-pubg]').forEach(input => { const team = game.teams.find(item => item.id === input.dataset.pubg); const map = team?.maps[Number(input.dataset.map)]; if (map) map[input.dataset.field] = input.value; });
   if (activeGame === 'tetris') document.querySelectorAll('[data-tetris-game]').forEach(input => { const stage = game.games.find(item => item.id === input.dataset.tetrisGame); const row = stage?.rows.find(item => item.teamId === input.dataset.tetrisTeam); if (row) row[input.dataset.field] = input.dataset.field === 'wins' ? num(input.value) : input.value; });
-  if (activeGame === 'tekken') game.players.forEach(player => { document.querySelectorAll(`[data-tekken="${player.id}"]`).forEach(input => { if (input.dataset.field === 'name') player.name = input.value.trim() || player.name; else if (input.dataset.field === 'games') { const [won, lost] = input.value.split('-').map(num); player.gamesWon = won; player.gamesLost = lost; } else player[input.dataset.field] = num(input.value); }); });
   return next;
 }
 

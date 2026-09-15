@@ -54,12 +54,17 @@ body:has(.ag-card:hover)::after{filter:blur(1px) brightness(1.22) saturate(1.18)
 .ag-game-logo.wordmark img[src*="mlbb-official"]{background:#050505;border-radius:6px}
 @media(max-width:650px){.ag-tetris-flow{grid-template-columns:1fr 1fr}.ag-tetris-flow i{display:none}.ag-tetris-stage-head{display:block}.ag-tetris-stage-head span{display:block;margin-top:5px}.ag-tetris-edit-row{grid-template-columns:1fr 1fr}}
 
-/* Featured live-board layout for the additional games. The original CS2, DOTA 2
-   and Tekken boards keep their existing presentation; these panels mirror the
+/* Featured live-board layout for the additional games. These panels mirror the
    reference tournament dashboard with a live rail and a results sidebar. */
-body[data-game]:not([data-game="tekken"]) .ag-layout{display:block}
+body[data-game] .ag-layout{display:block}
 body[data-game]:not([data-game="tekken"]) .ag-layout>aside{margin-top:18px}
 body[data-game]:not([data-game="tekken"]) #publicBoard{overflow:hidden}
+
+/* Tekken mounts its own full board (src/tekken) with its own admin login, live
+   status and styling, so the shared admin panel and sync badge are hidden and the
+   card frame steps aside. overflow stays visible so the Tekken sub-nav can stick. */
+body[data-game="tekken"] .ag-layout>aside,body[data-game="tekken"] #syncBadge{display:none}
+body[data-game="tekken"] #publicBoard{overflow:visible;border:0;border-radius:0;background:none;box-shadow:none}
 .ag-dashboard-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.85fr);gap:18px;padding:18px 20px 20px;border-top:1px solid rgba(255,255,255,.07)}
 .ag-dashboard-main,.ag-dashboard-side{display:grid;align-content:start;gap:18px;min-width:0}
 .ag-dash-panel{position:relative;padding:18px;border:1px solid #2e3147;border-radius:2px;background:linear-gradient(145deg,rgba(19,20,32,.96),rgba(8,9,16,.98));box-shadow:0 16px 34px rgba(0,0,0,.14)}
