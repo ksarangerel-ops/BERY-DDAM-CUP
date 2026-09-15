@@ -61,6 +61,8 @@
     .game-card.dota .game-art { opacity: 0; }
     .game-card.dota .game-video { display: block; position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: .92; filter: brightness(.78) saturate(1.18) contrast(1.08); pointer-events: none; }
     .game-card.dota .game-video-shade { display: block; position: absolute; inset: 0; z-index: 0; background: linear-gradient(90deg, rgba(3,6,10,.72), rgba(3,6,10,.36) 52%, rgba(3,6,10,.58)); pointer-events: none; }
+    .game-card.dota:hover .game-video { opacity: 1; filter: brightness(1.04) saturate(1.3) contrast(1.1); }
+    .game-card.dota:hover .game-video-shade { background: linear-gradient(90deg, rgba(3,6,10,.54), rgba(3,6,10,.16) 52%, rgba(3,6,10,.38)); }
     .game-card > div { position: relative; z-index: 1; }
     .game-card > div:first-of-type { width: min(820px, 100%); padding: 0; }
     .game-card .card-top { padding-bottom: 14px; border-bottom: 1px solid color-mix(in srgb, var(--card-accent, #fff) 34%, transparent); }
