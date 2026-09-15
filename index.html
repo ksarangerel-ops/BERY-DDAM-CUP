@@ -68,7 +68,9 @@
     .game-card.cs2 .game-video-shade { display: block; position: absolute; inset: 0; z-index: 0; background: linear-gradient(90deg, rgba(8,10,11,.6), rgba(8,10,11,.18) 55%, rgba(8,10,11,.42)); opacity: 0; pointer-events: none; transition: opacity .35s ease, background .35s ease; }
     .game-card.cs2.is-video-ready .game-art { opacity: 0; }
     .game-card.cs2.is-video-ready .game-video, .game-card.cs2.is-video-ready .game-video-shade { opacity: 1; }
+    .game-card.cs2.is-video-ready .game-video { transform: scale(1.1) translateZ(0); }
     .game-card.cs2:hover.is-video-ready .game-video { filter: brightness(1.06) saturate(1.26) contrast(1.1); }
+    .game-card.cs2:hover.is-video-ready .game-video { transform: scale(1.13) translateZ(0); }
     .game-card.cs2:hover.is-video-ready .game-video-shade { background: linear-gradient(90deg, rgba(8,10,11,.42), rgba(8,10,11,.1) 55%, rgba(8,10,11,.28)); }
     .game-card > div { position: relative; z-index: 1; }
     .game-card > div:first-of-type { width: min(820px, 100%); padding: 0; }
