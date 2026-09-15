@@ -100,6 +100,13 @@
     .game-card.pubg.is-video-ready .game-video { transform: scale(1.1) translateZ(0); }
     .game-card.pubg:hover.is-video-ready .game-video { filter: brightness(1.06) saturate(1.28) contrast(1.1); transform: scale(1.13) translateZ(0); }
     .game-card.pubg:hover.is-video-ready .game-video-shade { background: linear-gradient(90deg, rgba(5,20,22,.42), rgba(5,20,22,.1) 55%, rgba(5,20,22,.28)); }
+    .game-card.tekken .game-video { display: block; position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; filter: brightness(.9) saturate(1.14) contrast(1.08); transform: translateZ(0); backface-visibility: hidden; pointer-events: none; transition: opacity .35s ease, filter .35s ease; }
+    .game-card.tekken .game-video-shade { display: block; position: absolute; inset: 0; z-index: 0; background: linear-gradient(90deg, rgba(27,5,10,.64), rgba(27,5,10,.2) 55%, rgba(27,5,10,.44)); opacity: 0; pointer-events: none; transition: opacity .35s ease, background .35s ease; }
+    .game-card.tekken.is-video-ready .game-art { opacity: 0; }
+    .game-card.tekken.is-video-ready .game-video, .game-card.tekken.is-video-ready .game-video-shade { opacity: 1; }
+    .game-card.tekken.is-video-ready .game-video { transform: scale(1.1) translateZ(0); }
+    .game-card.tekken:hover.is-video-ready .game-video { filter: brightness(1.06) saturate(1.24) contrast(1.12); transform: scale(1.13) translateZ(0); }
+    .game-card.tekken:hover.is-video-ready .game-video-shade { background: linear-gradient(90deg, rgba(27,5,10,.44), rgba(27,5,10,.1) 55%, rgba(27,5,10,.3)); }
     .game-card > div { position: relative; z-index: 1; }
     .game-card > div:first-of-type { width: min(820px, 100%); padding: 0; }
     .game-card .card-top { padding-bottom: 14px; border-bottom: 1px solid color-mix(in srgb, var(--card-accent, #fff) 34%, transparent); }
@@ -289,6 +296,10 @@
 
       <a id="game-tekken" class="game-card rules-card tekken" href="./additional-games.html?game=tekken" data-board="tekken" data-board-title="TEKKEN 7" data-board-line="FIGHT FOR FINAL 4." data-board-copy="6 баг · 18 тоглогч · Group BO3 → 6-player round robin → Final 4 BO5 bracket." data-board-format="18 PLAYERS · BO3 / BO5" data-accent="#ff9bae" data-art="/game-backdrops/tekken-game.jpeg">
         <span class="game-art" aria-hidden="true"></span>
+        <video class="game-video hover-game-video" playsinline preload="auto" poster="/game-backdrops/tekken-game.jpeg" data-trim-start="0" data-trim-end="0" aria-hidden="true">
+          <source src="/game-videos/tekken7-theme.mp4" type="video/mp4">
+        </video>
+        <span class="game-video-shade" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo wordmark light-logo"><img src="/game-logos/tekken7.png" alt="Tekken 7 logo"></div><span class="status">RULES READY</span></div>
           <span class="card-kicker">Official rules · live board</span>
