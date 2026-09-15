@@ -27,10 +27,13 @@
     .hero { position: relative; isolation: isolate; max-width: none; min-height: 250px; margin-bottom: 18px; overflow: hidden; padding: 34px 38px; border: 1px solid rgba(255,89,89,.38); border-radius: 28px; background: linear-gradient(135deg, rgba(53,22,25,.97), rgba(14,12,14,.96)); box-shadow: 0 22px 55px rgba(0,0,0,.28), 0 0 38px rgba(255,73,73,.1); transition: border-color .25s ease, background .25s ease, box-shadow .25s ease; }
     .hero::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(17,10,13,.82), rgba(17,10,13,.48) 48%, rgba(17,10,13,.08)); pointer-events: none; }
     .hero::after { content: ''; position: absolute; inset: -4px; z-index: -2; background-image: var(--hero-art); background-repeat: no-repeat; background-position: center; background-size: cover; opacity: .72; filter: blur(1px) brightness(1.18) saturate(1.2) contrast(1.04); pointer-events: none; transition: filter .35s ease, transform .35s ease; }
+    .hero-video { display: none; }
     .hero:hover::after { filter: blur(0) brightness(1.22) saturate(1.2) contrast(1.04); transform: scale(1.02); }
     .hero-ambient { display: none; }
     .hero[data-board="dota"]::before { background: radial-gradient(circle at 76% 44%, rgba(255,73,73,.28), transparent 24%), radial-gradient(circle at 68% 86%, rgba(255,166,57,.16), transparent 30%), linear-gradient(90deg, rgba(17,10,13,.84), rgba(17,10,13,.48) 48%, rgba(17,10,13,.08)); background-size: 150% 150%, 140% 140%, 100% 100%; animation: dota-overlay-flow 11s ease-in-out infinite alternate; }
     .hero[data-board="dota"]::after { animation: dota-art-drift 19s ease-in-out infinite alternate; transform-origin: center; }
+    .hero[data-board="dota"]::after { opacity: 0; }
+    .hero[data-board="dota"] .hero-video { display: block; position: absolute !important; inset: -4px; z-index: -2 !important; width: calc(100% + 8px); height: calc(100% + 8px); object-fit: cover; object-position: center; opacity: .78; filter: brightness(.78) saturate(1.2) contrast(1.08); pointer-events: none; }
     .hero[data-board="dota"] .hero-ambient { display: block; position: absolute !important; z-index: 0 !important; right: 4%; bottom: -32%; width: 37%; aspect-ratio: 1; border: 1px solid rgba(255,105,105,.24); border-radius: 50%; background: radial-gradient(circle, rgba(255,88,88,.2) 0 3%, transparent 4% 23%, rgba(255,88,88,.12) 24% 24.5%, transparent 25% 47%, rgba(255,88,88,.1) 48% 48.5%, transparent 49%), repeating-conic-gradient(from 20deg, rgba(255,111,111,.16) 0 2deg, transparent 2deg 17deg); box-shadow: 0 0 65px rgba(255,73,73,.2), inset 0 0 50px rgba(255,73,73,.1); opacity: .65; filter: blur(.15px); animation: dota-sigil-float 8s ease-in-out infinite alternate, dota-sigil-spin 28s linear infinite; pointer-events: none; }
     .hero[data-board="dota"] .hero-ambient::before { content: ''; position: absolute; inset: 13%; border: 1px dashed rgba(255,178,116,.35); border-radius: 50%; animation: dota-ring-spin 15s linear infinite reverse; }
     .hero[data-board="dota"] .hero-ambient::after { content: ''; position: absolute; top: 13%; left: 18%; width: 8px; height: 8px; border-radius: 50%; background: #ff9a72; box-shadow: 0 0 22px 6px rgba(255,112,89,.7), 78px 42px 0 -2px #ff6969, -42px 104px 0 -3px #ffbe72; animation: dota-particles 5s ease-in-out infinite alternate; }
@@ -154,6 +157,9 @@
         <p id="heroCopy">Zone BO2 round-robin → playoff BO3 bracket. Багуудын оноо, тоглолт, дүрмийг харах.</p>
         <div class="hero-meta"><span id="heroFormat">BO2 → BO3 PLAYOFF</span><span>PUBLIC LIVE BOARD</span></div>
       </div>
+      <video class="hero-video" autoplay muted loop playsinline preload="metadata" poster="/game-backdrops/dota-game.png" aria-hidden="true">
+        <source src="/game-videos/dota2-intro-cinematic.mp4" type="video/mp4">
+      </video>
       <span class="hero-ambient" aria-hidden="true"></span>
     </section>
 
