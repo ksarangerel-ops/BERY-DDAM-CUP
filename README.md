@@ -4,7 +4,7 @@ One Vercel website with separate real-time DOTA 2, CS2 and additional game
 tournament boards. The launcher is at `/`; the dedicated boards are
 `/dota2.html`, `/cs2.html` and `/additional-games.html`. The additional board
 contains live scorecards for Mobile Legends, Meccha Chameleon, Stumble Guys,
-PUBG Mobile and Tekken 8. Rules are summarized at `/games.html`, with the full
+PUBG Mobile and Tekken 7. Rules are summarized at `/games.html`, with the full
 Mobile Legends rules at `/mobile-legends.html`.
 
 ## Tournament boards
@@ -14,7 +14,7 @@ Mobile Legends rules at `/mobile-legends.html`.
 - **CS2:** six-team Group BO1 round robin (15 matches), two Lower BO1 qualifiers,
   then two BO3 semifinals, a Grand Final and a 3rd Place Final (4 matches) for places 1–4.
 - **Additional live boards:** one public realtime page with tabs for Mobile
-  Legends, Meccha Chameleon, Stumble Guys, PUBG Mobile and Tekken 8. Admins can
+  Legends, Meccha Chameleon, Stumble Guys, PUBG Mobile and Tekken 7. Admins can
   edit team names, series results, player points and map scores from the page.
 - **Mobile Legends:** six teams split into two BO2 groups, then A1 vs B2 and
   B1 vs A2 BO3 semifinals, Grand Final and 3rd Place Final.

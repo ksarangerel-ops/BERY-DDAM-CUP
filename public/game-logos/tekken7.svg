@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 190" role="img" aria-labelledby="title desc">
+  <title id="title">Tekken 7 logo</title>
+  <desc id="desc">Stylized Tekken 7 wordmark</desc>
+  <defs>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".42" stop-color="#d8dce4"/>
+      <stop offset=".58" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#9ea5b2"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-30%" width="140%" height="170%">
+      <feDropShadow dx="0" dy="7" stdDeviation="4" flood-color="#000" flood-opacity=".8"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)" transform="skewX(-10)">
+    <text x="22" y="122" fill="url(#steel)" stroke="#0a0b12" stroke-width="13" paint-order="stroke" font-family="Arial Black,Impact,sans-serif" font-size="105" font-style="italic" font-weight="900" letter-spacing="-5">TEKKEN</text>
+    <text x="555" y="130" fill="none" stroke="#f4f6fb" stroke-width="13" font-family="Arial Black,Impact,sans-serif" font-size="132" font-style="italic" font-weight="900">7</text>
+  </g>
+</svg>
