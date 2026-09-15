@@ -89,3 +89,40 @@ begin
   end if;
 end
 $$;
+
+-- ---------------------------------------------------------------
+-- TEKKEN board
+-- The Tekken board is its own row in public.tournaments
+-- (id 'ddam-cup-tekken-2026'), covered by the policies above.
+-- Player photos live in the public Storage bucket below: anyone can
+-- view a photo by its URL, only tournament admins can upload,
+-- replace or delete. Safe to re-run.
+-- ---------------------------------------------------------------
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('tekken-photos', 'tekken-photos', true, 524288, array['image/webp', 'image/jpeg', 'image/png'])
+on conflict (id) do update
+  set public = excluded.public,
+      file_size_limit = excluded.file_size_limit,
+      allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "Tournament admins can read tekken photos" on storage.objects;
+drop policy if exists "Tournament admins can upload tekken photos" on storage.objects;
+drop policy if exists "Tournament admins can update tekken photos" on storage.objects;
+drop policy if exists "Tournament admins can delete tekken photos" on storage.objects;
+
+create policy "Tournament admins can read tekken photos"
+  on storage.objects for select to authenticated
+  using (bucket_id = 'tekken-photos' and public.is_tournament_admin());
+
+create policy "Tournament admins can upload tekken photos"
+  on storage.objects for insert to authenticated
+  with check (bucket_id = 'tekken-photos' and public.is_tournament_admin());
+
+create policy "Tournament admins can update tekken photos"
+  on storage.objects for update to authenticated
+  using (bucket_id = 'tekken-photos' and public.is_tournament_admin())
+  with check (bucket_id = 'tekken-photos' and public.is_tournament_admin());
+
+create policy "Tournament admins can delete tekken photos"
+  on storage.objects for delete to authenticated
+  using (bucket_id = 'tekken-photos' and public.is_tournament_admin());
