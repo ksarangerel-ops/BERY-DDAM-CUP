@@ -58,11 +58,12 @@
     .game-art { position: absolute; inset: 0; z-index: 0; background-image: var(--game-art); background-position: center; background-size: cover; opacity: .78; filter: brightness(1.1) saturate(1.18) contrast(1.08); pointer-events: none; transition: opacity .3s ease, filter .35s ease, transform .45s ease; }
     .game-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,10,11,.42), rgba(8,10,11,.12) 55%, rgba(8,10,11,.28)); }
     .game-video, .game-video-shade { display: none; }
-    .game-card.dota .game-art { opacity: 0; }
-    .game-card.dota .game-video { display: block; position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 1; filter: brightness(.9) saturate(1.16) contrast(1.06); transform: translateZ(0); backface-visibility: hidden; pointer-events: none; }
-    .game-card.dota .game-video-shade { display: block; position: absolute; inset: 0; z-index: 0; background: linear-gradient(90deg, rgba(3,6,10,.58), rgba(3,6,10,.22) 52%, rgba(3,6,10,.46)); pointer-events: none; }
-    .game-card.dota:hover .game-video { filter: brightness(1.08) saturate(1.28) contrast(1.1); }
-    .game-card.dota:hover .game-video-shade { background: linear-gradient(90deg, rgba(3,6,10,.42), rgba(3,6,10,.1) 52%, rgba(3,6,10,.3)); }
+    .game-card.dota .game-video { display: block; position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; filter: brightness(.9) saturate(1.16) contrast(1.06); transform: translateZ(0); backface-visibility: hidden; pointer-events: none; transition: opacity .25s ease, filter .25s ease; }
+    .game-card.dota .game-video-shade { display: block; position: absolute; inset: 0; z-index: 0; background: linear-gradient(90deg, rgba(3,6,10,.58), rgba(3,6,10,.22) 52%, rgba(3,6,10,.46)); opacity: 0; pointer-events: none; transition: opacity .25s ease, background .25s ease; }
+    .game-card.dota.is-video-ready .game-art { opacity: 0; }
+    .game-card.dota.is-video-ready .game-video, .game-card.dota.is-video-ready .game-video-shade { opacity: 1; }
+    .game-card.dota:hover.is-video-ready .game-video { filter: brightness(1.08) saturate(1.28) contrast(1.1); }
+    .game-card.dota:hover.is-video-ready .game-video-shade { background: linear-gradient(90deg, rgba(3,6,10,.42), rgba(3,6,10,.1) 52%, rgba(3,6,10,.3)); }
     .game-card.cs2 .game-video { display: block; position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; filter: brightness(.9) saturate(1.14) contrast(1.06); transform: translateZ(0); backface-visibility: hidden; pointer-events: none; transition: opacity .35s ease, filter .35s ease; }
     .game-card.cs2 .game-video-shade { display: block; position: absolute; inset: 0; z-index: 0; background: linear-gradient(90deg, rgba(8,10,11,.6), rgba(8,10,11,.18) 55%, rgba(8,10,11,.42)); opacity: 0; pointer-events: none; transition: opacity .35s ease, background .35s ease; }
     .game-card.cs2.is-video-ready .game-art { opacity: 0; }
@@ -168,7 +169,7 @@
       <section class="cards" aria-label="Tournament selection">
       <a id="game-dota" class="game-card dota" href="./dota2.html" data-board="dota" data-board-title="DOTA 2" data-board-line="ZONE PLAYOFF." data-board-copy="Zone BO2 round-robin → playoff BO3 bracket. Багуудын оноо, тоглолт, дүрмийг харах." data-board-format="BO2 → BO3 PLAYOFF" data-accent="#ff9999" data-art="/game-backdrops/dota-game.png">
         <span class="game-art" aria-hidden="true"></span>
-        <video class="game-video" autoplay muted loop playsinline preload="auto" poster="/game-backdrops/dota-game.png" aria-hidden="true">
+        <video class="game-video hover-game-video" muted playsinline preload="auto" poster="/game-backdrops/dota-game.png" data-trim-start="0" data-trim-end="0" aria-hidden="true">
           <source src="/game-videos/dota2-intro-cinematic.mp4" type="video/mp4">
         </video>
         <span class="game-video-shade" aria-hidden="true"></span>
@@ -183,7 +184,7 @@
 
       <a id="game-cs2" class="game-card cs2" href="./cs2.html" data-board="cs2" data-board-title="CS2" data-board-line="TACTICAL PLAYOFF." data-board-copy="6 teams Group BO1 → Lower qualifiers → Final Four BO3 round-robin. Seed 1–4 байр шийднэ." data-board-format="GROUP BO1 → FINAL FOUR BO3" data-accent="#ffe06b" data-art="/game-backdrops/cs2-game.png">
         <span class="game-art" aria-hidden="true"></span>
-        <video class="game-video timed-game-video" muted playsinline preload="auto" poster="/game-backdrops/cs2-game.png" data-trim-start="1.5" data-trim-end="0.5" aria-hidden="true">
+        <video class="game-video hover-game-video" muted playsinline preload="auto" poster="/game-backdrops/cs2-game.png" data-trim-start="1.5" data-trim-end="0.5" aria-hidden="true">
           <source src="/game-videos/cs2-rtx-demo.mp4" type="video/mp4">
         </video>
         <span class="game-video-shade" aria-hidden="true"></span>
@@ -280,38 +281,53 @@
     const next = document.getElementById('nextBoard');
     let activeIndex = 0;
 
-    document.querySelectorAll('.timed-game-video').forEach(video => {
+    document.querySelectorAll('.hover-game-video').forEach(video => {
       const card = video.closest('.game-card');
       const startAt = Number(video.dataset.trimStart || 0);
       const trimEnd = Number(video.dataset.trimEnd || 0);
       let armed = false;
-      let revealTimer = 0;
+      let pointerInside = false;
+      let endAt = 0;
 
       const armVideo = () => {
         if (armed || !Number.isFinite(video.duration) || video.duration <= startAt + trimEnd) return;
         armed = true;
-        const endAt = video.duration - trimEnd;
-        const revealVideo = () => {
-          card.classList.add('is-video-ready');
+        endAt = video.duration - trimEnd;
+        if (pointerInside) startVideo();
+      };
+
+      const startVideo = () => {
+        pointerInside = true;
+        if (!armed) return;
+        card.classList.add('is-video-ready');
+        video.currentTime = Math.min(startAt, Math.max(0, endAt - 0.05));
+        video.play().catch(() => {});
+      };
+
+      const stopVideo = () => {
+        pointerInside = false;
+        card.classList.remove('is-video-ready');
+        video.pause();
+        if (armed) video.currentTime = startAt;
+      };
+
+      const restartTrimmedLoop = () => {
+        if (pointerInside && (video.currentTime >= endAt - 0.05 || video.ended)) {
           video.currentTime = startAt;
           video.play().catch(() => {});
-        };
-        revealTimer = window.setTimeout(revealVideo, 1500);
-        const restartTrimmedLoop = () => {
-          if (video.currentTime >= endAt - 0.05 || video.ended) {
-            video.currentTime = startAt;
-            video.play().catch(() => {});
-          }
-        };
-        video.addEventListener('timeupdate', restartTrimmedLoop);
-        video.addEventListener('ended', restartTrimmedLoop);
+        }
       };
+
+      card.addEventListener('pointerenter', startVideo);
+      card.addEventListener('pointerleave', stopVideo);
+      video.addEventListener('timeupdate', restartTrimmedLoop);
+      video.addEventListener('ended', restartTrimmedLoop);
 
       if (video.readyState >= 1) armVideo();
       else video.addEventListener('loadedmetadata', armVideo, { once: true });
       video.addEventListener('error', () => {
-        if (revealTimer) window.clearTimeout(revealTimer);
         card.classList.remove('is-video-ready');
+        armed = false;
       });
     });
 
