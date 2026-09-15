@@ -60,6 +60,9 @@
     .game-video, .game-video-shade { display: none; }
     .game-card.dota .game-video { display: block; position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; filter: brightness(.9) saturate(1.16) contrast(1.06); transform: translateZ(0); backface-visibility: hidden; pointer-events: none; transition: opacity .25s ease, filter .25s ease; }
     .game-card.dota .game-video-shade { display: block; position: absolute; inset: 0; z-index: 0; background: linear-gradient(90deg, rgba(3,6,10,.58), rgba(3,6,10,.22) 52%, rgba(3,6,10,.46)); opacity: 0; pointer-events: none; transition: opacity .25s ease, background .25s ease; }
+    .dota-poster-logo { position: absolute; top: 30%; right: 5%; z-index: 0; width: min(44%, 520px); opacity: .86; transform: translate3d(0, 0, 0) scale(1); pointer-events: none; transition: opacity .3s ease, transform .3s ease, filter .3s ease; }
+    .dota-poster-logo img { display: block; width: 100%; height: auto; filter: drop-shadow(0 8px 18px rgba(0,0,0,.48)); }
+    .game-card.dota.is-video-ready .dota-poster-logo { opacity: 0; transform: translate3d(0, -6px, 0) scale(.96); }
     .game-card.dota.is-video-ready .game-art { opacity: 0; }
     .game-card.dota.is-video-ready .game-video, .game-card.dota.is-video-ready .game-video-shade { opacity: 1; }
     .game-card.dota:hover.is-video-ready .game-video { filter: brightness(1.08) saturate(1.28) contrast(1.1); }
@@ -169,6 +172,7 @@
       <section class="cards" aria-label="Tournament selection">
       <a id="game-dota" class="game-card dota" href="./dota2.html" data-board="dota" data-board-title="DOTA 2" data-board-line="ZONE PLAYOFF." data-board-copy="Zone BO2 round-robin → playoff BO3 bracket. Багуудын оноо, тоглолт, дүрмийг харах." data-board-format="BO2 → BO3 PLAYOFF" data-accent="#ff9999" data-art="/game-backdrops/dota-game.png">
         <span class="game-art" aria-hidden="true"></span>
+        <span class="dota-poster-logo" aria-hidden="true"><img src="/game-logos/dota2-wordmark.png" alt=""></span>
         <video class="game-video hover-game-video" muted playsinline preload="auto" poster="/game-backdrops/dota-game.png" data-trim-start="0" data-trim-end="0" aria-hidden="true">
           <source src="/game-videos/dota2-intro-cinematic.mp4" type="video/mp4">
         </video>
