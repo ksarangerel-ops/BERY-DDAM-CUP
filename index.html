@@ -79,6 +79,13 @@
     .game-card.ml.is-video-ready .game-video { transform: scale(1.1) translateZ(0); }
     .game-card.ml:hover.is-video-ready .game-video { filter: brightness(1.06) saturate(1.28) contrast(1.1); transform: scale(1.13) translateZ(0); }
     .game-card.ml:hover.is-video-ready .game-video-shade { background: linear-gradient(90deg, rgba(26,8,24,.42), rgba(26,8,24,.1) 55%, rgba(26,8,24,.28)); }
+    .game-card.mecha .game-video { display: block; position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; filter: brightness(.9) saturate(1.16) contrast(1.06); transform: translateZ(0); backface-visibility: hidden; pointer-events: none; transition: opacity .35s ease, filter .35s ease; }
+    .game-card.mecha .game-video-shade { display: block; position: absolute; inset: 0; z-index: 0; background: linear-gradient(90deg, rgba(24,14,8,.62), rgba(24,14,8,.18) 55%, rgba(24,14,8,.42)); opacity: 0; pointer-events: none; transition: opacity .35s ease, background .35s ease; }
+    .game-card.mecha.is-video-ready .game-art { opacity: 0; }
+    .game-card.mecha.is-video-ready .game-video, .game-card.mecha.is-video-ready .game-video-shade { opacity: 1; }
+    .game-card.mecha.is-video-ready .game-video { transform: scale(1.1) translateZ(0); }
+    .game-card.mecha:hover.is-video-ready .game-video { filter: brightness(1.06) saturate(1.24) contrast(1.1); transform: scale(1.13) translateZ(0); }
+    .game-card.mecha:hover.is-video-ready .game-video-shade { background: linear-gradient(90deg, rgba(24,14,8,.42), rgba(24,14,8,.1) 55%, rgba(24,14,8,.28)); }
     .game-card > div { position: relative; z-index: 1; }
     .game-card > div:first-of-type { width: min(820px, 100%); padding: 0; }
     .game-card .card-top { padding-bottom: 14px; border-bottom: 1px solid color-mix(in srgb, var(--card-accent, #fff) 34%, transparent); }
@@ -223,6 +230,10 @@
 
       <a id="game-mecha" class="game-card reference-card rules-card mecha" href="./additional-games.html?game=mecha" data-board="mecha" data-board-title="MECCHA CHAMELEON" data-board-line="HIDE. PAINT. SEEK." data-board-copy="6 баг · 2 lobby · 4 тоглогч/баг · lobby тус бүр 6 round. Missed Spot + Seeker catch оноогоор ranking гарна." data-board-format="2 LOBBIES · 6 ROUNDS EACH" data-accent="#ffc66a" data-art="/game-backdrops/mecha-chameleon-hero.jpg">
         <span class="game-art" aria-hidden="true"></span>
+        <video class="game-video hover-game-video" playsinline preload="auto" poster="/game-backdrops/mecha-chameleon-hero.jpg" data-trim-start="0" data-trim-end="0" aria-hidden="true">
+          <source src="/game-videos/mecha-chameleon-theme.mp4" type="video/mp4">
+        </video>
+        <span class="game-video-shade" aria-hidden="true"></span>
         <div>
           <div class="card-top"><div class="game-logo"><img src="/game-logos/mecha.webp" alt="Meccha Chameleon logo"></div><span class="status">RULES READY</span></div>
           <span class="card-kicker">Official rules · live board</span>
