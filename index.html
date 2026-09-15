@@ -28,6 +28,12 @@
     .hero::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(17,10,13,.82), rgba(17,10,13,.48) 48%, rgba(17,10,13,.08)); pointer-events: none; }
     .hero::after { content: ''; position: absolute; inset: -4px; z-index: -2; background-image: var(--hero-art); background-repeat: no-repeat; background-position: center; background-size: cover; opacity: .72; filter: blur(1px) brightness(1.18) saturate(1.2) contrast(1.04); pointer-events: none; transition: filter .35s ease, transform .35s ease; }
     .hero:hover::after { filter: blur(0) brightness(1.22) saturate(1.2) contrast(1.04); transform: scale(1.02); }
+    .hero-ambient { display: none; }
+    .hero[data-board="dota"]::before { background: radial-gradient(circle at 76% 44%, rgba(255,73,73,.28), transparent 24%), radial-gradient(circle at 68% 86%, rgba(255,166,57,.16), transparent 30%), linear-gradient(90deg, rgba(17,10,13,.84), rgba(17,10,13,.48) 48%, rgba(17,10,13,.08)); background-size: 150% 150%, 140% 140%, 100% 100%; animation: dota-overlay-flow 11s ease-in-out infinite alternate; }
+    .hero[data-board="dota"]::after { animation: dota-art-drift 19s ease-in-out infinite alternate; transform-origin: center; }
+    .hero[data-board="dota"] .hero-ambient { display: block; position: absolute !important; z-index: 0 !important; right: 4%; bottom: -32%; width: 37%; aspect-ratio: 1; border: 1px solid rgba(255,105,105,.24); border-radius: 50%; background: radial-gradient(circle, rgba(255,88,88,.2) 0 3%, transparent 4% 23%, rgba(255,88,88,.12) 24% 24.5%, transparent 25% 47%, rgba(255,88,88,.1) 48% 48.5%, transparent 49%), repeating-conic-gradient(from 20deg, rgba(255,111,111,.16) 0 2deg, transparent 2deg 17deg); box-shadow: 0 0 65px rgba(255,73,73,.2), inset 0 0 50px rgba(255,73,73,.1); opacity: .65; filter: blur(.15px); animation: dota-sigil-float 8s ease-in-out infinite alternate, dota-sigil-spin 28s linear infinite; pointer-events: none; }
+    .hero[data-board="dota"] .hero-ambient::before { content: ''; position: absolute; inset: 13%; border: 1px dashed rgba(255,178,116,.35); border-radius: 50%; animation: dota-ring-spin 15s linear infinite reverse; }
+    .hero[data-board="dota"] .hero-ambient::after { content: ''; position: absolute; top: 13%; left: 18%; width: 8px; height: 8px; border-radius: 50%; background: #ff9a72; box-shadow: 0 0 22px 6px rgba(255,112,89,.7), 78px 42px 0 -2px #ff6969, -42px 104px 0 -3px #ffbe72; animation: dota-particles 5s ease-in-out infinite alternate; }
     .hero-copy-panel { position: relative; z-index: 1; width: min(820px, 100%); padding: 0; }
     .hero-copy-panel p { color: #e1e8e2; text-shadow: 0 2px 8px rgba(0,0,0,.7); }
     .hero > * { position: relative; z-index: 1; }
@@ -66,6 +72,7 @@
     .game-card:hover .game-art { opacity: .94; filter: blur(0) brightness(1.24) saturate(1.2) contrast(1.08); transform: scale(1.04); }
     .game-card.dota { --game-art: url('/game-backdrops/dota-game.png'); --card-accent: #ff6464; border-color: rgba(255,89,89,.32); background: linear-gradient(145deg, rgba(53,22,25,.96), rgba(14,12,14,.97)); }
     .game-card.dota:hover { border-color: rgba(255,101,101,.8); box-shadow: 0 18px 50px rgba(0,0,0,.35), 0 0 30px rgba(255,73,73,.14); }
+    .game-card.dota .game-art { animation: dota-card-drift 17s ease-in-out infinite alternate; }
     .game-card.ml { --game-art: url('/game-backdrops/mlbb-game.jpg'); --card-accent: #ff7bd8; border-color: rgba(255,107,214,.3); background: linear-gradient(145deg, rgba(49,25,54,.96), rgba(15,12,22,.97)); }
     .game-card.ml:hover { border-color: rgba(255,143,226,.82); box-shadow: 0 22px 55px rgba(0,0,0,.42), 0 0 34px rgba(255,107,214,.18); }
     .game-card.ml .game-logo { background: linear-gradient(145deg, rgba(167,139,250,.24), rgba(255,107,214,.14)); }
@@ -115,7 +122,15 @@
     .game-card.tetris .game-logo { width: 176px; height: 88px; padding: 8px; border-radius: 18px; background: #05070e; border: 1px solid rgba(139,240,255,.72); box-shadow: 0 0 24px rgba(63,222,255,.24); }
     .game-card.tetris .status, .game-card.tetris .card-footer { color: #82eaff; border-color: rgba(111,231,255,.55); }
     .footer { margin-top: 42px; color: #64726b; font-size: 10px; letter-spacing: .18em; text-align: center; text-transform: uppercase; }
-    @media (max-width: 700px) { .shell { width: min(100% - 24px, 560px); padding-top: 22px; } .topbar { align-items: flex-start; margin-bottom: 34px; padding: 11px; } .brand-lockup { gap: 11px; } .brand-mark { width: 54px; height: 54px; border-radius: 15px; } .brand-kicker { font-size: 7px; letter-spacing: .2em; } .brand-title { font-size: clamp(18px, 6vw, 27px); letter-spacing: .06em; } .brand-subtitle { letter-spacing: .1em; font-size: 8px; } .brand-badge { display: none; } .hero { min-height: 290px; padding: 28px 24px; } .hero::after { background-position: center; background-size: cover; opacity: .42; } .hero p { font-size: 14px; } .board-toolbar { align-items: flex-end; } .board-hint { max-width: 170px; line-height: 1.35; } .cards { min-height: calc(100svh - 220px); } .game-card, .game-card.rules-card { flex-basis: 100%; min-height: calc(100svh - 220px); padding: 28px; } .game-logo { width: 82px; height: 82px; padding: 11px; border-radius: 20px; } .game-logo.wordmark { width: 138px; } .game-card.cs2 .game-logo, .game-card.tetris .game-logo { width: 150px; height: 76px; padding: 7px; } .game-card h2 { margin-top: 34px; font-size: clamp(30px, 10vw, 48px); } .game-card p { font-size: 14px; } }
+    @keyframes dota-overlay-flow { from { background-position: 64% 36%, 32% 78%, 0 0; } to { background-position: 78% 54%, 56% 66%, 0 0; } }
+    @keyframes dota-art-drift { from { transform: scale(1.01) translate3d(-.5%, -.4%, 0); } to { transform: scale(1.06) translate3d(1.2%, .7%, 0); } }
+    @keyframes dota-sigil-float { from { transform: translate3d(0, 9px, 0) rotate(-4deg); } to { transform: translate3d(-12px, -8px, 0) rotate(4deg); } }
+    @keyframes dota-sigil-spin { to { rotate: 360deg; } }
+    @keyframes dota-ring-spin { to { rotate: -360deg; } }
+    @keyframes dota-particles { from { opacity: .48; transform: translate3d(-3px, 4px, 0) scale(.86); } to { opacity: 1; transform: translate3d(6px, -9px, 0) scale(1.12); } }
+    @keyframes dota-card-drift { from { background-position: 48% 50%; } to { background-position: 54% 46%; } }
+    @media (prefers-reduced-motion: reduce) { .hero[data-board="dota"]::before, .hero[data-board="dota"]::after, .hero[data-board="dota"] .hero-ambient, .hero[data-board="dota"] .hero-ambient::before, .hero[data-board="dota"] .hero-ambient::after, .game-card.dota .game-art { animation: none; } }
+    @media (max-width: 700px) { .shell { width: min(100% - 24px, 560px); padding-top: 22px; } .topbar { align-items: flex-start; margin-bottom: 34px; padding: 11px; } .brand-lockup { gap: 11px; } .brand-mark { width: 54px; height: 54px; border-radius: 15px; } .brand-kicker { font-size: 7px; letter-spacing: .2em; } .brand-title { font-size: clamp(18px, 6vw, 27px); letter-spacing: .06em; } .brand-subtitle { letter-spacing: .1em; font-size: 8px; } .brand-badge { display: none; } .hero { min-height: 290px; padding: 28px 24px; } .hero::after { background-position: center; background-size: cover; opacity: .42; } .hero[data-board="dota"] .hero-ambient { right: -13%; bottom: -21%; width: 66%; opacity: .38; } .hero p { font-size: 14px; } .board-toolbar { align-items: flex-end; } .board-hint { max-width: 170px; line-height: 1.35; } .cards { min-height: calc(100svh - 220px); } .game-card, .game-card.rules-card { flex-basis: 100%; min-height: calc(100svh - 220px); padding: 28px; } .game-logo { width: 82px; height: 82px; padding: 11px; border-radius: 20px; } .game-logo.wordmark { width: 138px; } .game-card.cs2 .game-logo, .game-card.tetris .game-logo { width: 150px; height: 76px; padding: 7px; } .game-card h2 { margin-top: 34px; font-size: clamp(30px, 10vw, 48px); } .game-card p { font-size: 14px; } }
   </style>
 </head>
 <body>
@@ -139,6 +154,7 @@
         <p id="heroCopy">Zone BO2 round-robin → playoff BO3 bracket. Багуудын оноо, тоглолт, дүрмийг харах.</p>
         <div class="hero-meta"><span id="heroFormat">BO2 → BO3 PLAYOFF</span><span>PUBLIC LIVE BOARD</span></div>
       </div>
+      <span class="hero-ambient" aria-hidden="true"></span>
     </section>
 
     <div class="board-toolbar">
