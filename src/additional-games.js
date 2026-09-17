@@ -31,6 +31,13 @@ const BOARD_NAV = [
   ['rules', 'Rules', '▤'],
   ['admin', 'Admin', '▣'],
 ];
+const BOARD_TARGETS = {
+  arena: 'board-arena',
+  groups: 'board-groups',
+  playoffs: 'board-playoffs',
+  players: 'board-players',
+  admin: 'adminPanel',
+};
 
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
@@ -254,14 +261,21 @@ function renderPubg(game) {
 
 function renderTetris(game) { return renderTetrisClassic(game); }
 
-function classicSection(eyebrow, title, body, action = '') { return `<section class="ag-classic-section"><div class="ag-classic-section-head"><div><span>${esc(eyebrow)}</span><h2>${esc(title)}</h2></div>${action ? `<b>${esc(action)}</b>` : ''}</div>${body}</section>`; }
+function sectionTargetId(title) {
+  const normalized = String(title).toUpperCase();
+  if (/GROUP STAGE|ZONE QUALIFICATION|HIDER \/ SEEKER RACE|TEAM RACE|MAP QUALIFICATION/.test(normalized)) return 'board-groups';
+  if (/PLAYOFF BRACKET|PLAYOFF PATH/.test(normalized)) return 'board-playoffs';
+  if (/ROSTER/.test(normalized)) return 'board-players';
+  return '';
+}
+function classicSection(eyebrow, title, body, action = '') { const target = sectionTargetId(title); return `<section${target ? ` id="${target}"` : ''} class="ag-classic-section"><div class="ag-classic-section-head"><div><span>${esc(eyebrow)}</span><h2>${esc(title)}</h2></div>${action ? `<b>${esc(action)}</b>` : ''}</div>${body}</section>`; }
 function classicFacts(items) { return `<div class="ag-classic-facts">${items.map(item => `<div><b>${esc(item.value)}</b><span>${esc(item.label)}</span></div>`).join('')}</div>`; }
 function classicMiniRank(rows, value, meta) { return `<div class="ag-classic-mini-rank">${rows.map((row, index) => `<div class="ag-classic-mini-row ${index > 1 ? 'is-muted' : ''}"><span class="ag-classic-mini-place">${index + 1}</span>${dashAvatar(row.name, index)}<span><b>${esc(row.name)}</b><small>${esc(meta(row))}</small></span><strong>${esc(value(row))}</strong></div>`).join('')}</div>`; }
 function classicGroupCard(title, subtitle, rows, value, meta) { return `<article class="ag-classic-group"><div class="ag-classic-group-head"><span class="ag-classic-group-mark">${esc(title.replace(/[^A-Z0-9]/gi, '').slice(-1) || '#')}</span><div><b>${esc(title)}</b><small>${esc(subtitle)}</small></div><span>LIVE</span></div>${classicMiniRank(rows, value, meta)}</article>`; }
 function classicTable(rows, columns) { return `<div class="ag-classic-table-wrap"><table class="ag-classic-table"><thead><tr><th>#</th><th>Team / Player</th>${columns.map(column => `<th>${esc(column.label)}</th>`).join('')}</tr></thead><tbody>${rows.map((row, index) => `<tr><td><span class="ag-classic-rank ${index < 3 ? 'top' : ''}">${index + 1}</span></td><td><b>${esc(row.name)}</b><small>${esc(row.sub || '')}</small></td>${columns.map(column => `<td>${esc(column.value ? column.value(row) : row[column.key] ?? '—')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`; }
 function classicMatch(title, meta, rows) { return `<article class="ag-classic-match"><div class="ag-classic-match-head"><b>${esc(title)}</b><span>${esc(meta)}</span></div>${rows.map(row => `<div class="ag-classic-match-row"><span>${esc(row.left)}</span><strong>${esc(row.score || '—')}</strong><span>${esc(row.right)}</span></div>`).join('')}</article>`; }
 function classicBoard(def, subtitle, facts, formatCards, stage, standings, roster, breakdown, note) {
-  return `<div class="ag-classic-board"><section class="ag-classic-banner"><div class="ag-classic-banner-lockup"><div class="ag-classic-logo ${def.logoClass || ''}"><img src="${def.logo}" alt="${esc(def.label)} logo"></div><div><span>DDAM CUP · OFFICIAL TOURNAMENT FORMAT</span><h1>DDAM ESPORT CUP <b>${esc(def.label)}</b></h1><p>${esc(subtitle)}</p></div></div><span class="ag-classic-live">LIVE BOARD</span></section>${classicFacts(facts)}${classicSection('TOURNAMENT FORMAT', 'FORMAT & RULES', `<div class="ag-classic-format-grid">${formatCards.map(card => `<article><b>${esc(card.title)}</b><p>${esc(card.body)}</p></article>`).join('')}</div>`)}${stage}${standings}${roster}${breakdown}<p class="ag-classic-note">${note}</p></div>`;
+  return `<div id="board-arena" class="ag-classic-board"><section class="ag-classic-banner"><div class="ag-classic-banner-lockup"><div class="ag-classic-logo ${def.logoClass || ''}"><img src="${def.logo}" alt="${esc(def.label)} logo"></div><div><span>DDAM CUP · OFFICIAL TOURNAMENT FORMAT</span><h1>DDAM ESPORT CUP <b>${esc(def.label)}</b></h1><p>${esc(subtitle)}</p></div></div><span class="ag-classic-live">LIVE BOARD</span></section>${classicFacts(facts)}${classicSection('TOURNAMENT FORMAT', 'FORMAT & RULES', `<div class="ag-classic-format-grid">${formatCards.map(card => `<article><b>${esc(card.title)}</b><p>${esc(card.body)}</p></article>`).join('')}</div>`)}${stage}${standings}${roster}${breakdown}<p class="ag-classic-note">${note}</p></div>`;
 }
 function dashSeriesItem(match, game, code) { return { code, left: teamName(game, match.a), right: teamName(game, match.b), score: match.series || 'VS', meta: `${match.group || 'PLAYOFF'} · ${match.series ? 'FINISHED' : 'NEXT'}` }; }
 
@@ -383,40 +397,25 @@ function renderPubgDashboard(game) {
 }
 function renderTetrisDashboard(game) { return renderTetrisClassic(game); }
 
+function boardViewFromHash() {
+  const hash = location.hash.replace(/^#/, '');
+  return BOARD_NAV.find(([key]) => BOARD_TARGETS[key] === hash)?.[0] || 'arena';
+}
+
 function renderBoardNav() {
   const nav = $('boardNav');
   if (!nav) return;
-  nav.innerHTML = BOARD_NAV.map(([key, label, glyph]) => `<button class="${key === activeBoardView ? 'is-active' : ''}" type="button" data-board-view="${key}" aria-current="${key === activeBoardView ? 'page' : 'false'}"><span class="ag-board-nav-glyph" aria-hidden="true">${glyph}</span><span>${label}</span></button>`).join('');
-  nav.querySelectorAll('[data-board-view]').forEach(button => { button.onclick = () => focusBoardView(button.dataset.boardView); });
-}
-
-function focusBoardView(view) {
-  if (!view) return;
-  activeBoardView = view;
-  renderBoardNav();
-  if (view === 'rules') {
-    window.location.href = GAME_DEFS[activeGame].rules;
-    return;
-  }
-  if (view === 'admin') {
-    $('adminPanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    return;
-  }
-  if (view === 'arena') {
-    $('publicBoard')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    return;
-  }
-  const terms = {
-    groups: ['GROUP', 'ZONE', 'LOBBY', 'QUALIFICATION'],
-    playoffs: ['PLAYOFF', 'BRACKET', 'FINAL'],
-    players: ['ROSTER', 'FIGHTER', 'PLAYER'],
-  }[view] || [];
-  const sections = [...document.querySelectorAll('#publicBoard section, #publicBoard .ag-dashboard-main > .ag-dash-panel, #publicBoard .ag-dashboard-side > .ag-dash-panel')];
-  const target = sections.find(section => {
-    const heading = section.querySelector('.ag-classic-section-head, .ag-dash-head')?.textContent || '';
-    return terms.some(term => heading.toUpperCase().includes(term));
-  }) || sections.find(section => terms.some(term => section.textContent.toUpperCase().includes(term)));
-  (target || $('publicBoard'))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  nav.innerHTML = BOARD_NAV.map(([key, label, glyph]) => {
+    const href = key === 'rules' ? GAME_DEFS[activeGame].rules : `#${BOARD_TARGETS[key]}`;
+    const active = key === activeBoardView;
+    return `<a class="${active ? 'is-active' : ''}" href="${href}" data-board-view="${key}" aria-current="${active ? 'page' : 'false'}"><span class="ag-board-nav-glyph" aria-hidden="true">${glyph}</span><span>${label}</span></a>`;
+  }).join('');
+  nav.querySelectorAll('[data-board-view]').forEach(link => {
+    link.addEventListener('click', () => {
+      activeBoardView = link.dataset.boardView || 'arena';
+      requestAnimationFrame(renderBoardNav);
+    });
+  });
 }
 
 function renderTabs() { $('gameTabs').innerHTML = GAME_IDS.map(id => `<button class="ag-tab ${id === activeGame ? 'active' : ''}" data-game="${id}" type="button"><img src="${GAME_DEFS[id].logo}" alt="">${GAME_DEFS[id].short}</button>`).join(''); document.querySelectorAll('.ag-tab').forEach(button => { button.onclick = () => { activeGame = button.dataset.game; activeAdminPanel = 'matches'; const url = new URL(location.href); url.searchParams.set('game', activeGame); history.replaceState({}, '', url); render(); }; }); }
@@ -476,7 +475,7 @@ function renderAdmin() { const logged = Boolean(authSession?.user); $('loggedOut
 function render() {
   document.body.dataset.game = activeGame;
   document.body.style.setProperty('--ag-art', `url("${GAME_DEFS[activeGame].art}")`);
-  if (activeGame !== 'tekken') activeBoardView = 'arena';
+  if (activeGame !== 'tekken') activeBoardView = boardViewFromHash();
   renderBoardNav();
   renderTabs();
   renderPublic();
@@ -499,4 +498,5 @@ $('logoutBtn').onclick = async () => { try { await signOut(); showToast('✓ Sig
 $('saveBtn').onclick = async () => { if (!authSession?.user) return; const button = $('saveBtn'); button.disabled = true; button.textContent = 'Publishing…'; $('saveNote').textContent = ''; const result = await publish(saveFromEditor()); button.disabled = false; button.textContent = 'Save current game'; if (result.ok && !result.local) { showToast(`✓ ${GAME_DEFS[activeGame].label} published live`); $('saveNote').textContent = 'Saved to Supabase — every public viewer will update.'; } else if (result.ok) { showToast('Saved on this device only'); } else { $('saveNote').textContent = result.error?.message || 'Publish failed'; } };
 
 render();
+window.addEventListener('hashchange', () => { activeBoardView = boardViewFromHash(); renderBoardNav(); });
 startRealtime();
