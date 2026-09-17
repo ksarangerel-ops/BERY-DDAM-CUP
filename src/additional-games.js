@@ -20,6 +20,8 @@ const TAGS = ['ALP', 'BRV', 'CHR', 'DLT', 'ECH', 'FOX'];
 const TEAM_NAME_VERSION = 'ganaa-team-names-v1';
 const ML_SERIES = ['', '2-0', '1-1', '0-2'];
 const BO3_SERIES = ['', '2-0', '2-1', '1-2', '0-2'];
+const TETRIS_GROUPS = ['A', 'B', 'C', 'D', 'E', 'F'];
+const TETRIS_SERIES = ['', '3-0', '3-1', '3-2', '2-3', '1-3', '0-3'];
 const MAP_NAMES = ['Sanhok', 'Livik', 'Erangel'];
 const BOARD_NAV = [
   ['arena', 'Arena', '⌂'],
@@ -37,6 +39,19 @@ const clone = value => structuredClone(value);
 const parts = value => { const [wins, losses] = String(value || '0-0').split('-').map(Number); return { wins: Number.isFinite(wins) ? wins : 0, losses: Number.isFinite(losses) ? losses : 0 }; };
 const seriesOptions = (values, selected) => values.map(value => `<option value="${value}" ${value === selected ? 'selected' : ''}>${value || 'Not played'}</option>`).join('');
 const teamById = (game, id) => game.teams.find(team => team.id === id);
+
+function makeTetrisPlayers(teams) {
+  return teams.flatMap(team => [
+    ...Array.from({ length: 4 }, (_, index) => ({ id: `${team.id}-m${index + 1}`, teamId: team.id, name: `${team.tag} Player ${index + 1}`, gender: 'MEN', group: TETRIS_GROUPS[index] })),
+    ...Array.from({ length: 2 }, (_, index) => ({ id: `${team.id}-f${index + 1}`, teamId: team.id, name: `${team.tag} Player ${index + 5}`, gender: 'WOMEN', group: TETRIS_GROUPS[index + 4] })),
+  ]);
+}
+function makeTetrisMatches(players) {
+  return TETRIS_GROUPS.flatMap(group => {
+    const groupPlayers = players.filter(player => player.group === group);
+    return groupPlayers.flatMap((a, index) => groupPlayers.slice(index + 1).map(b => ({ id: `${group}-${a.id}-${b.id}`, group, a: a.id, b: b.id, score: '' })));
+  });
+}
 
 function groupMatches() {
   return [
@@ -56,6 +71,7 @@ function defaultState() {
     label: `Game ${index + 1}`,
     rows: tetrisTeams.map((team, teamIndex) => ({ teamId: team.id, zone: teamIndex < 3 ? 'A' : 'B', wins: 0, place: '' })),
   }));
+  const tetrisPlayers = makeTetrisPlayers(tetrisTeams);
   return {
     version: 1,
     teamNameVersion: TEAM_NAME_VERSION,
@@ -65,7 +81,7 @@ function defaultState() {
       mecha: { teams: makeTeams().map(team => ({ ...team, hider: 0, topMissedSpot: 0, seekersCaught: 0, cleanSweeps: 0 })) },
       stumble: { teams: makeTeams().map(team => ({ ...team, players: Array.from({ length: 5 }, (_, index) => ({ id: `${team.id}p${index + 1}`, name: `${team.tag} Player ${index + 1}`, points: 0 })) })) },
       pubg: { teams: makeTeams().map(team => ({ ...team, maps: MAP_NAMES.map(() => ({ placement: '', kills: '' })) })) },
-      tetris: { teams: tetrisTeams, games: tetrisGames },
+      tetris: { teams: tetrisTeams, games: tetrisGames, players: tetrisPlayers, matches: makeTetrisMatches(tetrisPlayers) },
     },
   };
 }
@@ -79,6 +95,8 @@ function normalizeState(value) {
       value.games.tetris.teams = value.games.tetris.teams.map((team, index) => ({ ...team, name: referenceTeams[index]?.name || team.name, tag: referenceTeams[index]?.tag || team.tag }));
     }
   }
+  if (!Array.isArray(value.games.tetris.players) || value.games.tetris.players.length !== 36) value.games.tetris.players = makeTetrisPlayers(value.games.tetris.teams);
+  if (!Array.isArray(value.games.tetris.matches) || value.games.tetris.matches.length !== 90) value.games.tetris.matches = makeTetrisMatches(value.games.tetris.players);
   value.games.mecha?.teams?.forEach(team => {
     if (team.hider == null) team.hider = 0;
     if (team.topMissedSpot == null) team.topMissedSpot = 0;
@@ -101,6 +119,7 @@ function writeCache(value) { try { localStorage.setItem(CACHE_KEY, JSON.stringif
 let state = readCache() || defaultState();
 let activeGame = new URLSearchParams(location.search).get('game') || 'mlbb';
 let activeBoardView = 'arena';
+let activeAdminPanel = 'matches';
 if (!GAME_DEFS[activeGame]) activeGame = 'mlbb';
 let authSession = null;
 let connection = false;
@@ -154,6 +173,17 @@ function mechaStats(team) {
   const seeker = Math.round(seekersCaught * 0.33 * 10) / 10;
   const bonus = cleanSweeps * 2;
   return { hider, topMissedSpot, seekersCaught, cleanSweeps, seeker, bonus, points: Math.round((hider + seeker + bonus) * 10) / 10 };
+}
+function tetrisGroupRows(game, group) {
+  const players = (game.players || []).filter(player => player.group === group).map(player => ({ player, points: 0, wins: 0, played: 0, gamesWon: 0, gamesLost: 0 }));
+  const byId = new Map(players.map(row => [row.player.id, row]));
+  (game.matches || []).filter(match => match.group === group && match.score).forEach(match => {
+    const result = parts(match.score); const a = byId.get(match.a); const b = byId.get(match.b);
+    if (!a || !b || result.wins === result.losses) return;
+    a.played += 1; b.played += 1; a.gamesWon += result.wins; a.gamesLost += result.losses; b.gamesWon += result.losses; b.gamesLost += result.wins;
+    if (result.wins > result.losses) { a.points += 3; a.wins += 1; b.points += result.losses; } else { b.points += 3; b.wins += 1; a.points += result.wins; }
+  });
+  return players.map(row => ({ name: row.player.name, sub: `${row.player.gender} · ${row.played}/5 matches`, points: row.points, wins: row.wins, played: row.played, games: `${row.gamesWon}-${row.gamesLost}`, gamesWon: row.gamesWon })).sort((a, b) => b.points - a.points || b.wins - a.wins || b.gamesWon - a.gamesWon || a.name.localeCompare(b.name));
 }
 
 function mlRows(game, group) {
@@ -292,12 +322,13 @@ function tetrisBracketCard(title, format, body) {
 function renderTetrisClassic(game) {
   const groups = `<div class="ag-tetris-group-grid">${['A', 'B', 'C', 'D'].map(group => tetrisGroupFormat(group, 'MEN')).join('')}${['E', 'F'].map(group => tetrisGroupFormat(group, 'WOMEN')).join('')}</div>`;
   const stage = classicSection('36 PLAYERS · 6 GROUPS', 'GROUP STAGE', `${groups}<div class="ag-tetris-callout"><b>1v1 ROUND-ROBIN · BEST OF 5</b><span>Group A–D: men · Group E–F: women. Нэг group-д 6 багийн тус бүрээс яг 1 тоглогч орно. Нэг багийн 2 тоглогч нэг group-д орохгүй.</span></div>`);
+  const liveGroups = classicSection('BO5 RESULTS · LIVE', 'GROUP STANDINGS', `<div class="ag-classic-group-grid">${TETRIS_GROUPS.map(group => classicGroupCard(`GROUP ${group}`, `${group < 'E' ? 'MEN' : 'WOMEN'} · 15 MATCHES`, tetrisGroupRows(game, group), item => `${item.points}P`, item => `${item.wins}W · ${item.played}/5`)).join('')}</div>`);
   const playoff = classicSection('DOUBLE ELIMINATION', 'PLAYOFF PATH', `<div class="ag-tetris-bracket-grid">${tetrisBracketCard('MEN · 8 PLAYERS', '4 UPPER + 4 LOWER', '<ul><li>Upper: WSF 4 → 2 → WF 2 → 1</li><li>Lower: LR1 → LR2 → LR3 → LF</li><li>Grand Final · BO5 · bracket reset боломжтой</li><li>3rd = LF loser · 4th = LR3 loser</li></ul>')}${tetrisBracketCard('WOMEN · 4 PLAYERS', '2 UPPER + 2 LOWER', '<ul><li>Upper-ээс эхний ялагдлаар Lower руу орно</li><li>Lower-ийн ялагдал шууд хасагдана</li><li>Grand Final · BO5 · bracket reset боломжтой</li></ul>')}</div>`);
   const scoring = classicSection('MATCH & CUP POINTS', 'SCORING SYSTEM', `<div class="ag-tetris-rule-grid"><article><b>GROUP MATCH</b><p>BO5-д хожсон тоглогч 3 оноо авна. Хожигдсон тоглогч авсан game-ийн тоогоор point авна. Жишээ: 3:1 бол winner 3, loser 1.</p></article><article><b>GROUP TIE-BREAK</b><ol><li>Нийт хожил</li><li>Нийт оноо</li><li>Зохион байгуулагчийн tie-break match</li></ol></article><article><b>CUP POINT</b><p>Эрэгтэй/эмэгтэй ангилал тус бүр: 1-р байр 5, 2-р байр 3, 3-р байр 2, 4-р байр 1 point. Багийн нийт point-оор нэгдсэн байр гарна.</p></article><article><b>TEAM TIE-BREAK</b><p>Point тэнцвэл өндөр байр эзэлсэн баг давуу. Байр мөн тэнцвэл харгалзах тоглогчид BO5-аар багийн ялагч тодортол тоглоно.</p></article></div>`);
   const roster = classicSection('6 TEAMS · 36 PLAYERS', 'ROSTER & CATEGORY', classicTable(game.teams.map(team => ({ name: team.name, sub: `${team.tag} · 4 men + 2 women`, roster: '6 players', groups: 'A–F' })), [{ label: 'Roster', key: 'roster' }, { label: 'Groups', key: 'groups' }]));
   const conduct = classicSection('OFFICIAL NOTICE', 'PLAYER RESPONSIBILITIES', `<div class="ag-tetris-notice-grid"><article><b>BEFORE MATCH</b><p>Компьютер, тохиргоо, keyboard болон хуваарьт байраа тоглолтоос өмнө бэлэн болгоно. Өөрийн keyboard ашиглаж болно.</p></article><article><b>NO COACHING</b><p>Match эхэлсний дараа гаднаас зөвлөгөө, тоглолтын мэдээлэл, spectator тусламж дамжуулахыг хориглоно.</p></article><article><b>TECHNICAL ISSUES</b><p>Хувийн keyboard, төхөөрөмж, internet-ийн асуудлаар rematch автоматаар хийхгүй. Host, console, venue-ийн алдааг зохион байгуулагч шийднэ.</p></article><article><b>DISCIPLINE</b><p>Cheat/hack, account sharing, match fixing, саад учруулах, доромжлол болон дүрмийн цоорхой ашиглахыг хориглоно. Анхааруулгаас шууд хасалт хүртэл арга хэмжээ авна.</p></article></div>`);
   const breakdown = classicSection('PLAYOFF SEEDING', 'MEN & WOMEN ADVANCEMENT', `<div class="ag-tetris-seeding"><div><b>MEN · GROUP A–D</b><span>4 × 1st → Upper · 4 × 2nd → Lower · 3–6 → out</span></div><div><b>WOMEN · GROUP E–F</b><span>2 × 1st → Upper · 2 × 2nd → Lower · 3–6 → out</span></div></div>`);
-  return classicBoard(GAME_DEFS.tetris, '6 баг · 36 тоглогч · 6 group · BO5 round-robin → men/women double elimination', [{ value: '6', label: 'Teams' }, { value: '36', label: 'Players' }, { value: '6', label: 'Groups' }, { value: 'BO5', label: 'Match format' }], [{ title: '1. Roster', body: 'Баг бүр 6 тоглогчтой: 4 эрэгтэй + 2 эмэгтэй. Тэмцээн 1v1 хэлбэртэй.' }, { title: '2. Group stage', body: 'A–F group тус бүр 6 тоглогчтой, бүгд round-robin BO5 тоглоно.' }, { title: '3. Playoff', body: 'Upper/Lower Double Elimination. Эрэгтэй 8, эмэгтэй 4 тоглогч playoff-д орно.' }], stage + playoff + scoring, roster, breakdown, conduct, 'Official Tetris format · Group A–D men, Group E–F women · 1st Upper, 2nd Lower, 3–6 eliminated. Шийдвэр, маргаан болон rematch-ийг зөвхөн зохион байгуулагч/шүүгч эцэслэнэ.');
+  return classicBoard(GAME_DEFS.tetris, '6 баг · 36 тоглогч · 6 group · BO5 round-robin → men/women double elimination', [{ value: '6', label: 'Teams' }, { value: '36', label: 'Players' }, { value: '6', label: 'Groups' }, { value: 'BO5', label: 'Match format' }], [{ title: '1. Roster', body: 'Баг бүр 6 тоглогчтой: 4 эрэгтэй + 2 эмэгтэй. Тэмцээн 1v1 хэлбэртэй.' }, { title: '2. Group stage', body: 'A–F group тус бүр 6 тоглогчтой, бүгд round-robin BO5 тоглоно.' }, { title: '3. Playoff', body: 'Upper/Lower Double Elimination. Эрэгтэй 8, эмэгтэй 4 тоглогч playoff-д орно.' }], stage + liveGroups + playoff + scoring, roster, breakdown, conduct, 'Official Tetris format · Group A–D men, Group E–F women · 1st Upper, 2nd Lower, 3–6 eliminated. Шийдвэр, маргаан болон rematch-ийг зөвхөн зохион байгуулагч/шүүгч эцэслэнэ.');
 }
 
 function renderPublic() {
@@ -388,17 +419,60 @@ function focusBoardView(view) {
   (target || $('publicBoard'))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function renderTabs() { $('gameTabs').innerHTML = GAME_IDS.map(id => `<button class="ag-tab ${id === activeGame ? 'active' : ''}" data-game="${id}" type="button"><img src="${GAME_DEFS[id].logo}" alt="">${GAME_DEFS[id].short}</button>`).join(''); document.querySelectorAll('.ag-tab').forEach(button => { button.onclick = () => { activeGame = button.dataset.game; const url = new URL(location.href); url.searchParams.set('game', activeGame); history.replaceState({}, '', url); render(); }; }); }
+function renderTabs() { $('gameTabs').innerHTML = GAME_IDS.map(id => `<button class="ag-tab ${id === activeGame ? 'active' : ''}" data-game="${id}" type="button"><img src="${GAME_DEFS[id].logo}" alt="">${GAME_DEFS[id].short}</button>`).join(''); document.querySelectorAll('.ag-tab').forEach(button => { button.onclick = () => { activeGame = button.dataset.game; activeAdminPanel = 'matches'; const url = new URL(location.href); url.searchParams.set('game', activeGame); history.replaceState({}, '', url); render(); }; }); }
 
 function inputTeamNames(game) { return `<div class="ag-form-section"><h3>Team setup</h3><div class="ag-form-grid">${game.teams.map(team => `<label class="ag-label">${esc(team.tag || team.id)}<input class="ag-input" data-team-name="${team.id}" value="${esc(team.name)}"></label>`).join('')}</div></div>`; }
 function renderMlEditor(game) { const name = id => teamName(game, id); return `${inputTeamNames(game)}<div class="ag-form-section"><h3>Group BO2 results</h3><div class="ag-form-grid">${game.groupResults.map(match => `<label class="ag-label">${match.group} · ${esc(name(match.a))} vs ${esc(name(match.b))}<select class="ag-select" data-ml-group="${match.id}">${seriesOptions(ML_SERIES, match.series)}</select></label>`).join('')}</div></div><div class="ag-form-section"><h3>Playoff BO3 results</h3><div class="ag-form-grid">${[['sf1','Semifinal 1'],['sf2','Semifinal 2'],['final','Grand Final'],['third','3rd Place Final']].map(([id, label]) => `<label class="ag-label">${label}<select class="ag-select" data-ml-playoff="${id}">${seriesOptions(BO3_SERIES, game.playoff[id])}</select></label>`).join('')}</div></div>`; }
 function renderMechaEditor(game) { return `${inputTeamNames(game)}<div class="ag-form-section"><h3>Official Meccha scoring input</h3><p class="ag-help">Hider points-ийг Missed Spot Ranking-ийн эцсийн дэлгэцээс 0.1 нарийвчлалтайгаар нийлбэрлэн оруулна. Seeker оноо автоматаар бодогдоно.</p><div class="ag-grid">${game.teams.map(team => { const score = mechaStats(team); return `<div class="ag-form-section"><h3>${esc(team.name)} · ${esc(team.tag)}</h3><div class="ag-form-grid three"><label class="ag-label">Hider points<input class="ag-input" type="number" min="0" step="0.1" data-mecha="${team.id}" data-field="hider" value="${score.hider}"></label><label class="ag-label">Highest Missed Spot rounds<input class="ag-input" type="number" min="0" max="12" step="1" data-mecha="${team.id}" data-field="topMissedSpot" value="${score.topMissedSpot}"></label><label class="ag-label">Hiders caught<input class="ag-input" type="number" min="0" max="20" step="1" data-mecha="${team.id}" data-field="seekersCaught" value="${score.seekersCaught}"></label><label class="ag-label">10/10 clean-sweep rounds<input class="ag-input" type="number" min="0" max="2" step="1" data-mecha="${team.id}" data-field="cleanSweeps" value="${score.cleanSweeps}"></label><div class="ag-mecha-total">Seeker ${score.seeker.toFixed(1)} + bonus ${score.bonus.toFixed(1)} = <b>${score.points.toFixed(1)} total</b></div></div></div>`; }).join('')}</div></div>`; }
 function renderStumbleEditor(game) { return `<div class="ag-form-section"><h3>Player points</h3><div class="ag-grid">${game.teams.map(team => `<div class="ag-form-section"><h3>${esc(team.name)}</h3><div class="ag-form-grid">${team.players.map(player => `<label class="ag-label">${esc(player.name)}<input class="ag-input" data-stumble-name="${player.id}" value="${esc(player.name)}"><input class="ag-input" type="number" min="0" data-stumble-points="${player.id}" value="${num(player.points)}"></label>`).join('')}</div></div>`).join('')}</div></div>`; }
 function renderPubgEditor(game) { return `${inputTeamNames(game)}<div class="ag-grid">${game.teams.map(team => `<div class="ag-form-section"><h3>${esc(team.name)}</h3><div class="ag-form-grid three">${team.maps.map((map, index) => `<div><label class="ag-label">${MAP_NAMES[index]} · Place<select class="ag-select" data-pubg="${team.id}" data-map="${index}" data-field="placement"><option value="">—</option>${[1,2,3,4,5,6].map(place => `<option value="${place}" ${String(place) === String(map.placement) ? 'selected' : ''}>${place}</option>`).join('')}</select></label><label class="ag-label" style="margin-top:8px">Kills<input class="ag-input" type="number" min="0" data-pubg="${team.id}" data-map="${index}" data-field="kills" value="${esc(map.kills)}"></label></div>`).join('')}</div></div>`).join('')}</div>`; }
-function renderTetrisEditor(game) { return `${inputTeamNames(game)}<div class="ag-form-section"><h3>New Tetris format · 36 players</h3><p class="ag-help">Баг бүр 4 эрэгтэй + 2 эмэгтэй тоглогчтой байна. Group A–D нь эрэгтэй, Group E–F нь эмэгтэй ангилал бөгөөд бүх match BO5 round-robin хэлбэртэй. Энэ хэсэгт одоогоор багийн нэрийн тохиргоог хадгална; тоглогч/group-ийн live score нь зохион байгуулагчийн шинэ бүртгэлээр орно.</p><div class="ag-tetris-seeding"><div><b>MEN</b><span>Group A–D · 1st Upper · 2nd Lower · 3–6 OUT</span></div><div><b>WOMEN</b><span>Group E–F · 1st Upper · 2nd Lower · 3–6 OUT</span></div></div></div>`; }
+function tetrisRosterEditor(game) { return `<div class="ag-tetris-admin-roster">${TETRIS_GROUPS.map(group => `<div class="ag-form-section"><h3>GROUP ${group} · ${group < 'E' ? 'MEN' : 'WOMEN'} · 6 PLAYERS</h3><div class="ag-form-grid three">${(game.players || []).filter(player => player.group === group).map(player => `<label class="ag-label">${esc(player.gender)} · ${esc(player.teamId)}<input class="ag-input" data-tetris-player="${player.id}" value="${esc(player.name)}"></label>`).join('')}</div></div>`).join('')}</div>`; }
+function tetrisMatchEditor(game) { return `<div class="ag-tetris-admin-matches">${TETRIS_GROUPS.map(group => `<div class="ag-form-section"><h3>GROUP ${group} · 15 MATCHES</h3><div class="ag-tetris-match-list">${(game.matches || []).filter(match => match.group === group).map(match => { const a = (game.players || []).find(player => player.id === match.a); const b = (game.players || []).find(player => player.id === match.b); return `<label class="ag-tetris-match-row"><span>${esc(a?.name || match.a)} <b>VS</b> ${esc(b?.name || match.b)}</span><select class="ag-select" data-tetris-match="${match.id}">${seriesOptions(TETRIS_SERIES, match.score)}</select></label>`; }).join('')}</div></div>`).join('')}</div>`; }
+function renderTetrisEditor(game) { return `${inputTeamNames(game)}<div class="ag-form-section"><h3>Official Tetris match control</h3><p class="ag-help">36 тоглогчийг Group A–F-д тус бүр 6-аар байршуулж, group stage-ийн BO5 үр дүнг энд хадгална. Winner = 3 point, loser = авсан game-ийн тоо.</p>${tetrisRosterEditor(game)}${tetrisMatchEditor(game)}</div>`; }
 function renderEditor() { const game = state.games[activeGame]; return activeGame === 'tekken' ? '' : activeGame === 'mecha' ? renderMechaEditor(game) : activeGame === 'stumble' ? renderStumbleEditor(game) : activeGame === 'pubg' ? renderPubgEditor(game) : activeGame === 'tetris' ? renderTetrisEditor(game) : renderMlEditor(game); }
 
-function renderAdmin() { const logged = Boolean(authSession?.user); $('loggedOut').classList.toggle('ag-hidden', logged); $('loggedIn').classList.toggle('ag-hidden', !logged); if (logged) { $('userEmail').textContent = authSession.user.email || 'admin'; $('adminEditor').innerHTML = renderEditor(); } }
+function adminQueueItem(code, left, right, status, meta) { return `<div class="ag-admin-queue-row"><span class="ag-admin-queue-code">${esc(code)}</span><div class="ag-admin-queue-match"><b>${esc(left)}</b><span>VS</span><b>${esc(right)}</b></div><em class="ag-admin-status ${status === 'SAVED' ? 'is-saved' : ''}">${esc(status)}</em><small>${esc(meta)}</small></div>`; }
+function adminQueue(game) {
+  let items = [];
+  if (activeGame === 'mlbb') {
+    items = game.groupResults.map((match, index) => { const round = game.groupResults.slice(0, index + 1).filter(item => item.group === match.group).length; return adminQueueItem(`${match.group} · R${round}`, teamName(game, match.a), teamName(game, match.b), match.series ? 'SAVED' : 'READY', `BO2 · ${match.series || 'score pending'}`); });
+    items.push(...[['SF1', 'Semifinal 1'], ['SF2', 'Semifinal 2'], ['GF', 'Grand Final'], ['3RD', '3rd Place Final']].map(([code, label], index) => adminQueueItem(code, label, 'Waiting', game.playoff[['sf1', 'sf2', 'final', 'third'][index]] ? 'SAVED' : 'READY', 'BO3 playoff')));
+  } else if (activeGame === 'mecha') {
+    items = game.teams.map((team, index) => adminQueueItem(`L${index < 3 ? 'A' : 'B'} · R${index % 3 + 1}`, team.name, index < 3 ? 'HIDER / SEEKER' : 'HIDER / SEEKER', mechaStats(team).points ? 'SAVED' : 'READY', 'Missed Spot · catch · bonus'));
+  } else if (activeGame === 'stumble') {
+    items = game.teams.map((team, index) => adminQueueItem(`TEAM ${index + 1}`, team.name, 'Grand Prix', team.players.some(player => num(player.points)) ? 'SAVED' : 'READY', '5 player points'));
+  } else if (activeGame === 'pubg') {
+    items = MAP_NAMES.map((map, index) => adminQueueItem(`MAP ${index + 1}`, map, 'All teams', game.teams.some(team => team.maps[index]?.placement || num(team.maps[index]?.kills)) ? 'SAVED' : 'READY', 'placement + kills'));
+  } else {
+    const matches = game.matches || [];
+    items = TETRIS_GROUPS.map(group => { const done = matches.filter(match => match.group === group && match.score).length; return adminQueueItem(`GROUP ${group}`, group <= 'D' ? 'MEN' : 'WOMEN', 'Round-robin', done ? 'SAVED' : 'READY', `BO5 · ${done}/15 matches`); });
+  }
+  return `<div class="ag-admin-queue"><div class="ag-admin-queue-head"><div><span>ORGANISER QUEUE</span><h3>${esc(GAME_DEFS[activeGame].short)} MATCHES</h3></div><b>${items.length}</b></div><div class="ag-admin-queue-list">${items.join('')}</div></div>`;
+}
+function adminGuide() {
+  const guides = {
+    mlbb: [['GROUP BO2', 'Winner 3 points, loser 0. Group ranking uses points, game differential and the official tie-break.'], ['PLAYOFF BO3', 'A1 vs B2 and B1 vs A2. Record semifinal, grand final and 3rd place series separately.']],
+    mecha: [['HIDER', 'Missed Spot ranking-ээс авсан оноог 0.1 нарийвчлалтай оруулна.'], ['SEEKER', 'Caught Hider × 0.33; 10/10 clean sweep бүр +2.0 bonus.']],
+    stumble: [['GRAND PRIX', 'Тоглогч бүрийн round оноог тусад нь оруулна. Багийн нийт = 5 тоглогчийн нийлбэр.'], ['LEADERBOARD', 'Нийт оноо өндөр баг түрүүлнэ. Tie-break-ийг зохион байгуулагч шийднэ.']],
+    pubg: [['MAP SCORE', 'Placement points + kills × 2. Sanhok, Livik, Erangel map тус бүрийн үр дүнг тусад нь хадгална.'], ['TIE-BREAK', 'WWCD → нийт kill → Erangel placement → Erangel kill.']],
+    tetris: [['GROUP BO5', '6 group, 1v1 round-robin. Хожсон тоглогч 3 point, хожигдсон тоглогч BO5-д авсан game-ийн тоогоор point авна.'], ['CUP POINT', 'Ангилал тус бүр 1-р байр 5, 2-р байр 3, 3-р байр 2, 4-р байр 1 point авна.']],
+  }[activeGame] || [];
+  return `<div class="ag-admin-system"><div class="ag-admin-work-head"><div><span>SCORING ENGINE</span><h3>${esc(GAME_DEFS[activeGame].label)} · SCORE SYSTEM</h3></div><b>RULES LOCKED</b></div><div class="ag-admin-rule-grid">${guides.map(([title, body]) => `<article><b>${esc(title)}</b><p>${esc(body)}</p></article>`).join('')}</div><div class="ag-admin-callout"><b>SEPARATE GAME LOGIC</b><span>Энэ panel зөвхөн ${esc(GAME_DEFS[activeGame].label)}-ийн онооны системийг ажиллуулна. Бусад тоглоомын оноо, ranking болон дүрэм тусдаа хадгалагдана.</span></div></div>`;
+}
+function adminRosterEditor(game) {
+  if (activeGame === 'stumble') return `${inputTeamNames(game)}<div class="ag-form-section"><h3>Player roster</h3><div class="ag-admin-roster-grid">${game.teams.flatMap(team => team.players.map(player => `<label class="ag-label">${esc(team.name)} · Player<input class="ag-input" data-stumble-name="${player.id}" value="${esc(player.name)}"></label>`)).join('')}</div></div>`;
+  if (activeGame === 'tetris') return `${inputTeamNames(game)}${tetrisRosterEditor(game)}`;
+  const copy = activeGame === 'tetris' ? '36 player format: 4 men + 2 women per team, Group A–D men and Group E–F women.' : 'Team names are shared with this game only and do not change another tournament board.';
+  return `${inputTeamNames(game)}<div class="ag-admin-callout"><b>ROSTER CONTROL</b><span>${copy}</span></div>`;
+}
+function adminSettings() { return `<div class="ag-admin-system"><div class="ag-admin-work-head"><div><span>BOARD SETTINGS</span><h3>${esc(GAME_DEFS[activeGame].label)} · SETTINGS</h3></div><b>PUBLIC BOARD</b></div><div class="ag-admin-setting-grid"><article><b>LIVE SOURCE</b><span>Supabase realtime publish</span></article><article><b>ACTIVE FORMAT</b><span>${esc(GAME_DEFS[activeGame].format)}</span></article><article><b>EDIT SCOPE</b><span>Only signed-in organiser can save</span></article><article><b>PUBLIC RESULT</b><span>Every saved update appears on the live board</span></article></div></div>`; }
+function adminWorkbench(game) {
+  const body = activeAdminPanel === 'scoring' ? adminGuide() : activeAdminPanel === 'roster' ? adminRosterEditor(game) : activeAdminPanel === 'settings' ? adminSettings() : `<div class="ag-admin-scoreboard"><div class="ag-admin-work-head"><div><span>ON STAGE · RECORD RESULT</span><h3>${esc(GAME_DEFS[activeGame].label)} · LIVE CONTROL</h3></div><b>${esc(GAME_DEFS[activeGame].format)}</b></div>${renderEditor(game)}</div>`;
+  return `<section class="ag-admin-workbench">${body}</section>`;
+}
+function renderAdminConsole(game) { return `<div class="ag-admin-console"><div class="ag-admin-console-head"><div><span>ORGANISER CONTROL</span><h2>ADMIN</h2></div><div class="ag-admin-current"><img src="${GAME_DEFS[activeGame].logo}" alt=""><b>${esc(GAME_DEFS[activeGame].label)}</b><small>${esc(GAME_DEFS[activeGame].format)}</small></div></div><nav class="ag-admin-nav" aria-label="Admin sections">${[['matches', 'Matches'], ['scoring', 'Scoring'], ['roster', 'Roster'], ['settings', 'Settings']].map(([key, label]) => `<button class="${key === activeAdminPanel ? 'is-active' : ''}" type="button" data-admin-panel="${key}">${label}</button>`).join('')}</nav><div class="ag-admin-layout">${adminQueue(game)}${adminWorkbench(game)}</div></div>`; }
+function bindAdminConsole() { document.querySelectorAll('#adminEditor [data-admin-panel]').forEach(button => { button.onclick = () => { activeAdminPanel = button.dataset.adminPanel || 'matches'; renderAdmin(); }; }); }
+function renderAdmin() { const logged = Boolean(authSession?.user); $('loggedOut').classList.toggle('ag-hidden', logged); $('loggedIn').classList.toggle('ag-hidden', !logged); if (logged) { $('userEmail').textContent = authSession.user.email || 'admin'; $('adminEditor').innerHTML = renderAdminConsole(state.games[activeGame]); bindAdminConsole(); } }
 function render() {
   document.body.dataset.game = activeGame;
   document.body.style.setProperty('--ag-art', `url("${GAME_DEFS[activeGame].art}")`);
@@ -416,7 +490,7 @@ function saveFromEditor() {
   if (activeGame === 'mecha') document.querySelectorAll('[data-mecha]').forEach(input => { const team = game.teams.find(item => item.id === input.dataset.mecha); if (team) team[input.dataset.field] = num(input.value); });
   if (activeGame === 'stumble') game.teams.forEach(team => team.players.forEach(player => { const name = document.querySelector(`[data-stumble-name="${player.id}"]`); const points = document.querySelector(`[data-stumble-points="${player.id}"]`); if (name) player.name = name.value.trim() || player.name; if (points) player.points = num(points.value); }));
   if (activeGame === 'pubg') document.querySelectorAll('[data-pubg]').forEach(input => { const team = game.teams.find(item => item.id === input.dataset.pubg); const map = team?.maps[Number(input.dataset.map)]; if (map) map[input.dataset.field] = input.value; });
-  if (activeGame === 'tetris') document.querySelectorAll('[data-tetris-game]').forEach(input => { const stage = game.games.find(item => item.id === input.dataset.tetrisGame); const row = stage?.rows.find(item => item.teamId === input.dataset.tetrisTeam); if (row) row[input.dataset.field] = input.dataset.field === 'wins' ? num(input.value) : input.value; });
+  if (activeGame === 'tetris') { game.players?.forEach(player => { const input = document.querySelector(`[data-tetris-player="${player.id}"]`); if (input) player.name = input.value.trim() || player.name; }); game.matches?.forEach(match => { const input = document.querySelector(`[data-tetris-match="${match.id}"]`); if (input) match.score = input.value; }); }
   return next;
 }
 
