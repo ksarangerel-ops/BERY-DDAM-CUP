@@ -56,7 +56,6 @@ const RULES: Section[] = [
     { h: 'Grand Final ба эцсийн байр' },
     { ul: [
       'Grand Final: Winners Final-ийн ялагч vs Losers Final-ийн ялагч тоглож 1, 2-р байрыг шийднэ. BO5.',
-      'Bracket Reset: Хэрэв Lower Bracket талын тоглогч Grand Final-ыг хожвол (энэ бол түүний анхны ялагдал тул), 2 тал аль аль нь адил нөхцөлд орох тул нэмэлт 2 дахь Grand Final (мөн BO5) тоглогдоно. Upper Bracket талын тоглогч хожвол тэмцээн тэр дор нь өндөрлөнө.',
       '3-р байр: Losers Final-ийн ялагдагч.',
       '4-р байр: Losers Round 3 (LR3)-ийн ялагдагч.',
     ] },
@@ -169,7 +168,6 @@ const GLANCE: [title: string, body: string][] = [
   ['Win = 1 point', 'Ties: head-to-head (2 level) → game diff → games won → BO1 tie-breaker.'],
   ['Top 2 advance', '1st → Upper Bracket. 2nd → Lower Bracket. 3rd–6th are eliminated.'],
   ['Double elimination', 'Upper players get a second life; one loss in the lower bracket ends your run.'],
-  ['Grand Final BO5', 'If the lower-bracket player wins, the bracket resets for one more BO5.'],
 ];
 
 export const rulesView: View = {
