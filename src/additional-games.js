@@ -21,6 +21,14 @@ const TEAM_NAME_VERSION = 'ganaa-team-names-v1';
 const ML_SERIES = ['', '2-0', '1-1', '0-2'];
 const BO3_SERIES = ['', '2-0', '2-1', '1-2', '0-2'];
 const MAP_NAMES = ['Sanhok', 'Livik', 'Erangel'];
+const BOARD_NAV = [
+  ['arena', 'Arena', '⌂'],
+  ['groups', 'Groups', '▦'],
+  ['playoffs', 'Playoffs', '⚑'],
+  ['players', 'Fighters', '♙'],
+  ['rules', 'Rules', '▤'],
+  ['admin', 'Admin', '▣'],
+];
 
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
@@ -92,6 +100,7 @@ function writeCache(value) { try { localStorage.setItem(CACHE_KEY, JSON.stringif
 
 let state = readCache() || defaultState();
 let activeGame = new URLSearchParams(location.search).get('game') || 'mlbb';
+let activeBoardView = 'arena';
 if (!GAME_DEFS[activeGame]) activeGame = 'mlbb';
 let authSession = null;
 let connection = false;
@@ -343,6 +352,42 @@ function renderPubgDashboard(game) {
 }
 function renderTetrisDashboard(game) { return renderTetrisClassic(game); }
 
+function renderBoardNav() {
+  const nav = $('boardNav');
+  if (!nav) return;
+  nav.innerHTML = BOARD_NAV.map(([key, label, glyph]) => `<button class="${key === activeBoardView ? 'is-active' : ''}" type="button" data-board-view="${key}" aria-current="${key === activeBoardView ? 'page' : 'false'}"><span class="ag-board-nav-glyph" aria-hidden="true">${glyph}</span><span>${label}</span></button>`).join('');
+  nav.querySelectorAll('[data-board-view]').forEach(button => { button.onclick = () => focusBoardView(button.dataset.boardView); });
+}
+
+function focusBoardView(view) {
+  if (!view) return;
+  activeBoardView = view;
+  renderBoardNav();
+  if (view === 'rules') {
+    window.location.href = GAME_DEFS[activeGame].rules;
+    return;
+  }
+  if (view === 'admin') {
+    $('adminPanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  if (view === 'arena') {
+    $('publicBoard')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+  const terms = {
+    groups: ['GROUP', 'ZONE', 'LOBBY', 'QUALIFICATION'],
+    playoffs: ['PLAYOFF', 'BRACKET', 'FINAL'],
+    players: ['ROSTER', 'FIGHTER', 'PLAYER'],
+  }[view] || [];
+  const sections = [...document.querySelectorAll('#publicBoard section, #publicBoard .ag-dashboard-main > .ag-dash-panel, #publicBoard .ag-dashboard-side > .ag-dash-panel')];
+  const target = sections.find(section => {
+    const heading = section.querySelector('.ag-classic-section-head, .ag-dash-head')?.textContent || '';
+    return terms.some(term => heading.toUpperCase().includes(term));
+  }) || sections.find(section => terms.some(term => section.textContent.toUpperCase().includes(term)));
+  (target || $('publicBoard'))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function renderTabs() { $('gameTabs').innerHTML = GAME_IDS.map(id => `<button class="ag-tab ${id === activeGame ? 'active' : ''}" data-game="${id}" type="button"><img src="${GAME_DEFS[id].logo}" alt="">${GAME_DEFS[id].short}</button>`).join(''); document.querySelectorAll('.ag-tab').forEach(button => { button.onclick = () => { activeGame = button.dataset.game; const url = new URL(location.href); url.searchParams.set('game', activeGame); history.replaceState({}, '', url); render(); }; }); }
 
 function inputTeamNames(game) { return `<div class="ag-form-section"><h3>Team setup</h3><div class="ag-form-grid">${game.teams.map(team => `<label class="ag-label">${esc(team.tag || team.id)}<input class="ag-input" data-team-name="${team.id}" value="${esc(team.name)}"></label>`).join('')}</div></div>`; }
@@ -357,6 +402,8 @@ function renderAdmin() { const logged = Boolean(authSession?.user); $('loggedOut
 function render() {
   document.body.dataset.game = activeGame;
   document.body.style.setProperty('--ag-art', `url("${GAME_DEFS[activeGame].art}")`);
+  if (activeGame !== 'tekken') activeBoardView = 'arena';
+  renderBoardNav();
   renderTabs();
   renderPublic();
   renderAdmin();
