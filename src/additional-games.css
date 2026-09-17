@@ -104,3 +104,16 @@ body[data-game="tekken"] .ag-board-nav{display:none}
 .ag-board-nav a:focus-visible{outline:2px solid var(--ag-gold);outline-offset:2px}
 .ag-classic-board[id],.ag-classic-section[id],#adminPanel{scroll-margin-top:88px}
 @media(max-width:650px){.ag-board-nav a{padding:9px 11px;font-size:11px}}
+
+/* Non-Tekken boards now use the same view routing as the reference board:
+   /#/groups, /#/playoffs and /#/players render one focused screen instead of
+   leaving every section in one long page. */
+body[data-game]:not([data-game="tekken"])[data-board-view="groups"] #publicBoard .ag-classic-board> :not(.ag-classic-banner):not(.ag-classic-facts):not(#board-groups):not(.ag-classic-note),
+body[data-game]:not([data-game="tekken"])[data-board-view="playoffs"] #publicBoard .ag-classic-board> :not(.ag-classic-banner):not(.ag-classic-facts):not(#board-playoffs):not(.ag-classic-note),
+body[data-game]:not([data-game="tekken"])[data-board-view="players"] #publicBoard .ag-classic-board> :not(.ag-classic-banner):not(.ag-classic-facts):not(#board-players):not(.ag-classic-note){display:none}
+body[data-game]:not([data-game="tekken"])[data-board-view="groups"] #publicBoard .ag-classic-board> #board-groups,
+body[data-game]:not([data-game="tekken"])[data-board-view="playoffs"] #publicBoard .ag-classic-board> #board-playoffs,
+body[data-game]:not([data-game="tekken"])[data-board-view="players"] #publicBoard .ag-classic-board> #board-players{display:block}
+body[data-game]:not([data-game="tekken"]):not([data-board-view="admin"]) #adminPanel{display:none}
+body[data-game]:not([data-game="tekken"])[data-board-view="admin"] #publicBoard{display:none}
+body[data-game]:not([data-game="tekken"])[data-board-view="admin"] .ag-layout>aside{margin-top:0}

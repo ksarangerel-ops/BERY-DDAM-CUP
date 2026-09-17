@@ -31,12 +31,12 @@ const BOARD_NAV = [
   ['rules', 'Rules', '▤'],
   ['admin', 'Admin', '▣'],
 ];
-const BOARD_TARGETS = {
-  arena: 'board-arena',
-  groups: 'board-groups',
-  playoffs: 'board-playoffs',
-  players: 'board-players',
-  admin: 'adminPanel',
+const BOARD_ROUTES = {
+  arena: '',
+  groups: 'groups',
+  playoffs: 'playoffs',
+  players: 'players',
+  admin: 'admin',
 };
 
 const $ = id => document.getElementById(id);
@@ -398,15 +398,15 @@ function renderPubgDashboard(game) {
 function renderTetrisDashboard(game) { return renderTetrisClassic(game); }
 
 function boardViewFromHash() {
-  const hash = location.hash.replace(/^#/, '');
-  return BOARD_NAV.find(([key]) => BOARD_TARGETS[key] === hash)?.[0] || 'arena';
+  const route = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean)[0] || 'arena';
+  return BOARD_NAV.find(([key]) => BOARD_ROUTES[key] === route)?.[0] || 'arena';
 }
 
 function renderBoardNav() {
   const nav = $('boardNav');
   if (!nav) return;
   nav.innerHTML = BOARD_NAV.map(([key, label, glyph]) => {
-    const href = key === 'rules' ? GAME_DEFS[activeGame].rules : `#${BOARD_TARGETS[key]}`;
+    const href = key === 'rules' ? GAME_DEFS[activeGame].rules : `#/${BOARD_ROUTES[key]}`;
     const active = key === activeBoardView;
     return `<a class="${active ? 'is-active' : ''}" href="${href}" data-board-view="${key}" aria-current="${active ? 'page' : 'false'}"><span class="ag-board-nav-glyph" aria-hidden="true">${glyph}</span><span>${label}</span></a>`;
   }).join('');
@@ -472,14 +472,21 @@ function adminWorkbench(game) {
 function renderAdminConsole(game) { return `<div class="ag-admin-console"><div class="ag-admin-console-head"><div><span>ORGANISER CONTROL</span><h2>ADMIN</h2></div><div class="ag-admin-current"><img src="${GAME_DEFS[activeGame].logo}" alt=""><b>${esc(GAME_DEFS[activeGame].label)}</b><small>${esc(GAME_DEFS[activeGame].format)}</small></div></div><nav class="ag-admin-nav" aria-label="Admin sections">${[['matches', 'Matches'], ['scoring', 'Scoring'], ['roster', 'Roster'], ['settings', 'Settings']].map(([key, label]) => `<button class="${key === activeAdminPanel ? 'is-active' : ''}" type="button" data-admin-panel="${key}">${label}</button>`).join('')}</nav><div class="ag-admin-layout">${adminQueue(game)}${adminWorkbench(game)}</div></div>`; }
 function bindAdminConsole() { document.querySelectorAll('#adminEditor [data-admin-panel]').forEach(button => { button.onclick = () => { activeAdminPanel = button.dataset.adminPanel || 'matches'; renderAdmin(); }; }); }
 function renderAdmin() { const logged = Boolean(authSession?.user); $('loggedOut').classList.toggle('ag-hidden', logged); $('loggedIn').classList.toggle('ag-hidden', !logged); if (logged) { $('userEmail').textContent = authSession.user.email || 'admin'; $('adminEditor').innerHTML = renderAdminConsole(state.games[activeGame]); bindAdminConsole(); } }
+function focusBoardView() {
+  const targets = { arena: '#board-arena', groups: '#board-groups', playoffs: '#board-playoffs', players: '#board-players', admin: '#adminPanel' };
+  const target = targets[activeBoardView];
+  if (target) requestAnimationFrame(() => document.querySelector(target)?.scrollIntoView({ behavior: 'auto', block: 'start' }));
+}
 function render() {
   document.body.dataset.game = activeGame;
   document.body.style.setProperty('--ag-art', `url("${GAME_DEFS[activeGame].art}")`);
   if (activeGame !== 'tekken') activeBoardView = boardViewFromHash();
+  document.body.dataset.boardView = activeBoardView;
   renderBoardNav();
   renderTabs();
   renderPublic();
   renderAdmin();
+  if (activeGame !== 'tekken') focusBoardView();
 }
 
 function saveFromEditor() {
@@ -498,5 +505,5 @@ $('logoutBtn').onclick = async () => { try { await signOut(); showToast('✓ Sig
 $('saveBtn').onclick = async () => { if (!authSession?.user) return; const button = $('saveBtn'); button.disabled = true; button.textContent = 'Publishing…'; $('saveNote').textContent = ''; const result = await publish(saveFromEditor()); button.disabled = false; button.textContent = 'Save current game'; if (result.ok && !result.local) { showToast(`✓ ${GAME_DEFS[activeGame].label} published live`); $('saveNote').textContent = 'Saved to Supabase — every public viewer will update.'; } else if (result.ok) { showToast('Saved on this device only'); } else { $('saveNote').textContent = result.error?.message || 'Publish failed'; } };
 
 render();
-window.addEventListener('hashchange', () => { activeBoardView = boardViewFromHash(); renderBoardNav(); });
+window.addEventListener('hashchange', () => { activeBoardView = boardViewFromHash(); render(); });
 startRealtime();
