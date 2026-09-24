@@ -186,10 +186,10 @@ function renderZoneCards() {
         <span class="text-[9px] uppercase tracking-widest font-display font-bold ${complete ? 'text-gold' : 'text-slate-500'}">${complete ? 'Complete' : `${teams.length}/3 teams`}</span>
       </div>
       <div class="divide-y divide-line/50">
-        ${rows.length ? rows.map(row => { const teamLogo = mediaSrc(row.team.logo); return `<div class="flex items-center gap-2 px-4 py-2.5 text-sm ${finalists.has(row.team.id) ? 'bg-gold/10' : ''}">
-          <span class="w-5 font-mono font-extrabold ${row.rank <= 2 ? 'text-gold' : 'text-slate-500'}">#${row.rank}</span>
-          <span class="dota-team-logo dota-team-logo--sm">${teamLogo ? `<img src="${esc(teamLogo)}" alt="${esc(row.team.name)} logo">` : esc(initials(row.team.name))}</span>
-          <span class="flex-1 font-semibold truncate ${finalists.has(row.team.id) ? 'text-white' : 'text-slate-300'}">${esc(row.team.name)}</span>
+        ${rows.length ? rows.map(row => { const teamLogo = mediaSrc(row.team.logo); return `<div class="dota-zone-row flex items-center gap-2 px-4 py-2 ${finalists.has(row.team.id) ? 'bg-gold/10' : ''}">
+           <span class="w-5 font-mono font-extrabold ${row.rank <= 2 ? 'text-gold' : 'text-slate-500'}">#${row.rank}</span>
+           <span class="dota-team-logo dota-team-logo--zone">${teamLogo ? `<img src="${esc(teamLogo)}" alt="${esc(row.team.name)} logo">` : esc(initials(row.team.name))}</span>
+           <span class="flex-1 min-w-0 font-semibold text-xs truncate ${finalists.has(row.team.id) ? 'text-white' : 'text-slate-300'}">${esc(row.team.name)}</span>
           ${finalists.has(row.team.id) ? `<span class="text-[8px] uppercase tracking-widest font-display font-black text-gold">FINAL</span>` : ''}
           <span class="font-mono text-xs font-extrabold text-white">${row.total}P</span>
         </div>`; }).join('') : `<div class="px-4 py-6 text-center text-sm text-slate-600 font-semibold">Assign 3 teams to Zone ${zoneId} in Admin</div>`}
