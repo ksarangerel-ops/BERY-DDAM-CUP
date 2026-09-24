@@ -8,7 +8,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { TOURNAMENT_ID } from './config.js';
 
-const MEDIA_BUCKET = 'dota2-assets';
+// All non-Tekken boards share one public media bucket.
+const MEDIA_BUCKET = 'cup-assets';
 
 const config = {
   url: import.meta.env.VITE_SUPABASE_URL,
