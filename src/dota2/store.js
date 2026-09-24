@@ -6,7 +6,7 @@
    so an organiser is never locked out mid-tournament.
 
    state = {
-     teams:   [{ id, name, tag, zoneId, players:[{id,name} x5] }],
+     teams:   [{ id, name, tag, zoneId, logo?, players:[{id,name,photo?} x5] }],
      results: { 1:{ teamId:{ series: '2-0' } }, ... },
      updated: ISO string
    }
@@ -30,9 +30,9 @@ export function blankState() {
   return {
     teamNameVersion: TEAM_NAME_VERSION,
     teams: TEAM_SEED.map(([name, tag, zoneId], i) => ({
-      id: 't' + (i + 1), name, tag, zoneId: zoneId || null,
+      id: 't' + (i + 1), name, tag, zoneId: zoneId || null, logo: null,
       players: Array.from({ length: SQUAD_SIZE }, (_, p) => ({
-        id: `t${i + 1}p${p + 1}`, name: `${tag} Player ${p + 1}`,
+        id: `t${i + 1}p${p + 1}`, name: `${tag} Player ${p + 1}`, photo: null,
       })),
     })),
     results: {}, updated: null,

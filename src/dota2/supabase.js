@@ -8,6 +8,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { TOURNAMENT_ID } from './config.js';
 
+const MEDIA_BUCKET = 'dota2-assets';
+
 const config = {
   url: import.meta.env.VITE_SUPABASE_URL,
   publishableKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
@@ -133,4 +135,37 @@ export async function publish(state) {
     updated: state.updated,
   }, { onConflict: 'id' });
   if (error) throw error;
+}
+
+function dataUrlToBlob(data) {
+  const match = String(data || '').match(/^data:(image\/[\w.+-]+);base64,(.+)$/);
+  if (!match) throw new Error('Invalid image data');
+  const binary = atob(match[2]);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return { blob: new Blob([bytes], { type: match[1] }), type: match[1] };
+}
+
+/** Store a compressed DOTA asset and return its public URL. */
+export async function uploadMedia(path, data) {
+  if (!client) throw new Error('Supabase is not configured');
+  const { blob, type } = dataUrlToBlob(data);
+  const extension = type === 'image/webp' ? 'webp' : type === 'image/png' ? 'png' : 'jpg';
+  const finalPath = `${path}-${Date.now()}.${extension}`;
+  const { error } = await client.storage.from(MEDIA_BUCKET).upload(finalPath, blob, {
+    contentType: type,
+    cacheControl: '31536000',
+    upsert: false,
+  });
+  if (error) throw error;
+  return client.storage.from(MEDIA_BUCKET).getPublicUrl(finalPath).data.publicUrl;
+}
+
+/** Best-effort cleanup after replacing or cancelling a stored image. */
+export async function removeMedia(url) {
+  if (!client || typeof url !== 'string') return;
+  const marker = `/object/public/${MEDIA_BUCKET}/`;
+  const at = url.indexOf(marker);
+  if (at < 0) return;
+  await client.storage.from(MEDIA_BUCKET).remove([decodeURIComponent(url.slice(at + marker.length))]).catch(() => undefined);
 }

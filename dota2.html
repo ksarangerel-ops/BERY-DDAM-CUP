@@ -253,6 +253,15 @@ tailwind.config = {
       </div>
 
       <div class="rounded-2xl glass p-5">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <h3 class="font-display font-bold text-xs uppercase tracking-[.2em] text-cyan">Roster & Media</h3>
+          <span class="text-[9px] uppercase tracking-widest font-bold text-slate-500">Logos · player photos</span>
+        </div>
+        <div class="space-y-4" id="mediaEditor"></div>
+        <p class="text-[11px] text-slate-500 mt-3">Upload team logos and every player photo here. Images are compressed automatically before saving.</p>
+      </div>
+
+      <div class="rounded-2xl glass p-5">
         <h3 class="font-display font-bold text-xs uppercase tracking-[.2em] text-rose-400 mb-3">Danger Zone</h3>
         <button id="btnReset" class="w-full px-4 py-2.5 rounded-lg bg-rose-500/10 border border-rose-500/40 text-rose-300 font-display font-bold text-xs uppercase tracking-widest hover:bg-rose-500/20 transition">Reset Entire Tournament</button>
         <p class="text-[11px] text-slate-500 mt-3">Clears all DOTA 2 series results. Team names, tags, zones and player names are kept.</p>

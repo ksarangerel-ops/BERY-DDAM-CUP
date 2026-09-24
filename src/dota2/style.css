@@ -309,3 +309,22 @@
   .leader-card-1{--leader-accent:#ff5b5b}.leader-card-2{--leader-accent:#4ea4ff}.leader-card-3{--leader-accent:#2ed7a0}.leader-card-4{--leader-accent:#ffad3d}.leader-card-5{--leader-accent:#b86cff}.leader-card-6{--leader-accent:#ef4f92}
   @media(max-width:1050px){.leader-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
   @media(max-width:560px){.leader-cards{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:.55rem}.leader-card{flex:0 0 min(76vw,12rem);scroll-snap-align:start}}
+
+  /* ---------- team logos and roster media ---------- */
+  .dota-team-logo{display:grid;place-items:center;flex:none;overflow:hidden;border:1px solid rgba(255,172,94,.58);border-radius:.55rem;background:rgba(10,8,16,.76);color:#ffd7ad;font:900 .62rem/1 'Orbitron',sans-serif;letter-spacing:.04em}
+  .dota-team-logo img,.dota-player-avatar img{display:block;width:100%;height:100%;object-fit:contain}
+  .dota-team-logo--sm{width:2rem;height:2rem}
+  .dota-team-logo--md{width:2.7rem;height:2.7rem}
+  .leader-team-logo{width:1.25rem;height:1.25rem;flex:none;object-fit:contain;border:1px solid rgba(255,255,255,.28);border-radius:.25rem;background:#160c10}
+  .dota-player-avatar{display:grid;place-items:center;flex:none;width:2rem;height:2rem;overflow:hidden;border:1px solid rgba(116,214,255,.48);border-radius:50%;background:#11182e;color:#a5f3fc;font:900 .55rem/1 'Orbitron',sans-serif}
+  .dota-player-avatar--admin{width:2.25rem;height:2.25rem}
+  .dota-media-team{overflow:hidden;border:1px solid rgba(255,74,74,.22);border-radius:.75rem;background:rgba(17,7,13,.6)}
+  .dota-media-team-head{display:flex;align-items:center;gap:.65rem;padding:.65rem .7rem;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,74,74,.07)}
+  .dota-media-players{display:grid;gap:.45rem;padding:.65rem .7rem}
+  .dota-media-player{display:flex;align-items:center;gap:.5rem;min-width:0}
+  .media-player-name{min-width:0;flex:1;padding:.45rem .55rem;border:1px solid rgba(255,255,255,.12);border-radius:.45rem;background:rgba(8,8,16,.72);color:#fff;font:700 .75rem/1.1 'Rajdhani',sans-serif;outline:none}
+  .media-player-name:focus{border-color:#ffad3d;box-shadow:0 0 0 1px rgba(255,173,61,.25)}
+  .media-btn{padding:.42rem .55rem;border:1px solid rgba(116,214,255,.38);border-radius:.42rem;background:rgba(33,112,148,.16);color:#9ceaff;font:800 .55rem/1 'JetBrains Mono',monospace;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;cursor:pointer}
+  .media-btn:hover{border-color:#ffad3d;color:#ffd7ad;background:rgba(255,173,61,.12)}
+  .media-btn--muted{border-color:rgba(255,74,74,.28);background:rgba(255,74,74,.07);color:#ffaaa4}
+  @media(max-width:560px){.dota-media-team-head{align-items:flex-start;flex-wrap:wrap}.dota-media-team-head .ml-auto{width:100%;margin-left:3.35rem}.dota-media-player{flex-wrap:wrap}.dota-media-player .media-player-name{min-width:calc(100% - 2.75rem);flex-basis:calc(100% - 2.75rem)}.dota-media-player .media-btn{margin-left:2.75rem}}

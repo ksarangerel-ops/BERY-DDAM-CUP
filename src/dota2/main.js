@@ -13,10 +13,12 @@ import {
   qualifiedTeams, seriesStats, matchTeams, matchComplete,
 } from './scoring.js';
 import { ICONS } from './icons.js';
+import { assetUrl, pickImage, prepareImage } from './assets.js';
 import { enhanceSelects, setSelectState, syncSelect } from './select.js';
 import {
   isConfigured, missingKeys, isLive,
   getSession, subscribeAuth, signIn, signOut,
+  uploadMedia, removeMedia,
 } from './supabase.js';
 
 let state = blankState();
@@ -42,6 +44,8 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
 }[c]));
 const num = n => (n || 0).toLocaleString('en-US');
 const teamOf = pid => state.teams.find(team => team.players.some(player => player.id === pid));
+const mediaSrc = value => assetUrl(value);
+const initials = value => String(value || '?').trim().split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase() || '?';
 const matchConfig = matchNo => MATCHES.find(match => match.id === Number(matchNo));
 const firstUnplayedMatch = () => MATCHES.find(match => !matchComplete(state, match))?.id || 1;
 const activeTeamsForMatch = (matchNo = currentMatch) => matchTeams(state, matchNo);
@@ -177,12 +181,13 @@ function renderZoneCards() {
         <span class="text-[9px] uppercase tracking-widest font-display font-bold ${complete ? 'text-gold' : 'text-slate-500'}">${complete ? 'Complete' : `${teams.length}/3 teams`}</span>
       </div>
       <div class="divide-y divide-line/50">
-        ${rows.length ? rows.map(row => `<div class="flex items-center gap-2 px-4 py-2.5 text-sm ${finalists.has(row.team.id) ? 'bg-gold/10' : ''}">
+        ${rows.length ? rows.map(row => { const teamLogo = mediaSrc(row.team.logo); return `<div class="flex items-center gap-2 px-4 py-2.5 text-sm ${finalists.has(row.team.id) ? 'bg-gold/10' : ''}">
           <span class="w-5 font-mono font-extrabold ${row.rank <= 2 ? 'text-gold' : 'text-slate-500'}">#${row.rank}</span>
+          <span class="dota-team-logo dota-team-logo--sm">${teamLogo ? `<img src="${esc(teamLogo)}" alt="${esc(row.team.name)} logo">` : esc(initials(row.team.name))}</span>
           <span class="flex-1 font-semibold truncate ${finalists.has(row.team.id) ? 'text-white' : 'text-slate-300'}">${esc(row.team.name)}</span>
           ${finalists.has(row.team.id) ? `<span class="text-[8px] uppercase tracking-widest font-display font-black text-gold">FINAL</span>` : ''}
           <span class="font-mono text-xs font-extrabold text-white">${row.total}P</span>
-        </div>`).join('') : `<div class="px-4 py-6 text-center text-sm text-slate-600 font-semibold">Assign 3 teams to Zone ${zoneId} in Admin</div>`}
+        </div>`; }).join('') : `<div class="px-4 py-6 text-center text-sm text-slate-600 font-semibold">Assign 3 teams to Zone ${zoneId} in Admin</div>`}
       </div>
     </div>`;
   }).join('');
@@ -221,6 +226,7 @@ function renderStandings() {
   const rows = computeStandings(state);
   $('standings').innerHTML = rows.map(row => {
     const active = row.series > 0;
+    const teamLogo = mediaSrc(row.team.logo);
     const badge = !active ? 'bg-panel2 text-slate-500 border border-line'
       : row.rank === 1 ? 'bg-gradient-to-br from-gold2 to-amber-600 text-ink'
       : row.rank === 2 ? 'bg-gradient-to-br from-slate-200 to-slate-400 text-ink'
@@ -229,6 +235,7 @@ function renderStandings() {
     return `<tr class="${row.rank === 1 && active ? 'row-champ' : ''} hover:bg-white/[.04] transition">
       <td class="py-3.5 pl-4 pr-2"><span class="inline-grid place-items-center w-9 h-9 rounded-lg font-display font-black text-sm ${badge}">${row.rank}</span></td>
       <td class="py-3.5 px-2"><div class="flex items-center gap-2.5">
+        <span class="dota-team-logo dota-team-logo--sm">${teamLogo ? `<img src="${esc(teamLogo)}" alt="${esc(row.team.name)} logo">` : esc(initials(row.team.name))}</span>
         <span class="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-ink/70 border border-line text-cyan">${esc(row.team.tag)}</span>
         <span class="font-display font-bold text-sm sm:text-base whitespace-nowrap ${row.rank === 1 && active ? 'champ-name' : 'text-white'}">${esc(row.team.name)}</span>
         <span class="text-[9px] uppercase tracking-widest font-bold ${row.team.zoneId ? 'text-slate-500' : 'text-rose-300'}">${row.team.zoneId ? `Zone ${esc(row.team.zoneId)}` : 'Unassigned'}</span>
@@ -254,9 +261,11 @@ function renderRosters() {
     : null;
   $('leaderCards').innerHTML = state.teams.map((team, index) => {
     const leaderAvatar = LEADER_AVATARS[team.tag] || `/leader-avatars/leader-${index + 1}.png`;
+    const teamLogo = mediaSrc(team.logo);
     return `
     <article class="leader-card leader-card-${index + 1}">
       <div class="leader-card-head">
+        ${teamLogo ? `<img class="leader-team-logo" src="${esc(teamLogo)}" alt="${esc(team.name)} logo">` : ''}
         <span>TEAM ${esc(team.name.replace(/^Team\s+/i, ''))}</span>
         <b>${esc(team.tag)}</b>
       </div>
@@ -288,12 +297,15 @@ function renderRosters() {
           <div class="rounded-xl bg-ink/70 border border-line py-2.5"><div class="font-display font-black text-2xl text-cyan">4</div><div class="text-[9px] uppercase tracking-[.2em] font-bold text-slate-500">Final matches</div></div>
         </div>
       </div>`;
-  $('mvpTable').innerHTML = list.map(row => `<tr class="hover:bg-white/[.04] transition">
+  $('mvpTable').innerHTML = list.map(row => {
+    const playerPhoto = mediaSrc(row.player.photo);
+    return `<tr class="hover:bg-white/[.04] transition">
     <td class="py-2.5 pl-4 pr-2"><span class="font-display font-black text-xs text-slate-500">${row.rank}</span></td>
-    <td class="py-2.5 px-2"><span class="font-display font-bold text-sm text-white">${esc(row.player.name)}</span></td>
+    <td class="py-2.5 px-2"><div class="flex items-center gap-2"><span class="dota-player-avatar">${playerPhoto ? `<img src="${esc(playerPhoto)}" alt="${esc(row.player.name)}">` : esc(initials(row.player.name))}</span><span class="font-display font-bold text-sm text-white">${esc(row.player.name)}</span></div></td>
     <td class="py-2.5 px-2"><span class="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-ink/70 border border-line text-cyan">${esc(row.team.tag)}</span><span class="text-xs font-semibold text-slate-400 ml-1 hidden sm:inline">${esc(row.team.name)}</span></td>
     <td class="py-2.5 px-2 text-center font-mono font-bold ${row.zoneId ? 'text-gold' : 'text-slate-600'}">${row.zoneId ? `Zone ${esc(row.zoneId)}` : '—'}</td>
-  </tr>`).join('');
+  </tr>`;
+  }).join('');
   $('btnMore').textContent = showAllPlayers ? 'Show top 10' : `Show all ${rows.length}`;
 }
 
@@ -388,8 +400,12 @@ function renderTeamCards() {
   }
   $('teamCards').innerHTML = teams.map(team => {
     const current = result[team.id]?.series || '';
-    const players = team.players.map(player => `<div class="grid grid-cols-[1fr] gap-2 items-center" data-player="${player.id}"><input type="text" value="${esc(player.name)}" maxlength="24" placeholder="Player name" class="p-name bg-ink/60 border border-line rounded-lg px-2.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold min-w-0"></div>`).join('');
-    return `<div class="team-card rounded-2xl glass overflow-hidden" data-team="${team.id}"><div class="px-4 py-3 glass-2 border-b border-gold/20 flex items-center gap-2.5 flex-wrap"><span class="tc-tag font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-ink/70 border border-line text-cyan">${esc(team.tag)}</span><span class="tc-name font-display font-bold text-sm text-white">${esc(team.name)}</span><span class="tc-zone text-[9px] uppercase tracking-widest font-bold text-gold">Zone ${esc(team.zoneId)}</span><div class="sel ml-auto"><select class="t-series select-esports" aria-label="BO result for ${esc(team.name)}"><option value="">Result —</option>${resultOptions(match)}</select></div></div><div class="px-4 pt-3 pb-2 text-[9px] uppercase tracking-[.18em] font-display font-bold text-slate-500">Roster · 5 players</div><div class="px-4 pb-3 space-y-2">${players}</div><div class="px-4 pb-3">${renderPerformanceInputs(team, result)}</div><div class="px-4 py-2.5 bg-ink/60 border-t border-line/70 flex items-center gap-4 text-xs"><span class="uppercase tracking-[.15em] font-display font-bold text-slate-500">Series result</span><span class="t-series-label font-mono font-extrabold text-cyan text-base">${current || '—'}</span><span class="uppercase tracking-[.15em] font-display font-bold text-slate-500 ml-auto">Points</span><span class="t-pts font-display font-black text-white text-base">${current ? `${previewResult(match, current).points}` : '—'}</span></div></div>`;
+    const teamLogo = mediaSrc(team.logo);
+    const players = team.players.map(player => {
+      const photo = mediaSrc(player.photo);
+      return `<div class="grid grid-cols-[auto_1fr] gap-2 items-center" data-player="${player.id}"><span class="dota-player-avatar">${photo ? `<img src="${esc(photo)}" alt="${esc(player.name)}">` : esc(initials(player.name))}</span><input type="text" value="${esc(player.name)}" maxlength="24" placeholder="Player name" class="p-name bg-ink/60 border border-line rounded-lg px-2.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold min-w-0"></div>`;
+    }).join('');
+    return `<div class="team-card rounded-2xl glass overflow-hidden" data-team="${team.id}"><div class="px-4 py-3 glass-2 border-b border-gold/20 flex items-center gap-2.5 flex-wrap"><span class="dota-team-logo dota-team-logo--sm">${teamLogo ? `<img src="${esc(teamLogo)}" alt="${esc(team.name)} logo">` : esc(initials(team.name))}</span><span class="tc-tag font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-ink/70 border border-line text-cyan">${esc(team.tag)}</span><span class="tc-name font-display font-bold text-sm text-white">${esc(team.name)}</span><span class="tc-zone text-[9px] uppercase tracking-widest font-bold text-gold">Zone ${esc(team.zoneId)}</span><div class="sel ml-auto"><select class="t-series select-esports" aria-label="BO result for ${esc(team.name)}"><option value="">Result —</option>${resultOptions(match)}</select></div></div><div class="px-4 pt-3 pb-2 text-[9px] uppercase tracking-[.18em] font-display font-bold text-slate-500">Roster · 5 players</div><div class="px-4 pb-3 space-y-2">${players}</div><div class="px-4 pb-3">${renderPerformanceInputs(team, result)}</div><div class="px-4 py-2.5 bg-ink/60 border-t border-line/70 flex items-center gap-4 text-xs"><span class="uppercase tracking-[.15em] font-display font-bold text-slate-500">Series result</span><span class="t-series-label font-mono font-extrabold text-cyan text-base">${current || '—'}</span><span class="uppercase tracking-[.15em] font-display font-bold text-slate-500 ml-auto">Points</span><span class="t-pts font-display font-black text-white text-base">${current ? `${previewResult(match, current).points}` : '—'}</span></div></div>`;
   }).join('');
 
   document.querySelectorAll('#teamCards .t-series').forEach(select => {
@@ -514,6 +530,136 @@ function renderTeamEditorValues() {
   });
 }
 
+function renderMediaEditor() {
+  const root = $('mediaEditor');
+  if (!root) return;
+  root.innerHTML = state.teams.map(team => {
+    const logo = mediaSrc(team.logo);
+    return `<section class="dota-media-team">
+      <div class="dota-media-team-head">
+        <span class="dota-team-logo dota-team-logo--md">${logo ? `<img src="${esc(logo)}" alt="${esc(team.name)} logo">` : esc(initials(team.name))}</span>
+        <div class="min-w-0"><b class="block truncate text-sm text-white">${esc(team.name)}</b><small class="text-[10px] uppercase tracking-widest text-slate-500">${esc(team.tag)} · 5 players</small></div>
+        <div class="ml-auto flex flex-wrap justify-end gap-1.5">
+          <button type="button" class="media-team-logo-upload media-btn" data-team="${team.id}">${logo ? 'Change logo' : 'Upload logo'}</button>
+          ${logo ? `<button type="button" class="media-team-logo-remove media-btn media-btn--muted" data-team="${team.id}">Remove</button>` : ''}
+        </div>
+      </div>
+      <div class="dota-media-players">
+        ${team.players.map(player => {
+          const photo = mediaSrc(player.photo);
+          return `<div class="dota-media-player" data-player="${player.id}">
+            <span class="dota-player-avatar dota-player-avatar--admin">${photo ? `<img src="${esc(photo)}" alt="${esc(player.name)}">` : esc(initials(player.name))}</span>
+            <input class="media-player-name" data-player="${player.id}" value="${esc(player.name)}" maxlength="24" aria-label="Player name">
+            <button type="button" class="media-player-upload media-btn" data-player="${player.id}">${photo ? 'Change photo' : 'Upload photo'}</button>
+            ${photo ? `<button type="button" class="media-player-remove media-btn media-btn--muted" data-player="${player.id}">Remove</button>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+    </section>`;
+  }).join('');
+
+  document.querySelectorAll('#mediaEditor .media-team-logo-upload').forEach(button => {
+    button.onclick = () => uploadTeamLogo(button.dataset.team);
+  });
+  document.querySelectorAll('#mediaEditor .media-team-logo-remove').forEach(button => {
+    button.onclick = () => removeTeamLogo(button.dataset.team);
+  });
+  document.querySelectorAll('#mediaEditor .media-player-upload').forEach(button => {
+    button.onclick = () => uploadPlayerPhoto(button.dataset.player);
+  });
+  document.querySelectorAll('#mediaEditor .media-player-remove').forEach(button => {
+    button.onclick = () => removePlayerPhoto(button.dataset.player);
+  });
+  document.querySelectorAll('#mediaEditor .media-player-name').forEach(input => {
+    input.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); input.blur(); } });
+    input.addEventListener('change', () => savePlayerName(input.dataset.player, input));
+  });
+}
+
+async function uploadPlayerPhoto(pid) {
+  const player = teamOf(pid)?.players.find(item => item.id === pid);
+  if (!player) return;
+  const file = await pickImage();
+  if (!file) return;
+  let data;
+  try { data = await prepareImage(file, 'photo'); }
+  catch (error) { toast(error.message || 'Could not process that image', true); return; }
+
+  const previous = player.photo;
+  let value = data;
+  const storedOnline = isLive();
+  if (storedOnline) {
+    try { value = await uploadMedia(`dota2/${TOURNAMENT_ID}/players/${pid}`, data); }
+    catch (error) { console.error('[dota2] player photo upload failed:', error); toast(`Photo upload failed — ${error.message || 'Storage rejected the file'}`, true); return; }
+  }
+  const result = await saveRoster(next => {
+    const target = next.teams.find(team => team.players.some(item => item.id === pid));
+    const targetPlayer = target?.players.find(item => item.id === pid);
+    if (!targetPlayer) return false;
+    targetPlayer.photo = value;
+  }, `Photo saved for ${player.name}`);
+  if (storedOnline) {
+    if (result?.ok) void removeMedia(previous);
+    else void removeMedia(value);
+  }
+  renderMediaEditor();
+}
+
+async function removePlayerPhoto(pid) {
+  const player = teamOf(pid)?.players.find(item => item.id === pid);
+  if (!player?.photo || !confirm(`Remove the photo of ${player.name}?`)) return;
+  const previous = player.photo;
+  const result = await saveRoster(next => {
+    const target = next.teams.find(team => team.players.some(item => item.id === pid));
+    const targetPlayer = target?.players.find(item => item.id === pid);
+    if (!targetPlayer) return false;
+    targetPlayer.photo = null;
+  }, 'Player photo removed');
+  if (result?.ok) void removeMedia(previous);
+  renderMediaEditor();
+}
+
+async function uploadTeamLogo(teamId) {
+  const team = state.teams.find(item => item.id === teamId);
+  if (!team) return;
+  const file = await pickImage();
+  if (!file) return;
+  let data;
+  try { data = await prepareImage(file, 'logo'); }
+  catch (error) { toast(error.message || 'Could not process that image', true); return; }
+
+  const previous = team.logo;
+  let value = data;
+  const storedOnline = isLive();
+  if (storedOnline) {
+    try { value = await uploadMedia(`dota2/${TOURNAMENT_ID}/teams/${teamId}`, data); }
+    catch (error) { console.error('[dota2] team logo upload failed:', error); toast(`Logo upload failed — ${error.message || 'Storage rejected the file'}`, true); return; }
+  }
+  const result = await saveRoster(next => {
+    const target = next.teams.find(item => item.id === teamId);
+    if (!target) return false;
+    target.logo = value;
+  }, `Logo saved for ${team.name}`);
+  if (storedOnline) {
+    if (result?.ok) void removeMedia(previous);
+    else void removeMedia(value);
+  }
+  renderMediaEditor();
+}
+
+async function removeTeamLogo(teamId) {
+  const team = state.teams.find(item => item.id === teamId);
+  if (!team?.logo || !confirm(`Remove the logo of ${team.name}?`)) return;
+  const previous = team.logo;
+  const result = await saveRoster(next => {
+    const target = next.teams.find(item => item.id === teamId);
+    if (!target) return false;
+    target.logo = null;
+  }, 'Team logo removed');
+  if (result?.ok) void removeMedia(previous);
+  renderMediaEditor();
+}
+
 function renderRulesLegend() {
   $('ptsLegend').innerHTML = `<li class="flex justify-between items-center"><span class="text-gold font-bold">Zone BO2 2–0 Win</span><span class="font-mono font-extrabold text-white">3 pts</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Zone BO2 1–1 Draw</span><span class="font-mono font-extrabold text-white">1 pt</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Zone BO2 0–2 Loss</span><span class="font-mono font-extrabold text-white">0 pts</span></li><li class="flex justify-between items-center pt-2 mt-2 border-t border-line text-cyan"><span>Zone stage</span><span class="font-mono font-extrabold">6 matches</span></li><li class="flex justify-between items-center text-gold"><span>Final BO3 bracket</span><span class="font-mono font-extrabold">4 matches</span></li><li class="flex justify-between items-center text-gold"><span>Placement</span><span class="font-mono font-extrabold">1st–4th</span></li>`;
 }
@@ -536,7 +682,7 @@ function renderAdminAuth() {
 }
 
 function renderAdmin() { renderAdminAuth(); renderMatchTabs(); renderTeamCards(); renderRemoteNotice(); }
-function renderAll() { renderSectionIcons(); renderBoard(); renderAdmin(); renderTeamEditor(); renderRulesLegend(); renderSyncBadge(); }
+function renderAll() { renderSectionIcons(); renderBoard(); renderAdmin(); renderTeamEditor(); renderMediaEditor(); renderRulesLegend(); renderSyncBadge(); }
 
 /* ---------- actions ---------- */
 $('adminLoginForm').addEventListener('submit', async event => {
