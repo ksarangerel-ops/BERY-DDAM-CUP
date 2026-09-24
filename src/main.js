@@ -14,9 +14,11 @@ import {
 } from './scoring.js';
 import { ICONS } from './icons.js';
 import { enhanceSelects, setSelectState, syncSelect } from './select.js';
+import { assetUrl, pickImage, prepareImage } from './dota2/assets.js';
 import {
   isConfigured, missingKeys, isLive,
   getSession, subscribeAuth, signIn, signOut,
+  uploadMedia, removeMedia,
 } from './supabase.js';
 
 let state = blankState();
@@ -27,6 +29,7 @@ let pendingRemote = false;
 let rosterSaving = false;
 let lastSelfPublish = null;
 let authSession = null;
+let currentAdminPanel = 'matches';
 
 const $ = id => document.getElementById(id);
 const LEADER_AVATARS = {
@@ -42,6 +45,8 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
 }[c]));
 const num = n => (n || 0).toLocaleString('en-US');
 const teamOf = pid => state.teams.find(team => team.players.some(player => player.id === pid));
+const mediaSrc = value => assetUrl(value);
+const initials = value => String(value || '?').trim().split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase() || '?';
 const matchConfig = matchNo => MATCHES.find(match => match.id === Number(matchNo));
 const firstUnplayedMatch = () => MATCHES.find(match => !matchComplete(state, match))?.id || 1;
 const activeTeamsForMatch = (matchNo = currentMatch) => matchTeams(state, matchNo);
@@ -226,6 +231,7 @@ function renderStandings() {
     return `<tr class="${row.rank === 1 && active ? 'row-champ' : ''} hover:bg-white/[.04] transition">
       <td class="py-3.5 pl-4 pr-2"><span class="inline-grid place-items-center w-9 h-9 rounded-lg font-display font-black text-sm ${badge}">${row.rank}</span></td>
       <td class="py-3.5 px-2"><div class="flex items-center gap-2.5">
+        ${mediaSrc(row.team.logo) ? `<img class="cs-inline-logo" src="${esc(mediaSrc(row.team.logo))}" alt="${esc(row.team.name)} logo">` : ''}
         <span class="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-ink/70 border border-line text-cyan">${esc(row.team.tag)}</span>
         <span class="font-display font-bold text-sm sm:text-base whitespace-nowrap ${row.rank === 1 && active ? 'champ-name' : 'text-white'}">${esc(row.team.name)}</span>
         <span class="text-[9px] uppercase tracking-widest font-bold ${row.qualified ? 'text-gold' : 'text-slate-500'}">${row.qualified ? 'Playoff' : completedGroupStage(state) ? (row.rank <= 2 ? 'Upper' : 'Lower') : 'Group Stage'}</span>
@@ -250,7 +256,7 @@ function renderRosters() {
     ? computeStandings(state).find(row => row.rank === 1 && row.qualified)
     : null;
   $('leaderCards').innerHTML = state.teams.map((team, index) => {
-    const leaderAvatar = LEADER_AVATARS[team.tag] || `/leader-avatars/leader-${index + 1}.png`;
+    const leaderAvatar = mediaSrc(team.players?.[0]?.photo) || LEADER_AVATARS[team.tag] || `/leader-avatars/leader-${index + 1}.png`;
     return `
     <article class="leader-card leader-card-${index + 1}">
       <div class="leader-card-head">
@@ -287,7 +293,7 @@ function renderRosters() {
       </div>`;
   $('mvpTable').innerHTML = list.map(row => `<tr class="hover:bg-white/[.04] transition">
     <td class="py-2.5 pl-4 pr-2"><span class="font-display font-black text-xs text-slate-500">${row.rank}</span></td>
-    <td class="py-2.5 px-2"><span class="font-display font-bold text-sm text-white">${esc(row.player.name)}</span></td>
+    <td class="py-2.5 px-2"><div class="flex items-center gap-2"><span class="cs-inline-player">${mediaSrc(row.player.photo) ? `<img src="${esc(mediaSrc(row.player.photo))}" alt="${esc(row.player.name)}">` : esc(initials(row.player.name))}</span><span class="font-display font-bold text-sm text-white">${esc(row.player.name)}</span></div></td>
     <td class="py-2.5 px-2"><span class="font-mono text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-ink/70 border border-line text-cyan">${esc(row.team.tag)}</span><span class="text-xs font-semibold text-slate-400 ml-1 hidden sm:inline">${esc(row.team.name)}</span></td>
     <td class="py-2.5 px-2 text-center font-mono font-bold text-slate-600">—</td>
   </tr>`).join('');
@@ -496,6 +502,118 @@ function renderTeamEditorValues() {
   });
 }
 
+function renderMediaEditor() {
+  const root = $('mediaEditor');
+  if (!root) return;
+  root.innerHTML = state.teams.map(team => {
+    const logo = mediaSrc(team.logo);
+    return `<section class="cs-media-team">
+      <div class="cs-media-team-head">
+        <span class="cs-media-logo">${logo ? `<img src="${esc(logo)}" alt="${esc(team.name)} logo">` : esc(initials(team.name))}</span>
+        <div class="min-w-0"><b class="block truncate text-sm text-white">${esc(team.name)}</b><small class="text-[10px] uppercase tracking-widest text-slate-500">${esc(team.tag)} · 5 players</small></div>
+        <div class="ml-auto flex flex-wrap justify-end gap-1.5">
+          <button type="button" class="cs-media-logo-upload cs-media-btn" data-team="${team.id}">${logo ? 'Change logo' : 'Upload logo'}</button>
+          ${logo ? `<button type="button" class="cs-media-logo-remove cs-media-btn cs-media-btn--muted" data-team="${team.id}">Remove</button>` : ''}
+        </div>
+      </div>
+      <div class="cs-media-players">
+        ${team.players.map(player => {
+          const photo = mediaSrc(player.photo);
+          return `<div class="cs-media-player-row" data-player="${player.id}">
+            <span class="cs-media-player">${photo ? `<img src="${esc(photo)}" alt="${esc(player.name)}">` : esc(initials(player.name))}</span>
+            <input class="cs-media-name" data-player="${player.id}" value="${esc(player.name)}" maxlength="24" aria-label="Player name">
+            <button type="button" class="cs-media-photo-upload cs-media-btn" data-player="${player.id}">${photo ? 'Change photo' : 'Upload photo'}</button>
+            ${photo ? `<button type="button" class="cs-media-photo-remove cs-media-btn cs-media-btn--muted" data-player="${player.id}">Remove</button>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+    </section>`;
+  }).join('');
+
+  document.querySelectorAll('#mediaEditor .cs-media-logo-upload').forEach(button => { button.onclick = () => uploadTeamLogo(button.dataset.team); });
+  document.querySelectorAll('#mediaEditor .cs-media-logo-remove').forEach(button => { button.onclick = () => removeTeamLogo(button.dataset.team); });
+  document.querySelectorAll('#mediaEditor .cs-media-photo-upload').forEach(button => { button.onclick = () => uploadPlayerPhoto(button.dataset.player); });
+  document.querySelectorAll('#mediaEditor .cs-media-photo-remove').forEach(button => { button.onclick = () => removePlayerPhoto(button.dataset.player); });
+  document.querySelectorAll('#mediaEditor .cs-media-name').forEach(input => {
+    input.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); input.blur(); } });
+    input.addEventListener('change', () => savePlayerName(input.dataset.player, input));
+  });
+}
+
+async function uploadPlayerPhoto(pid) {
+  const player = teamOf(pid)?.players.find(item => item.id === pid);
+  if (!player) return;
+  const file = await pickImage();
+  if (!file) return;
+  let data;
+  try { data = await prepareImage(file, 'photo'); } catch (error) { toast(error.message || 'Could not process that image', true); return; }
+  const previous = player.photo;
+  let value = data;
+  const storedOnline = isLive();
+  if (storedOnline) {
+    try { value = await uploadMedia(`players/${pid}`, data); }
+    catch (error) { console.error('[cs2] player photo upload failed:', error); toast(`Photo upload failed — ${error.message || 'Storage rejected the file'}`, true); return; }
+  }
+  const result = await saveRoster(next => {
+    const target = next.teams.find(team => team.players.some(item => item.id === pid));
+    const targetPlayer = target?.players.find(item => item.id === pid);
+    if (!targetPlayer) return false;
+    targetPlayer.photo = value;
+  }, `Photo saved for ${player.name}`);
+  if (storedOnline) { if (result?.ok) void removeMedia(previous); else void removeMedia(value); }
+  renderMediaEditor();
+}
+
+async function removePlayerPhoto(pid) {
+  const player = teamOf(pid)?.players.find(item => item.id === pid);
+  if (!player?.photo || !confirm(`Remove the photo of ${player.name}?`)) return;
+  const previous = player.photo;
+  const result = await saveRoster(next => {
+    const target = next.teams.find(team => team.players.some(item => item.id === pid));
+    const targetPlayer = target?.players.find(item => item.id === pid);
+    if (!targetPlayer) return false;
+    targetPlayer.photo = null;
+  }, 'Player photo removed');
+  if (result?.ok) void removeMedia(previous);
+  renderMediaEditor();
+}
+
+async function uploadTeamLogo(teamId) {
+  const team = state.teams.find(item => item.id === teamId);
+  if (!team) return;
+  const file = await pickImage();
+  if (!file) return;
+  let data;
+  try { data = await prepareImage(file, 'logo'); } catch (error) { toast(error.message || 'Could not process that image', true); return; }
+  const previous = team.logo;
+  let value = data;
+  const storedOnline = isLive();
+  if (storedOnline) {
+    try { value = await uploadMedia(`teams/${teamId}`, data); }
+    catch (error) { console.error('[cs2] team logo upload failed:', error); toast(`Logo upload failed — ${error.message || 'Storage rejected the file'}`, true); return; }
+  }
+  const result = await saveRoster(next => {
+    const target = next.teams.find(item => item.id === teamId);
+    if (!target) return false;
+    target.logo = value;
+  }, `Logo saved for ${team.name}`);
+  if (storedOnline) { if (result?.ok) void removeMedia(previous); else void removeMedia(value); }
+  renderMediaEditor();
+}
+
+async function removeTeamLogo(teamId) {
+  const team = state.teams.find(item => item.id === teamId);
+  if (!team?.logo || !confirm(`Remove the logo of ${team.name}?`)) return;
+  const previous = team.logo;
+  const result = await saveRoster(next => {
+    const target = next.teams.find(item => item.id === teamId);
+    if (!target) return false;
+    target.logo = null;
+  }, 'Team logo removed');
+  if (result?.ok) void removeMedia(previous);
+  renderMediaEditor();
+}
+
 function renderRulesLegend() {
   $('ptsLegend').innerHTML = `<li class="flex justify-between items-center"><span class="text-gold font-bold">Group / Lower BO1 win</span><span class="font-mono font-extrabold text-white">1 pt</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Group / Lower BO1 loss</span><span class="font-mono font-extrabold text-white">0 pts</span></li><li class="flex justify-between items-center"><span class="text-slate-300">Final BO3 win</span><span class="font-mono font-extrabold text-white">3 pts</span></li><li class="flex justify-between items-center pt-2 mt-2 border-t border-line text-cyan"><span>Group Stage</span><span class="font-mono font-extrabold">15 BO1</span></li><li class="flex justify-between items-center text-cyan"><span>Lower Qualifier</span><span class="font-mono font-extrabold">2 BO1</span></li><li class="flex justify-between items-center text-gold"><span>Final Playoff</span><span class="font-mono font-extrabold">4 BO3</span></li><li class="flex justify-between items-center text-gold"><span>Placement</span><span class="font-mono font-extrabold">1st–4th</span></li>`;
 }
@@ -517,8 +635,21 @@ function renderAdminAuth() {
   }
 }
 
-function renderAdmin() { renderAdminAuth(); renderMatchTabs(); renderTeamCards(); renderRemoteNotice(); }
-function renderAll() { renderSectionIcons(); renderBoard(); renderAdmin(); renderTeamEditor(); renderRulesLegend(); renderSyncBadge(); }
+function renderAdmin() { renderAdminAuth(); renderMatchTabs(); renderTeamCards(); renderRemoteNotice(); renderMediaEditor(); }
+function renderAll() { renderSectionIcons(); renderBoard(); renderAdmin(); renderTeamEditor(); renderRulesLegend(); renderSyncBadge(); renderMediaEditor(); }
+
+function setAdminPanel(panel = 'matches') {
+  currentAdminPanel = panel === 'media' ? 'media' : 'matches';
+  document.querySelectorAll('.admin-panel-tab').forEach(button => {
+    const active = button.dataset.adminPanel === currentAdminPanel;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', String(active));
+  });
+  $('adminPanelMatches')?.classList.toggle('hidden', currentAdminPanel !== 'matches');
+  $('adminPanelMedia')?.classList.toggle('hidden', currentAdminPanel !== 'media');
+  if (currentAdminPanel === 'media') renderMediaEditor();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
 /* ---------- actions ---------- */
 $('adminLoginForm').addEventListener('submit', async event => {
@@ -642,6 +773,10 @@ document.querySelectorAll('.tabbtn').forEach(button => {
     if (view === 'board') renderBoard();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+});
+
+document.querySelectorAll('.admin-panel-tab').forEach(button => {
+  button.addEventListener('click', () => setAdminPanel(button.dataset.adminPanel));
 });
 
 $('btnPng').onclick = async () => {

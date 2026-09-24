@@ -134,3 +134,30 @@ export async function publish(state) {
   }, { onConflict: 'id' });
   if (error) throw error;
 }
+
+export async function uploadMedia(path, data) {
+  if (!client) throw new Error('Supabase is not configured');
+  const match = String(data || '').match(/^data:(image\/[\w.+-]+);base64,(.+)$/);
+  if (!match) throw new Error('Invalid image data');
+  const binary = atob(match[2]);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  const type = match[1];
+  const extension = type === 'image/webp' ? 'webp' : type === 'image/png' ? 'png' : 'jpg';
+  const finalPath = `cs2/${path}-${Date.now()}.${extension}`;
+  const { error } = await client.storage.from('cup-assets').upload(finalPath, new Blob([bytes], { type }), {
+    contentType: type,
+    cacheControl: '31536000',
+    upsert: false,
+  });
+  if (error) throw error;
+  return client.storage.from('cup-assets').getPublicUrl(finalPath).data.publicUrl;
+}
+
+export async function removeMedia(url) {
+  if (!client || typeof url !== 'string') return;
+  const marker = '/object/public/cup-assets/';
+  const at = url.indexOf(marker);
+  if (at < 0) return;
+  await client.storage.from('cup-assets').remove([decodeURIComponent(url.slice(at + marker.length))]).catch(() => undefined);
+}

@@ -1,6 +1,7 @@
 import './additional-games.css';
 import { supabase as client, isConfigured } from './shared/supabase-client.ts';
 import { saveRow } from './shared/save-row.ts';
+import { assetUrl, pickImage, prepareImage, uploadMedia, removeMedia } from './shared/media.js';
 
 const TOURNAMENT_ID = 'ddam-cup-additional-games-v1';
 const CACHE_KEY = `ddam-cup-cache:${TOURNAMENT_ID}`;
@@ -19,6 +20,7 @@ const REQUIRED_GAME_IDS = GAME_IDS.filter(id => id !== 'tetris' && id !== 'tekke
 const TEAM_NAMES = ['Team Gegeenee', 'Team Ganaa', 'Team Garidaa', 'Team Amaraa', 'Team Bery', 'Team Bagaa'];
 const TAGS = ['ALP', 'BRV', 'CHR', 'DLT', 'ECH', 'FOX'];
 const TEAM_NAME_VERSION = 'ganaa-team-names-v1';
+const ROSTER_SIZES = { mlbb: 5, mecha: 4, stumble: 5, pubg: 4, tetris: 6 };
 const ML_SERIES = ['', '2-0', '1-1', '0-2'];
 const BO3_SERIES = ['', '2-0', '2-1', '1-2', '0-2'];
 const TETRIS_GROUPS = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -50,9 +52,12 @@ const teamById = (game, id) => game.teams.find(team => team.id === id);
 
 function makeTetrisPlayers(teams) {
   return teams.flatMap(team => [
-    ...Array.from({ length: 4 }, (_, index) => ({ id: `${team.id}-m${index + 1}`, teamId: team.id, name: `${team.tag} Player ${index + 1}`, gender: 'MEN', group: TETRIS_GROUPS[index] })),
-    ...Array.from({ length: 2 }, (_, index) => ({ id: `${team.id}-f${index + 1}`, teamId: team.id, name: `${team.tag} Player ${index + 5}`, gender: 'WOMEN', group: TETRIS_GROUPS[index + 4] })),
+    ...Array.from({ length: 4 }, (_, index) => ({ id: `${team.id}-m${index + 1}`, teamId: team.id, name: `${team.tag} Player ${index + 1}`, gender: 'MEN', group: TETRIS_GROUPS[index], photo: null })),
+    ...Array.from({ length: 2 }, (_, index) => ({ id: `${team.id}-f${index + 1}`, teamId: team.id, name: `${team.tag} Player ${index + 5}`, gender: 'WOMEN', group: TETRIS_GROUPS[index + 4], photo: null })),
   ]);
+}
+function makePlayers(teamId, tag, count) {
+  return Array.from({ length: count }, (_, index) => ({ id: `${teamId}p${index + 1}`, name: `${tag} Player ${index + 1}`, photo: null }));
 }
 function makeTetrisMatches(players) {
   return TETRIS_GROUPS.flatMap(group => {
@@ -71,8 +76,8 @@ function groupMatches() {
 function defaultState() {
   const mlTeams = [
     ['a1', 'A', 0], ['a2', 'A', 1], ['a3', 'A', 2], ['b1', 'B', 3], ['b2', 'B', 4], ['b3', 'B', 5],
-  ].map(([id, group, index]) => ({ id, group, name: TEAM_NAMES[index], tag: TAGS[index] }));
-  const makeTeams = () => TEAM_NAMES.map((name, index) => ({ id: `t${index + 1}`, name, tag: TAGS[index] }));
+  ].map(([id, group, index]) => ({ id, group, name: TEAM_NAMES[index], tag: TAGS[index], logo: null, players: makePlayers(id, TAGS[index], ROSTER_SIZES.mlbb) }));
+  const makeTeams = (gameId = null) => TEAM_NAMES.map((name, index) => ({ id: `t${index + 1}`, name, tag: TAGS[index], logo: null, ...(gameId ? { players: makePlayers(`t${index + 1}`, TAGS[index], ROSTER_SIZES[gameId]) } : {}) }));
   const tetrisTeams = makeTeams();
   const tetrisGames = Array.from({ length: 3 }, (_, index) => ({
     id: `game${index + 1}`,
@@ -86,16 +91,38 @@ function defaultState() {
     updated: null,
     games: {
       mlbb: { teams: mlTeams, groupResults: groupMatches().map(match => ({ ...match, series: '' })), playoff: { sf1: '', sf2: '', final: '', third: '' } },
-      mecha: { teams: makeTeams().map(team => ({ ...team, hider: 0, topMissedSpot: 0, seekersCaught: 0, cleanSweeps: 0 })) },
-      stumble: { teams: makeTeams().map(team => ({ ...team, players: Array.from({ length: 5 }, (_, index) => ({ id: `${team.id}p${index + 1}`, name: `${team.tag} Player ${index + 1}`, points: 0 })) })) },
-      pubg: { teams: makeTeams().map(team => ({ ...team, maps: MAP_NAMES.map(() => ({ placement: '', kills: '' })) })) },
+      mecha: { teams: makeTeams('mecha').map(team => ({ ...team, hider: 0, topMissedSpot: 0, seekersCaught: 0, cleanSweeps: 0 })) },
+      stumble: { teams: makeTeams('stumble').map(team => ({ ...team, players: team.players.map(player => ({ ...player, points: 0 })) })) },
+      pubg: { teams: makeTeams('pubg').map(team => ({ ...team, maps: MAP_NAMES.map(() => ({ placement: '', kills: '' })) })) },
       tetris: { teams: tetrisTeams, games: tetrisGames, players: tetrisPlayers, matches: makeTetrisMatches(tetrisPlayers) },
     },
   };
 }
 
+function ensureMediaState(value) {
+  if (!value?.games) return value;
+  Object.entries(ROSTER_SIZES).forEach(([gameId, count]) => {
+    const game = value.games[gameId];
+    if (!game?.teams) return;
+    game.teams.forEach(team => {
+      team.logo = team.logo || null;
+      if (gameId === 'tetris') return;
+      const players = Array.isArray(team.players) ? team.players : [];
+      team.players = Array.from({ length: count }, (_, index) => ({
+        id: players[index]?.id || `${team.id}p${index + 1}`,
+        name: players[index]?.name || `${team.tag} Player ${index + 1}`,
+        photo: players[index]?.photo || null,
+        ...(players[index]?.points != null ? { points: players[index].points } : {}),
+      }));
+    });
+    if (gameId === 'tetris') game.players = (game.players || []).map(player => ({ ...player, photo: player.photo || null }));
+  });
+  return value;
+}
+
 function normalizeState(value) {
   if (!usable(value)) return null;
+  ensureMediaState(value);
   if (!value.games.tetris?.teams || !Array.isArray(value.games.tetris.games) || value.games.tetris.games.length !== 3) {
     value.games.tetris = defaultState().games.tetris;
     const referenceTeams = value.games.tekken?.teams || value.games.mecha?.teams;
@@ -209,6 +236,22 @@ function tetrisGroupRows(game, group) {
   return players.map(row => ({ name: row.player.name, sub: `${row.player.gender} · ${row.played}/5 matches`, points: row.points, wins: row.wins, played: row.played, games: `${row.gamesWon}-${row.gamesLost}`, gamesWon: row.gamesWon })).sort((a, b) => b.points - a.points || b.wins - a.wins || b.gamesWon - a.gamesWon || a.name.localeCompare(b.name));
 }
 
+function rowMedia(row) {
+  const game = state.games[activeGame];
+  const teams = game?.teams || [];
+  let team = row.team || teams.find(candidate => candidate.name === row.name || candidate.name === row.sub);
+  let player = null;
+  if (activeGame === 'tetris') player = (game.players || []).find(item => item.name === row.name || item.id === row.playerId);
+  else if (team) player = (team.players || []).find(item => item.name === row.name || item.id === row.playerId);
+  if (!team && player) team = teams.find(candidate => candidate.id === player.teamId);
+  return { teamLogo: assetUrl(row.logo || team?.logo), photo: assetUrl(row.photo || player?.photo) };
+}
+function rowMediaMark(row) {
+  const media = rowMedia(row);
+  const source = media.photo || media.teamLogo;
+  return source ? `<span class="ag-row-media"><img src="${esc(source)}" alt=""></span>` : '';
+}
+
 function mlRows(game, group) {
   const rows = game.teams.filter(team => team.group === group).map(team => ({ team, points: 0, gamesWon: 0, gamesLost: 0, played: 0 }));
   game.groupResults.filter(match => match.group === group).forEach(match => {
@@ -228,7 +271,7 @@ function mlPlayoff(game) {
 }
 
 function rankingTable(rows, columns) {
-  return `<div class="ag-table-wrap"><table class="ag-table"><thead><tr><th>#</th><th>Team / Player</th>${columns.map(column => `<th class="num">${column.label}</th>`).join('')}</tr></thead><tbody>${rows.map((row, index) => `<tr><td><span class="ag-rank ${index < 3 ? 'top' : ''}">${index + 1}</span></td><td><span class="ag-team">${esc(row.name)}</span>${row.sub ? `<span class="ag-sub">${esc(row.sub)}</span>` : ''}</td>${columns.map(column => `<td class="num ${column.score ? 'score' : ''}">${esc(row[column.key] ?? 0)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  return `<div class="ag-table-wrap"><table class="ag-table"><thead><tr><th>#</th><th>Team / Player</th>${columns.map(column => `<th class="num">${column.label}</th>`).join('')}</tr></thead><tbody>${rows.map((row, index) => `<tr><td><span class="ag-rank ${index < 3 ? 'top' : ''}">${index + 1}</span></td><td><span class="ag-team ag-team-with-media">${rowMediaMark(row)}<span>${esc(row.name)}</span></span>${row.sub ? `<span class="ag-sub">${esc(row.sub)}</span>` : ''}</td>${columns.map(column => `<td class="num ${column.score ? 'score' : ''}">${esc(row[column.key] ?? 0)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
 function boardHead(def, subtitle, rules) { return `<div class="ag-card-head"><div class="ag-title-lockup"><div class="ag-game-logo ${def.logoClass || ''}"><img src="${def.logo}" alt="${esc(def.label)} logo"></div><div><h2>${def.label}</h2><p>${subtitle}</p></div></div><a class="ag-pill" href="${rules}">Official rules ↗</a></div>`; }
 
@@ -288,7 +331,7 @@ function classicSection(eyebrow, title, body, action = '') { const target = sect
 function classicFacts(items) { return `<div class="ag-classic-facts">${items.map(item => `<div><b>${esc(item.value)}</b><span>${esc(item.label)}</span></div>`).join('')}</div>`; }
 function classicMiniRank(rows, value, meta) { return `<div class="ag-classic-mini-rank">${rows.map((row, index) => `<div class="ag-classic-mini-row ${index > 1 ? 'is-muted' : ''}"><span class="ag-classic-mini-place">${index + 1}</span>${dashAvatar(row.name, index)}<span><b>${esc(row.name)}</b><small>${esc(meta(row))}</small></span><strong>${esc(value(row))}</strong></div>`).join('')}</div>`; }
 function classicGroupCard(title, subtitle, rows, value, meta) { return `<article class="ag-classic-group"><div class="ag-classic-group-head"><span class="ag-classic-group-mark">${esc(title.replace(/[^A-Z0-9]/gi, '').slice(-1) || '#')}</span><div><b>${esc(title)}</b><small>${esc(subtitle)}</small></div><span>LIVE</span></div>${classicMiniRank(rows, value, meta)}</article>`; }
-function classicTable(rows, columns) { return `<div class="ag-classic-table-wrap"><table class="ag-classic-table"><thead><tr><th>#</th><th>Team / Player</th>${columns.map(column => `<th>${esc(column.label)}</th>`).join('')}</tr></thead><tbody>${rows.map((row, index) => `<tr><td><span class="ag-classic-rank ${index < 3 ? 'top' : ''}">${index + 1}</span></td><td><b>${esc(row.name)}</b><small>${esc(row.sub || '')}</small></td>${columns.map(column => `<td>${esc(column.value ? column.value(row) : row[column.key] ?? '—')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`; }
+function classicTable(rows, columns) { return `<div class="ag-classic-table-wrap"><table class="ag-classic-table"><thead><tr><th>#</th><th>Team / Player</th>${columns.map(column => `<th>${esc(column.label)}</th>`).join('')}</tr></thead><tbody>${rows.map((row, index) => `<tr><td><span class="ag-classic-rank ${index < 3 ? 'top' : ''}">${index + 1}</span></td><td><b class="ag-team-with-media">${rowMediaMark(row)}<span>${esc(row.name)}</span></b><small>${esc(row.sub || '')}</small></td>${columns.map(column => `<td>${esc(column.value ? column.value(row) : row[column.key] ?? '—')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`; }
 function classicMatch(title, meta, rows) { return `<article class="ag-classic-match"><div class="ag-classic-match-head"><b>${esc(title)}</b><span>${esc(meta)}</span></div>${rows.map(row => `<div class="ag-classic-match-row"><span>${esc(row.left)}</span><strong>${esc(row.score || '—')}</strong><span>${esc(row.right)}</span></div>`).join('')}</article>`; }
 function classicBoard(def, subtitle, facts, formatCards, stage, standings, roster, breakdown, note) {
   return `<div id="board-arena" class="ag-classic-board"><section class="ag-classic-banner"><div class="ag-classic-banner-lockup"><div class="ag-classic-logo ${def.logoClass || ''}"><img src="${def.logo}" alt="${esc(def.label)} logo"></div><div><span>DDAM CUP · OFFICIAL TOURNAMENT FORMAT</span><h1>DDAM ESPORT CUP <b>${esc(def.label)}</b></h1><p>${esc(subtitle)}</p></div></div><span class="ag-classic-live">LIVE BOARD</span></section>${classicFacts(facts)}${classicSection('TOURNAMENT FORMAT', 'FORMAT & RULES', `<div class="ag-classic-format-grid">${formatCards.map(card => `<article><b>${esc(card.title)}</b><p>${esc(card.body)}</p></article>`).join('')}</div>`)}${stage}${standings}${roster}${breakdown}<p class="ag-classic-note">${note}</p></div>`;
@@ -474,19 +517,138 @@ function adminGuide() {
   }[activeGame] || [];
   return `<div class="ag-admin-system"><div class="ag-admin-work-head"><div><span>SCORING ENGINE</span><h3>${esc(GAME_DEFS[activeGame].label)} · SCORE SYSTEM</h3></div><b>RULES LOCKED</b></div><div class="ag-admin-rule-grid">${guides.map(([title, body]) => `<article><b>${esc(title)}</b><p>${esc(body)}</p></article>`).join('')}</div><div class="ag-admin-callout"><b>SEPARATE GAME LOGIC</b><span>Энэ panel зөвхөн ${esc(GAME_DEFS[activeGame].label)}-ийн онооны системийг ажиллуулна. Бусад тоглоомын оноо, ranking болон дүрэм тусдаа хадгалагдана.</span></div></div>`;
 }
+function mediaPlayersForTeam(game, team) {
+  return activeGame === 'tetris'
+    ? (game.players || []).filter(player => player.teamId === team.id)
+    : (team.players || []);
+}
+function mediaRosterEditor(game) {
+  if (activeGame === 'tekken') return '';
+  return `<div class="ag-form-section ag-media-editor"><div class="ag-media-editor-head"><div><span>TEAM ASSETS</span><h3>LOGOS &amp; PLAYER PHOTOS</h3></div><b>${game.teams.length} TEAMS · ${game.teams.reduce((sum, team) => sum + mediaPlayersForTeam(game, team).length, 0)} PLAYERS</b></div><p class="ag-help">Багийн лого болон тоглогч бүрийн зургийг эндээс оруулна. Зураг автоматаар шахагдаж хадгалагдана.</p><div class="ag-media-teams">${game.teams.map(team => {
+    const logo = assetUrl(team.logo);
+    const players = mediaPlayersForTeam(game, team);
+    return `<section class="ag-media-team"><div class="ag-media-team-head"><span class="ag-media-logo">${logo ? `<img src="${esc(logo)}" alt="${esc(team.name)} logo">` : esc(String(team.name || '?').split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase())}</span><div class="ag-media-team-copy"><b>${esc(team.name)}</b><small>${esc(team.tag)} · ${players.length} players</small></div><div class="ag-media-actions"><button class="ag-button ag-media-logo-upload" type="button" data-media-team="${team.id}">${logo ? 'Change logo' : 'Upload logo'}</button>${logo ? `<button class="ag-button secondary ag-media-logo-remove" type="button" data-media-team="${team.id}">Remove</button>` : ''}</div></div><div class="ag-media-players">${players.map(player => {
+      const photo = assetUrl(player.photo);
+      return `<div class="ag-media-player-row"><span class="ag-media-player">${photo ? `<img src="${esc(photo)}" alt="${esc(player.name)}">` : esc(String(player.name || '?').split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase())}</span><input class="ag-input ag-media-name" data-media-player="${player.id}" value="${esc(player.name)}" maxlength="24"><button class="ag-button ag-media-photo-upload" type="button" data-media-player="${player.id}">${photo ? 'Change photo' : 'Upload photo'}</button>${photo ? `<button class="ag-button secondary ag-media-photo-remove" type="button" data-media-player="${player.id}">Remove</button>` : ''}</div>`;
+    }).join('')}</div></section>`;
+  }).join('')}</div></div>`;
+}
 function adminRosterEditor(game) {
-  if (activeGame === 'stumble') return `${inputTeamNames(game)}<div class="ag-form-section"><h3>Player roster</h3><div class="ag-admin-roster-grid">${game.teams.flatMap(team => team.players.map(player => `<label class="ag-label">${esc(team.name)} · Player<input class="ag-input" data-stumble-name="${player.id}" value="${esc(player.name)}"></label>`)).join('')}</div></div>`;
-  if (activeGame === 'tetris') return `${inputTeamNames(game)}${tetrisRosterEditor(game)}`;
-  const copy = activeGame === 'tetris' ? '36 player format: 4 men + 2 women per team, Group A–D men and Group E–F women.' : 'Team names are shared with this game only and do not change another tournament board.';
-  return `${inputTeamNames(game)}<div class="ag-admin-callout"><b>ROSTER CONTROL</b><span>${copy}</span></div>`;
+  let body;
+  if (activeGame === 'stumble') body = `${inputTeamNames(game)}<div class="ag-form-section"><h3>Player roster</h3><div class="ag-admin-roster-grid">${game.teams.flatMap(team => team.players.map(player => `<label class="ag-label">${esc(team.name)} · Player<input class="ag-input" data-stumble-name="${player.id}" value="${esc(player.name)}"></label>`)).join('')}</div></div>`;
+  else if (activeGame === 'tetris') body = `${inputTeamNames(game)}${tetrisRosterEditor(game)}`;
+  else {
+    const copy = 'Team names are shared with this game only and do not change another tournament board.';
+    body = `${inputTeamNames(game)}<div class="ag-admin-callout"><b>ROSTER CONTROL</b><span>${copy}</span></div>`;
+  }
+  return `${body}${mediaRosterEditor(game)}`;
+}
+function mediaPlayerOf(game, playerId) {
+  if (activeGame === 'tetris') return (game.players || []).find(player => player.id === playerId);
+  for (const team of game.teams || []) {
+    const player = (team.players || []).find(item => item.id === playerId);
+    if (player) return player;
+  }
+  return null;
+}
+async function saveMediaPlayerName(playerId, input) {
+  const game = state.games[activeGame];
+  const player = mediaPlayerOf(game, playerId);
+  const value = input.value.trim();
+  if (!player) return;
+  if (!value) { input.value = player.name; return; }
+  if (value === player.name) return;
+  const next = clone(game);
+  const target = mediaPlayerOf(next, playerId);
+  if (!target) return;
+  target.name = value;
+  await publish(activeGame, next);
+}
+async function uploadGamePlayerPhoto(playerId) {
+  const game = state.games[activeGame];
+  const player = mediaPlayerOf(game, playerId);
+  if (!player) return;
+  const file = await pickImage();
+  if (!file) return;
+  let data;
+  try { data = await prepareImage(file, 'photo'); } catch (error) { showToast(error.message || 'Could not process that image'); return; }
+  const previous = player.photo;
+  let value = data;
+  const storedOnline = Boolean(client && authSession?.user);
+  if (storedOnline) {
+    try { value = await uploadMedia(activeGame, `players/${playerId}`, data); }
+    catch (error) { console.error('[additional-games] player photo upload failed:', error); showToast(`Photo upload failed — ${error.message || 'Storage rejected the file'}`); return; }
+  }
+  const next = clone(game);
+  const target = mediaPlayerOf(next, playerId);
+  if (!target) return;
+  target.photo = value;
+  const result = await publish(activeGame, next);
+  if (storedOnline) { if (result.ok) void removeMedia(previous); else void removeMedia(value); }
+}
+async function removeGamePlayerPhoto(playerId) {
+  const game = state.games[activeGame];
+  const player = mediaPlayerOf(game, playerId);
+  if (!player?.photo || !confirm(`Remove the photo of ${player.name}?`)) return;
+  const previous = player.photo;
+  const next = clone(game);
+  const target = mediaPlayerOf(next, playerId);
+  if (!target) return;
+  target.photo = null;
+  const result = await publish(activeGame, next);
+  if (result.ok) void removeMedia(previous);
+}
+async function uploadGameTeamLogo(teamId) {
+  const game = state.games[activeGame];
+  const team = teamById(game, teamId);
+  if (!team) return;
+  const file = await pickImage();
+  if (!file) return;
+  let data;
+  try { data = await prepareImage(file, 'logo'); } catch (error) { showToast(error.message || 'Could not process that image'); return; }
+  const previous = team.logo;
+  let value = data;
+  const storedOnline = Boolean(client && authSession?.user);
+  if (storedOnline) {
+    try { value = await uploadMedia(activeGame, `teams/${teamId}`, data); }
+    catch (error) { console.error('[additional-games] team logo upload failed:', error); showToast(`Logo upload failed — ${error.message || 'Storage rejected the file'}`); return; }
+  }
+  const next = clone(game);
+  const target = teamById(next, teamId);
+  if (!target) return;
+  target.logo = value;
+  const result = await publish(activeGame, next);
+  if (storedOnline) { if (result.ok) void removeMedia(previous); else void removeMedia(value); }
+}
+async function removeGameTeamLogo(teamId) {
+  const game = state.games[activeGame];
+  const team = teamById(game, teamId);
+  if (!team?.logo || !confirm(`Remove the logo of ${team.name}?`)) return;
+  const previous = team.logo;
+  const next = clone(game);
+  const target = teamById(next, teamId);
+  if (!target) return;
+  target.logo = null;
+  const result = await publish(activeGame, next);
+  if (result.ok) void removeMedia(previous);
 }
 function adminSettings() { return `<div class="ag-admin-system"><div class="ag-admin-work-head"><div><span>BOARD SETTINGS</span><h3>${esc(GAME_DEFS[activeGame].label)} · SETTINGS</h3></div><b>PUBLIC BOARD</b></div><div class="ag-admin-setting-grid"><article><b>LIVE SOURCE</b><span>Supabase realtime publish</span></article><article><b>ACTIVE FORMAT</b><span>${esc(GAME_DEFS[activeGame].format)}</span></article><article><b>EDIT SCOPE</b><span>Only signed-in organiser can save</span></article><article><b>PUBLIC RESULT</b><span>Every saved update appears on the live board</span></article></div></div>`; }
 function adminWorkbench(game) {
   const body = activeAdminPanel === 'scoring' ? adminGuide() : activeAdminPanel === 'roster' ? adminRosterEditor(game) : activeAdminPanel === 'settings' ? adminSettings() : `<div class="ag-admin-scoreboard"><div class="ag-admin-work-head"><div><span>ON STAGE · RECORD RESULT</span><h3>${esc(GAME_DEFS[activeGame].label)} · LIVE CONTROL</h3></div><b>${esc(GAME_DEFS[activeGame].format)}</b></div>${renderEditor(game)}</div>`;
   return `<section class="ag-admin-workbench">${body}</section>`;
 }
-function renderAdminConsole(game) { return `<div class="ag-admin-console"><div class="ag-admin-console-head"><div><span>ORGANISER CONTROL</span><h2>ADMIN</h2></div><div class="ag-admin-current"><img src="${GAME_DEFS[activeGame].logo}" alt=""><b>${esc(GAME_DEFS[activeGame].label)}</b><small>${esc(GAME_DEFS[activeGame].format)}</small></div></div><nav class="ag-admin-nav" aria-label="Admin sections">${[['matches', 'Matches'], ['scoring', 'Scoring'], ['roster', 'Roster'], ['settings', 'Settings']].map(([key, label]) => `<button class="${key === activeAdminPanel ? 'is-active' : ''}" type="button" data-admin-panel="${key}">${label}</button>`).join('')}</nav><div class="ag-admin-layout">${adminQueue(game)}${adminWorkbench(game)}</div></div>`; }
-function bindAdminConsole() { document.querySelectorAll('#adminEditor [data-admin-panel]').forEach(button => { button.onclick = () => { activeAdminPanel = button.dataset.adminPanel || 'matches'; renderAdmin(); }; }); }
+function renderAdminConsole(game) {
+  if (activeGame === 'tekken') return `<div class="ag-admin-callout"><b>TEKKEN 7 SEPARATE BOARD</b><span>Tekken-ийн roster, зураг болон admin систем тусдаа хуудсанд ажиллана. Энэ shared board дээр Tekken media өөрчлөгдөхгүй.</span></div>`;
+  return `<div class="ag-admin-console"><div class="ag-admin-console-head"><div><span>ORGANISER CONTROL</span><h2>ADMIN</h2></div><div class="ag-admin-current"><img src="${GAME_DEFS[activeGame].logo}" alt=""><b>${esc(GAME_DEFS[activeGame].label)}</b><small>${esc(GAME_DEFS[activeGame].format)}</small></div></div><nav class="ag-admin-nav" aria-label="Admin sections">${[['matches', 'Matches'], ['scoring', 'Scoring'], ['roster', 'Roster'], ['settings', 'Settings']].map(([key, label]) => `<button class="${key === activeAdminPanel ? 'is-active' : ''}" type="button" data-admin-panel="${key}">${label}</button>`).join('')}</nav><div class="ag-admin-layout">${adminQueue(game)}${adminWorkbench(game)}</div></div>`;
+}
+function bindAdminConsole() {
+  document.querySelectorAll('#adminEditor [data-admin-panel]').forEach(button => { button.onclick = () => { activeAdminPanel = button.dataset.adminPanel || 'matches'; renderAdmin(); }; });
+  document.querySelectorAll('#adminEditor .ag-media-logo-upload').forEach(button => { button.onclick = () => uploadGameTeamLogo(button.dataset.mediaTeam); });
+  document.querySelectorAll('#adminEditor .ag-media-logo-remove').forEach(button => { button.onclick = () => removeGameTeamLogo(button.dataset.mediaTeam); });
+  document.querySelectorAll('#adminEditor .ag-media-photo-upload').forEach(button => { button.onclick = () => uploadGamePlayerPhoto(button.dataset.mediaPlayer); });
+  document.querySelectorAll('#adminEditor .ag-media-photo-remove').forEach(button => { button.onclick = () => removeGamePlayerPhoto(button.dataset.mediaPlayer); });
+  document.querySelectorAll('#adminEditor .ag-media-name').forEach(input => { input.addEventListener('change', () => saveMediaPlayerName(input.dataset.mediaPlayer, input)); });
+}
 function renderAdmin() { const logged = Boolean(authSession?.user); $('loggedOut').classList.toggle('ag-hidden', logged); $('loggedIn').classList.toggle('ag-hidden', !logged); if (logged) { $('userEmail').textContent = authSession.user.email || 'admin'; $('adminEditor').innerHTML = renderAdminConsole(state.games[activeGame]); bindAdminConsole(); } }
 function focusBoardView() {
   const targets = { arena: '#board-arena', groups: '#board-groups', playoffs: '#board-playoffs', players: '#board-players', admin: '#adminPanel' };

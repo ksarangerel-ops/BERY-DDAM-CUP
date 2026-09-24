@@ -6,7 +6,7 @@
    so an organiser is never locked out mid-tournament.
 
    state = {
-     teams:   [{ id, name, tag, players:[{id,name} x5] }],
+     teams:   [{ id, name, tag, logo?, players:[{id,name,photo?} x5] }],
      results: { 1:{ teamId:{ series: '2-0' } }, ... },
      updated: ISO string
    }
@@ -30,12 +30,24 @@ export function blankState() {
   return {
     teamNameVersion: TEAM_NAME_VERSION,
     teams: TEAM_SEED.map(([name, tag], i) => ({
-      id: 't' + (i + 1), name, tag,
+      id: 't' + (i + 1), name, tag, logo: null,
       players: Array.from({ length: SQUAD_SIZE }, (_, p) => ({
-        id: `t${i + 1}p${p + 1}`, name: `${tag} Player ${p + 1}`,
+        id: `t${i + 1}p${p + 1}`, name: `${tag} Player ${p + 1}`, photo: null,
       })),
     })),
     results: {}, updated: null,
+  };
+}
+
+function ensureMedia(state) {
+  if (!state?.teams) return state;
+  return {
+    ...state,
+    teams: state.teams.map(team => ({
+      ...team,
+      logo: team.logo || null,
+      players: (team.players || []).map(player => ({ ...player, photo: player.photo || null })),
+    })),
   };
 }
 
@@ -55,7 +67,7 @@ export function readCache() {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const s = JSON.parse(raw);
-    return isUsable(s) ? s : null;
+    return isUsable(s) ? ensureMedia(s) : null;
   } catch { return null; }
 }
 
@@ -96,7 +108,7 @@ export function createStore({ onState, onMode }) {
           console.warn('[store] ignoring unusable remote snapshot');
           return;
         }
-        state = migrateTeamNames(remote);
+        state = ensureMedia(migrateTeamNames(remote));
         writeCache(state);
         onState(state, { fromRemote: true });
       },

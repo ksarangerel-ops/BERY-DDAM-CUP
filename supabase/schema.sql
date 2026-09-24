@@ -160,3 +160,36 @@ create policy "Tournament admins can update dota2 assets"
 create policy "Tournament admins can delete dota2 assets"
   on storage.objects for delete to authenticated
   using (bucket_id = 'dota2-assets' and public.is_tournament_admin());
+
+-- ---------------------------------------------------------------
+-- Shared media for CS2, MLBB, Meccha, Stumble Guys, PUBG Mobile
+-- and Tetris. Tekken keeps its own photo bucket and app.
+-- ---------------------------------------------------------------
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('cup-assets', 'cup-assets', true, 524288, array['image/webp', 'image/jpeg', 'image/png'])
+on conflict (id) do update
+  set public = excluded.public,
+      file_size_limit = excluded.file_size_limit,
+      allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "Tournament admins can read cup assets" on storage.objects;
+drop policy if exists "Tournament admins can upload cup assets" on storage.objects;
+drop policy if exists "Tournament admins can update cup assets" on storage.objects;
+drop policy if exists "Tournament admins can delete cup assets" on storage.objects;
+
+create policy "Tournament admins can read cup assets"
+  on storage.objects for select to authenticated
+  using (bucket_id = 'cup-assets' and public.is_tournament_admin());
+
+create policy "Tournament admins can upload cup assets"
+  on storage.objects for insert to authenticated
+  with check (bucket_id = 'cup-assets' and public.is_tournament_admin());
+
+create policy "Tournament admins can update cup assets"
+  on storage.objects for update to authenticated
+  using (bucket_id = 'cup-assets' and public.is_tournament_admin())
+  with check (bucket_id = 'cup-assets' and public.is_tournament_admin());
+
+create policy "Tournament admins can delete cup assets"
+  on storage.objects for delete to authenticated
+  using (bucket_id = 'cup-assets' and public.is_tournament_admin());

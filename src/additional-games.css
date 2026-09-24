@@ -117,3 +117,17 @@ body[data-game]:not([data-game="tekken"])[data-board-view="players"] #publicBoar
 body[data-game]:not([data-game="tekken"]):not([data-board-view="admin"]) #adminPanel{display:none}
 body[data-game]:not([data-game="tekken"])[data-board-view="admin"] #publicBoard{display:none}
 body[data-game]:not([data-game="tekken"])[data-board-view="admin"] .ag-layout>aside{margin-top:0}
+/* ---------- shared non-Tekken roster media ---------- */
+.ag-media-editor{margin-top:14px;padding:14px;background:linear-gradient(145deg,rgba(12,14,25,.72),rgba(6,7,14,.86))}
+.ag-media-editor-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08)}
+.ag-media-editor-head span{display:block;color:#8be7ff;font-size:8px;font-weight:950;letter-spacing:.22em;text-transform:uppercase}.ag-media-editor-head h3{margin:4px 0 0;color:#fff;font-size:15px;font-style:italic;letter-spacing:.08em}.ag-media-editor-head>b{color:#ffd36a;font-size:9px;letter-spacing:.1em;text-align:right}
+.ag-media-teams{display:grid;gap:12px;margin-top:14px}
+.ag-media-team{overflow:hidden;border:1px solid rgba(255,64,88,.25);background:rgba(6,7,14,.55)}
+.ag-media-team-head{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(105deg,rgba(48,10,22,.62),rgba(8,9,17,.32))}
+.ag-media-logo,.ag-media-player{display:grid;place-items:center;flex:none;overflow:hidden;background:rgba(8,9,17,.8);color:#ffd36a;font-weight:950;text-align:center}
+.ag-media-logo{width:76px;height:76px;border:1px solid rgba(255,211,106,.6);border-radius:12px;font-size:15px}.ag-media-logo img,.ag-media-player img{display:block;width:100%;height:100%;object-fit:contain}
+.ag-media-team-copy{min-width:0}.ag-media-team-copy b{display:block;overflow:hidden;color:#fff;font-size:14px;text-overflow:ellipsis;white-space:nowrap}.ag-media-team-copy small{display:block;margin-top:4px;color:#7e879f;font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+.ag-media-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;margin-left:auto}.ag-media-actions .ag-button,.ag-media-player-row .ag-button{padding:7px 9px;font-size:9px}
+.ag-media-players{display:grid;gap:7px;padding:10px 12px}.ag-media-player-row{display:flex;align-items:center;gap:7px;min-width:0}.ag-media-player{width:52px;height:52px;border:1px solid rgba(130,234,255,.5);border-radius:9px;color:#82eaff;font-size:10px}.ag-media-name{min-width:0;flex:1}.ag-media-player-row .ag-button{flex:none}
+@media(max-width:650px){.ag-media-team-head{align-items:flex-start;flex-wrap:wrap}.ag-media-actions{width:100%;margin-left:88px;justify-content:flex-start}.ag-media-player-row{flex-wrap:wrap}.ag-media-name{min-width:calc(100% - 59px);flex-basis:calc(100% - 59px)}.ag-media-player-row .ag-button{margin-left:59px}}
+ .ag-team-with-media{display:inline-flex;align-items:center;gap:7px}.ag-row-media{display:inline-grid;place-items:center;width:26px;height:26px;overflow:hidden;border:1px solid rgba(130,234,255,.42);border-radius:6px;background:rgba(8,9,17,.8);vertical-align:middle}.ag-row-media img{display:block;width:100%;height:100%;object-fit:contain}
