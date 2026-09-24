@@ -49,12 +49,12 @@ export const NUM_MATCHES = MATCHES.length;
 export const NUM_TEAMS = 6;
 
 export const TEAM_SEED = [
-  ['Team Gegeenee', 'ALP', null],
-  ['Team Babi',     'BRV', null],
-  ['Team Ganaa',    'CHR', null],
-  ['Team Hangai',   'DLT', null],
-  ['Team Amara',    'ECH', null],
-  ['Team Bery',     'FOX', null],
+  ['Ээжийн найзын хүүхдүүд', 'ALP', null],
+  ['ЮМ Өгцөн2',              'BRV', null],
+  ['GG FUCKING EZ',          'CHR', null],
+  ['HANGALZ',                'DLT', null],
+  ['AMAR',                   'ECH', null],
+  ['FRESH BERRIES',          'FOX', null],
 ];
 
 export const matchById = id => MATCHES.find(match => match.id === Number(id));

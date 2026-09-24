@@ -67,12 +67,12 @@ export const NUM_TEAMS = 6;
 
 /* The six seed names and the initial A/B split are editable from Admin. */
 export const TEAM_SEED = [
-  ['Team Babi',     'ALP', 'A'],
-  ['Team Gegeenee', 'BRV', 'A'],
-  ['Team Ganaa',    'CHR', 'A'],
-  ['Team Hangai',   'DLT', 'B'],
-  ['Team Bery',     'ECH', 'B'],
-  ['Team Amaraa',   'FOX', 'B'],
+  ['ЮМ Өгцөн2',              'ALP', 'A'],
+  ['Ээжийн найзын хүүхдүүд', 'BRV', 'A'],
+  ['GG FUCKING EZ',          'CHR', 'A'],
+  ['HANGALZ',                'DLT', 'B'],
+  ['FRESH BERRIES',          'ECH', 'B'],
+  ['AMAR',                   'FOX', 'B'],
 ];
 
 export const matchById = id => MATCHES.find(match => match.id === Number(id));

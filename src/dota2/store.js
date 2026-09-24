@@ -15,7 +15,7 @@
 import { TEAM_SEED, SQUAD_SIZE, NUM_TEAMS, ZONES, CACHE_KEY } from './config.js';
 import * as realtime from './supabase.js';
 
-const TEAM_NAME_VERSION = 'ddam-team-order-v3';
+const TEAM_NAME_VERSION = 'ddam-team-names-v4';
 
 function migrateTeamNames(state) {
   if (!state?.teams) return state;
