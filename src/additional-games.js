@@ -22,6 +22,8 @@ const TEAM_NAMES = ['Team Gegeenee', 'Team Ganaa', 'Team Garidaa', 'Team Amaraa'
 const TAGS = ['ALP', 'BRV', 'CHR', 'DLT', 'ECH', 'FOX'];
 const TEAM_NAME_VERSION = 'ganaa-team-names-v1';
 const ROSTER_SIZES = { mlbb: 5, mecha: 4, stumble: 5, pubg: 4, tetris: 6 };
+const MECHA_LOBBIES = ['A', 'B'];
+const MECHA_ROUNDS = [1, 2, 3, 4, 5, 6];
 const ML_SERIES = ['', '2-0', '1-1', '0-2'];
 const BO3_SERIES = ['', '2-0', '2-1', '1-2', '0-2'];
 const TETRIS_GROUPS = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -60,6 +62,11 @@ function makeTetrisPlayers(teams) {
 function makePlayers(teamId, tag, count) {
   return Array.from({ length: count }, (_, index) => ({ id: `${teamId}p${index + 1}`, name: `${tag} Player ${index + 1}`, photo: null }));
 }
+function makeMechaLobbies() {
+  return Object.fromEntries(MECHA_LOBBIES.map(lobby => [lobby, {
+    rounds: Object.fromEntries(MECHA_ROUNDS.map(round => [String(round), { scores: {}, catches: '' }]))
+  }]));
+}
 function makeTetrisMatches(players) {
   return TETRIS_GROUPS.flatMap(group => {
     const groupPlayers = players.filter(player => player.group === group);
@@ -92,7 +99,7 @@ function defaultState() {
     updated: null,
     games: {
       mlbb: { teams: mlTeams, groupResults: groupMatches().map(match => ({ ...match, series: '' })), playoff: { sf1: '', sf2: '', final: '', third: '' } },
-      mecha: { teams: makeTeams('mecha').map(team => ({ ...team, hider: 0, topMissedSpot: 0, seekersCaught: 0, cleanSweeps: 0 })) },
+      mecha: { teams: makeTeams('mecha').map(team => ({ ...team, hider: 0, topMissedSpot: 0, seekersCaught: 0, cleanSweeps: 0 })), lobbies: makeMechaLobbies() },
       stumble: { teams: makeTeams('stumble').map(team => ({ ...team, players: team.players.map(player => ({ ...player, points: 0 })) })) },
       pubg: { teams: makeTeams('pubg').map(team => ({ ...team, maps: MAP_NAMES.map(() => ({ placement: '', kills: '' })) })) },
       tetris: { teams: tetrisTeams, games: tetrisGames, players: tetrisPlayers, matches: makeTetrisMatches(tetrisPlayers) },
@@ -121,9 +128,26 @@ function ensureMediaState(value) {
   return value;
 }
 
+function ensureMechaScorebook(game) {
+  if (!game?.teams) return;
+  if (!game.lobbies || typeof game.lobbies !== 'object') game.lobbies = makeMechaLobbies();
+  MECHA_LOBBIES.forEach(lobby => {
+    if (!game.lobbies[lobby] || typeof game.lobbies[lobby] !== 'object') game.lobbies[lobby] = { rounds: {} };
+    if (!game.lobbies[lobby].rounds || typeof game.lobbies[lobby].rounds !== 'object') game.lobbies[lobby].rounds = {};
+    MECHA_ROUNDS.forEach(round => {
+      const current = game.lobbies[lobby].rounds[String(round)];
+      game.lobbies[lobby].rounds[String(round)] = {
+        scores: current?.scores && typeof current.scores === 'object' ? current.scores : {},
+        catches: current?.catches == null ? '' : current.catches,
+      };
+    });
+  });
+}
+
 function normalizeState(value) {
   if (!usable(value)) return null;
   ensureMediaState(value);
+  ensureMechaScorebook(value.games.mecha);
   if (!value.games.tetris?.teams || !Array.isArray(value.games.tetris.games) || value.games.tetris.games.length !== 3) {
     value.games.tetris = defaultState().games.tetris;
     const referenceTeams = value.games.tekken?.teams || value.games.mecha?.teams;
@@ -162,6 +186,10 @@ let connection = false;
 let channel = null;
 let toastTimer = null;
 let sharedProfiles = {};
+let mechaAdminLobby = 'A';
+let mechaAdminRound = 1;
+const mechaDrafts = {};
+const mechaNameDrafts = {};
 
 function applySharedIdentity(value) {
   if (!value?.games) return value;
@@ -232,14 +260,108 @@ async function publish(gameId, game) {
 function showToast(message) { const el = $('toast'); el.textContent = message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2800); }
 function teamName(game, id, fallback = 'Waiting') { return teamById(game, id)?.name || fallback; }
 function scoreForBo2(series) { const result = parts(series); return result.wins === result.losses ? [1, 1] : result.wins > result.losses ? [3, 0] : [0, 3]; }
-function mechaStats(team) {
+function mechaLobbyPlayers(game, lobby) {
+  const offset = lobby === 'B' ? 2 : 0;
+  return game.teams.flatMap(team => (team.players || []).slice(offset, offset + 2).map(player => ({ ...player, teamId: team.id, team })));
+}
+function mechaRoundRecord(game, lobby, round) {
+  const record = game?.lobbies?.[lobby]?.rounds?.[String(round)];
+  return { scores: { ...(record?.scores || {}) }, catches: record?.catches == null ? '' : record.catches };
+}
+function mechaSeekerTeam(game, round) {
+  return game?.teams?.[(Number(round) - 1) % (game?.teams?.length || 1)] || null;
+}
+function mechaRoundPreview(game, lobby, round, record = mechaRoundRecord(game, lobby, round)) {
+  const seekerTeam = mechaSeekerTeam(game, round);
+  const players = mechaLobbyPlayers(game, lobby);
+  const hiders = players.filter(player => player.teamId !== seekerTeam?.id);
+  const scoreFor = player => record.scores?.[player.id] === '' || record.scores?.[player.id] == null ? null : num(record.scores[player.id]);
+  const entered = hiders.filter(player => scoreFor(player) !== null);
+  const total = entered.reduce((sum, player) => sum + scoreFor(player), 0);
+  const sorted = [...entered].sort((a, b) => scoreFor(b) - scoreFor(a) || a.id.localeCompare(b.id));
+  const rankFor = player => {
+    const score = scoreFor(player);
+    return score === null ? null : 1 + sorted.filter(other => scoreFor(other) > score).length;
+  };
+  const catches = record.catches === '' || record.catches == null ? null : num(record.catches);
+  const seekerPoints = catches === null ? 0 : Math.round(catches * 0.33 * 10) / 10;
+  const bonus = catches === 10 ? 2 : 0;
+  return {
+    seekerTeam,
+    hiders,
+    rows: hiders.map(player => ({ player, score: scoreFor(player), points: total > 0 && scoreFor(player) !== null ? Math.round((scoreFor(player) / total) * 10 * 10) / 10 : 0, rank: rankFor(player) })),
+    entered: entered.length,
+    total,
+    catches,
+    seekerPoints,
+    bonus,
+    valid: entered.length === 10 && total > 0 && catches !== null && catches >= 0 && catches <= 10,
+  };
+}
+function mechaHasSavedRounds(game) {
+  return MECHA_LOBBIES.some(lobby => MECHA_ROUNDS.some(round => mechaRoundPreview(game, lobby, round).valid));
+}
+function mechaDraftKey(lobby = mechaAdminLobby, round = mechaAdminRound) { return `${lobby}-${round}`; }
+function mechaEditorRecord(game, lobby = mechaAdminLobby, round = mechaAdminRound) {
+  return mechaDrafts[mechaDraftKey(lobby, round)] || mechaRoundRecord(game, lobby, round);
+}
+function mechaPlayerDisplayName(player) { return mechaNameDrafts[player.id] ?? player.name; }
+function mechaRoundSaved(game, lobby, round) { return mechaRoundPreview(game, lobby, round).valid; }
+function mechaSavedRoundCount(game, lobby) { return MECHA_ROUNDS.filter(round => mechaRoundSaved(game, lobby, round)).length; }
+function captureMechaDraft(game) {
+  if (activeGame !== 'mecha' || !document.querySelector('#adminEditor [data-mecha-score]')) return null;
+  const key = mechaDraftKey();
+  const record = mechaEditorRecord(game);
+  record.scores = {};
+  document.querySelectorAll('#adminEditor [data-mecha-score]').forEach(input => {
+    record.scores[input.dataset.mechaScore] = input.value.trim();
+  });
+  const catches = document.querySelector('#adminEditor [data-mecha-catches]');
+  record.catches = catches ? catches.value.trim() : '';
+  document.querySelectorAll('#adminEditor [data-mecha-player]').forEach(input => {
+    mechaNameDrafts[input.dataset.mechaPlayer] = input.value.trim();
+  });
+  mechaDrafts[key] = record;
+  return record;
+}
+function applyMechaNames(game) {
+  game.teams.forEach(team => (team.players || []).forEach(player => {
+    if (mechaNameDrafts[player.id]?.trim()) player.name = mechaNameDrafts[player.id].trim();
+  }));
+}
+function mechaRoundValidation(preview) {
+  if (preview.entered < 10) return `${preview.entered}/10 hider scores entered`;
+  if (preview.total <= 0) return 'At least one Missed Spot score must be above zero';
+  if (preview.catches === null) return 'Enter the caught Hider count';
+  if (preview.catches < 0 || preview.catches > 10) return 'Caught Hiders must be between 0 and 10';
+  return '';
+}
+function mechaStats(team, game) {
+  if (game && mechaHasSavedRounds(game)) {
+    let hider = 0; let topMissedSpot = 0; let seekersCaught = 0; let cleanSweeps = 0; let seeker = 0; let bonus = 0;
+    MECHA_LOBBIES.forEach(lobby => MECHA_ROUNDS.forEach(round => {
+      const preview = mechaRoundPreview(game, lobby, round);
+      if (!preview.valid) return;
+      if (preview.seekerTeam?.id === team.id) {
+        seekersCaught += preview.catches;
+        seeker += preview.seekerPoints;
+        bonus += preview.bonus;
+        if (preview.catches === 10) cleanSweeps += 1;
+      } else {
+        hider += preview.rows.filter(row => row.player.teamId === team.id).reduce((sum, row) => sum + row.points, 0);
+        const maxScore = Math.max(...preview.rows.map(row => row.score ?? 0));
+        if (preview.rows.some(row => row.player.teamId === team.id && row.score === maxScore)) topMissedSpot += 1;
+      }
+    }));
+    return { hider: Math.round(hider * 10) / 10, topMissedSpot, seekersCaught, cleanSweeps, seeker: Math.round(seeker * 10) / 10, bonus: Math.round(bonus * 10) / 10, points: Math.round((hider + seeker + bonus) * 10) / 10 };
+  }
   const hider = Math.round(num(team.hider) * 10) / 10;
-  const topMissedSpot = num(team.topMissedSpot);
+  const legacyTop = num(team.topMissedSpot);
   const seekersCaught = team.seekersCaught == null ? Math.round(num(team.seeker) / 0.33) : num(team.seekersCaught);
   const cleanSweeps = team.cleanSweeps == null ? Math.round(num(team.bonus) / 2) : num(team.cleanSweeps);
   const seeker = Math.round(seekersCaught * 0.33 * 10) / 10;
   const bonus = cleanSweeps * 2;
-  return { hider, topMissedSpot, seekersCaught, cleanSweeps, seeker, bonus, points: Math.round((hider + seeker + bonus) * 10) / 10 };
+  return { hider, topMissedSpot: legacyTop, seekersCaught, cleanSweeps, seeker, bonus, points: Math.round((hider + seeker + bonus) * 10) / 10 };
 }
 function tetrisGroupRows(game, group) {
   const players = (game.players || []).filter(player => player.group === group).map(player => ({ player, points: 0, wins: 0, played: 0, gamesWon: 0, gamesLost: 0 }));
@@ -320,7 +442,7 @@ function renderMlbb(game) {
 }
 
 function renderMecha(game) {
-  const rows = game.teams.map(team => { const score = mechaStats(team); return { name: team.name, sub: team.tag, hider: score.hider, seeker: score.seeker, bonus: score.bonus, points: score.points }; }).sort((a, b) => b.points - a.points || b.hider - a.hider);
+  const rows = game.teams.map(team => { const score = mechaStats(team, game); return { name: team.name, sub: team.tag, hider: score.hider, seeker: score.seeker, bonus: score.bonus, points: score.points }; }).sort((a, b) => b.points - a.points || b.hider - a.hider);
   return `${boardHead(GAME_DEFS.mecha, '6 баг · 2 lobby · 4 тоглогч/баг · lobby тус бүр 6 round', GAME_DEFS.mecha.rules)}<div class="ag-pad"><div class="ag-status-grid"><div class="ag-status"><b>12</b><span>Total rounds</span></div><div class="ag-status"><b>2 + 2</b><span>Women / men per team</span></div><div class="ag-status"><b>${rows.reduce((sum, row) => sum + row.points, 0).toFixed(1)}</b><span>Total points</span></div></div><div class="ag-form-section" style="margin-top:16px"><h3>Team ranking</h3>${rankingTable(rows, [{ key: 'hider', label: 'Hider pts' }, { key: 'seeker', label: 'Seeker pts' }, { key: 'bonus', label: 'Clean-sweep bonus' }, { key: 'points', label: 'Total', score: true }])}</div><p class="ag-help" style="margin:14px 0 0">Hider оноо Missed Spot Ranking-оос хувьчилна. Seeker оноо = барьсан Hider × 0.33; бүх 10 Hider баривал +2.0 bonus.</p></div>`;
 }
 
@@ -371,7 +493,7 @@ function renderMlbbClassic(game) {
 }
 
 function renderMechaClassic(game) {
-  const rows = game.teams.map(team => { const score = mechaStats(team); return { name: team.name, sub: `${team.tag} · Hider ${score.hider.toFixed(1)} · ${score.seekersCaught} caught`, hider: score.hider, caught: score.seekersCaught, bonus: score.bonus, points: score.points }; }).sort((a, b) => b.points - a.points || b.hider - a.hider);
+  const rows = game.teams.map(team => { const score = mechaStats(team, game); return { name: team.name, sub: `${team.tag} · Hider ${score.hider.toFixed(1)} · ${score.seekersCaught} caught`, hider: score.hider, caught: score.seekersCaught, bonus: score.bonus, points: score.points }; }).sort((a, b) => b.points - a.points || b.hider - a.hider);
   const lobbies = classicSection('LOBBY A · WOMEN · 6 ROUNDS', 'HIDER / SEEKER RACE', `<div class="ag-classic-group-grid">${classicGroupCard('LOBBY A', '2F / TEAM · BASIC · 6 ROUNDS', rows, item => `${item.points.toFixed(1)}P`, item => `Hider ${item.hider.toFixed(1)} · ${item.caught} caught`)}${classicGroupCard('LOBBY B', '2M / TEAM · BASIC · 6 ROUNDS', rows, item => `${item.points.toFixed(1)}P`, item => `Hider ${item.hider.toFixed(1)} · ${item.caught} caught`)}</div>`);
   const rotation = classicSection('ROUND ROTATION', 'SEEKER ORDER', `<div class="ag-classic-round-flow">${Array.from({ length: 6 }, (_, index) => `<div><b>ROUND ${index + 1}</b><span>Draft team ${index + 1} → 2 Seekers</span></div>`).join('')}</div>`);
   const stage = lobbies + rotation;
@@ -454,7 +576,7 @@ function renderMlbbDashboard(game) {
   return dashboardBoard(GAME_DEFS.mlbb, '6 баг · A/B хэсэг · BO2 round-robin · 4 баг playoff', GAME_DEFS.mlbb.rules, main, side, 'Tie-break: head-to-head → нийт хожсон game → нийт хожигдсон game бага → нэмэлт BO1.');
 }
 function renderMechaDashboard(game) {
-  const rows = game.teams.map(team => { const score = mechaStats(team); return { name: team.name, sub: `${team.tag} · Hider ${score.hider.toFixed(1)} · Seeker ${score.seekersCaught} caught · +${score.bonus.toFixed(1)}`, points: `${score.points.toFixed(1)} pts`, raw: score.points, topMissedSpot: score.topMissedSpot }; }).sort((a, b) => b.raw - a.raw || b.topMissedSpot - a.topMissedSpot || a.name.localeCompare(b.name));
+  const rows = game.teams.map(team => { const score = mechaStats(team, game); return { name: team.name, sub: `${team.tag} · Hider ${score.hider.toFixed(1)} · Seeker ${score.seekersCaught} caught · +${score.bonus.toFixed(1)}`, points: `${score.points.toFixed(1)} pts`, raw: score.points, topMissedSpot: score.topMissedSpot }; }).sort((a, b) => b.raw - a.raw || b.topMissedSpot - a.topMissedSpot || a.name.localeCompare(b.name));
   const main = dashPanel('TWO LOBBIES · 6 ROUNDS EACH', 'GROUP RACE', `<div class="ag-dash-groups">${dashGroup('A', rows.slice(0, 3), { title: 'LOBBY A · WOMEN', meta: '6 ROUNDS' })}${dashGroup('B', rows.slice(3), { title: 'LOBBY B · MEN', meta: '6 ROUNDS' })}</div>`, '', 'ALL LOBBIES →');
   const side = `${dashPanel('GET READY', 'UP NEXT', dashMatchList([{ code: 'R1', left: rows[0]?.name || 'Team A', right: rows[3]?.name || 'Team D', meta: 'HIDER / SEEKER' }, { code: 'R2', left: rows[1]?.name || 'Team B', right: rows[4]?.name || 'Team E', meta: 'LOBBY A · NEXT ROUND' }, { code: 'R3', left: rows[2]?.name || 'Team C', right: rows[5]?.name || 'Team F', meta: 'LOBBY B · NEXT ROUND' }]))}${dashPanel('JUST FINISHED', 'LATEST RESULTS', dashMatchList([], 'No round results yet.'))}${dashPanel('TOP SCORE', 'MOST PICKED', dashPicked(rows, row => row.points))}`;
   return dashboardBoard(GAME_DEFS.mecha, '6 баг · 2 lobby · 4 тоглогч/баг · lobby тус бүр 6 round', GAME_DEFS.mecha.rules, main, side, 'Hider = 10 × (тоглогчийн Missed Spot / раундын нийт Missed Spot). Seeker = барьсан Hider × 0.33; бүх 10 Hider баривал +2.0. Tie-break: нийт оноо → хамгийн өндөр Missed Spot авсан round → нийт барьсан Hider.');
@@ -498,7 +620,45 @@ function renderTabs() { $('gameTabs').innerHTML = GAME_IDS.map(id => `<button cl
 
 function inputTeamNames(game) { return `<div class="ag-form-section"><h3>Team setup</h3><div class="ag-form-grid">${game.teams.map(team => `<label class="ag-label">${esc(team.tag || team.id)}<input class="ag-input" data-team-name="${team.id}" value="${esc(team.name)}"></label>`).join('')}</div></div>`; }
 function renderMlEditor(game) { const name = id => teamName(game, id); return `${inputTeamNames(game)}<div class="ag-form-section"><h3>Group BO2 results</h3><div class="ag-form-grid">${game.groupResults.map(match => `<label class="ag-label">${match.group} · ${esc(name(match.a))} vs ${esc(name(match.b))}<select class="ag-select" data-ml-group="${match.id}">${seriesOptions(ML_SERIES, match.series)}</select></label>`).join('')}</div></div><div class="ag-form-section"><h3>Playoff BO3 results</h3><div class="ag-form-grid">${[['sf1','Semifinal 1'],['sf2','Semifinal 2'],['final','Grand Final'],['third','3rd Place Final']].map(([id, label]) => `<label class="ag-label">${label}<select class="ag-select" data-ml-playoff="${id}">${seriesOptions(BO3_SERIES, game.playoff[id])}</select></label>`).join('')}</div></div>`; }
-function renderMechaEditor(game) { return `${inputTeamNames(game)}<div class="ag-form-section"><h3>Official Meccha scoring input</h3><p class="ag-help">Hider points-ийг Missed Spot Ranking-ийн эцсийн дэлгэцээс 0.1 нарийвчлалтайгаар нийлбэрлэн оруулна. Seeker оноо автоматаар бодогдоно.</p><div class="ag-grid">${game.teams.map(team => { const score = mechaStats(team); return `<div class="ag-form-section"><h3>${esc(team.name)} · ${esc(team.tag)}</h3><div class="ag-form-grid three"><label class="ag-label">Hider points<input class="ag-input" type="number" min="0" step="0.1" data-mecha="${team.id}" data-field="hider" value="${score.hider}"></label><label class="ag-label">Highest Missed Spot rounds<input class="ag-input" type="number" min="0" max="12" step="1" data-mecha="${team.id}" data-field="topMissedSpot" value="${score.topMissedSpot}"></label><label class="ag-label">Hiders caught<input class="ag-input" type="number" min="0" max="20" step="1" data-mecha="${team.id}" data-field="seekersCaught" value="${score.seekersCaught}"></label><label class="ag-label">10/10 clean-sweep rounds<input class="ag-input" type="number" min="0" max="2" step="1" data-mecha="${team.id}" data-field="cleanSweeps" value="${score.cleanSweeps}"></label><div class="ag-mecha-total">Seeker ${score.seeker.toFixed(1)} + bonus ${score.bonus.toFixed(1)} = <b>${score.points.toFixed(1)} total</b></div></div></div>`; }).join('')}</div></div>`; }
+function mechaSeekerHint(preview) {
+  if (preview.catches === null) return 'Enter the catch count to calculate Seeker points.';
+  if (preview.catches === 10) return 'Clean sweep — the +2.0 bonus is in.';
+  if (preview.catches < 6) return `${6 - preview.catches} more catches to beat hiding (2.0).`;
+  return `Beats the 2.0 a hiding round would have paid (${preview.seekerPoints.toFixed(1)} Seeker points).`;
+}
+function renderMechaEditor(game) {
+  const lobby = MECHA_LOBBIES.includes(mechaAdminLobby) ? mechaAdminLobby : 'A';
+  const round = MECHA_ROUNDS.includes(Number(mechaAdminRound)) ? Number(mechaAdminRound) : 1;
+  const record = mechaEditorRecord(game, lobby, round);
+  const preview = mechaRoundPreview(game, lobby, round, record);
+  const seeker = preview.seekerTeam;
+  const lobbyPlayers = mechaLobbyPlayers(game, lobby);
+  const seekerNames = lobbyPlayers.filter(player => player.teamId === seeker?.id).map(player => mechaPlayerDisplayName(player)).join(' · ');
+  const hiderTeams = game.teams.filter(team => team.id !== seeker?.id);
+  const status = mechaRoundSaved(game, lobby, round) ? 'SAVED' : preview.valid ? 'READY TO SAVE' : 'INPUT REQUIRED';
+  const savedCount = mechaSavedRoundCount(game, lobby);
+  const roster = game.teams.map(team => {
+    const players = lobbyPlayers.filter(player => player.teamId === team.id);
+    return `<div class="ag-mecha-roster-team"><b>${esc(team.name)}</b><small>${esc(team.tag)}</small>${players.map(player => `<label class="ag-label"><span>Player</span><input class="ag-input" data-mecha-player="${esc(player.id)}" value="${esc(mechaPlayerDisplayName(player))}" maxlength="24"></label>`).join('')}</div>`;
+  }).join('');
+  const scoreCards = hiderTeams.map(team => `<section class="ag-mecha-score-team"><header><b>${esc(team.name)}</b><small>${esc(team.tag)} · HIDER</small></header>${lobbyPlayers.filter(player => player.teamId === team.id).map(player => {
+    const row = preview.rows.find(item => item.player.id === player.id);
+    const raw = record.scores?.[player.id] ?? '';
+    return `<div class="ag-mecha-score-row"><span class="ag-mecha-player-name">${esc(mechaPlayerDisplayName(player))}</span><input class="ag-input ag-mecha-score-input" type="number" min="0" step="any" inputmode="decimal" data-mecha-score="${esc(player.id)}" value="${esc(raw)}" aria-label="Missed Spot points for ${esc(mechaPlayerDisplayName(player))}"><span class="ag-mecha-derived" data-mecha-points="${esc(player.id)}">${row?.score === null ? '—' : `${row?.points.toFixed(1)} pts`}</span><span class="ag-mecha-derived ag-mecha-rank" data-mecha-rank="${esc(player.id)}">${row?.rank ? `#${row.rank}` : '—'}</span></div>`;
+  }).join('')}</section>`).join('');
+  return `${inputTeamNames(game)}<div class="ag-mecha-desk" data-mecha-desk>
+    <div class="ag-mecha-desk-head"><div><span>LIVE SCORE DESK</span><h3>MECCHA CHAMELEON · ENTER A ROUND</h3></div><b data-mecha-round-status>${status}</b></div>
+    <p class="ag-help">Зөвхөн тоглоомын results screen дээр харагдах 10 Missed Spot тоо болон seeker-ийн catch count-ыг оруулна. Байр, хувь оноо, багийн нийт оноог систем автоматаар бодно.</p>
+    <div class="ag-mecha-lobby-tabs">${MECHA_LOBBIES.map(id => `<button type="button" class="ag-mecha-tab ${id === lobby ? 'is-active' : ''}" data-mecha-lobby="${id}">LOBBY ${id}<small>${id === 'A' ? 'WOMEN' : 'MEN'} · ${mechaSavedRoundCount(game, id)}/6 SAVED</small></button>`).join('')}</div>
+    <div class="ag-mecha-round-tabs">${MECHA_ROUNDS.map(id => `<button type="button" class="ag-mecha-round ${id === round ? 'is-active' : ''} ${mechaRoundSaved(game, lobby, id) ? 'is-saved' : ''}" data-mecha-round="${id}">${id}<small>${mechaRoundSaved(game, lobby, id) ? 'SAVED' : 'OPEN'}</small></button>`).join('')}</div>
+    <div class="ag-mecha-roster-strip"><div class="ag-mecha-strip-head"><b>${esc(lobby === 'A' ? 'WOMEN LOBBY' : 'MEN LOBBY')} · PLAYER NAMES</b><span>12 players · names belong to this lobby</span></div><div class="ag-mecha-roster-grid">${roster}</div></div>
+    <div class="ag-mecha-seeker"><div><span>ROUND ${round} · FIXED ROTATION</span><h4>${esc(seeker?.name || 'Seeker team not configured')} <small>SEEKS THIS ROUND</small></h4><p>${esc(seekerNames || 'Enter the two seeker names above.')}</p></div><label class="ag-label"><span>HIDERS CAUGHT · 0–10</span><input class="ag-input" type="number" min="0" max="10" step="1" data-mecha-catches value="${esc(record.catches)}"></label><strong data-mecha-seeker-points>${preview.catches === null ? '—' : `${preview.seekerPoints.toFixed(1)} PTS`}</strong><p class="ag-mecha-seeker-hint" data-mecha-seeker-hint>${esc(mechaSeekerHint(preview))}</p></div>
+    <div class="ag-mecha-score-head"><div><span>MISSED SPOT POINTS</span><h4>Ten hider scores</h4></div><b data-mecha-count>${preview.entered}/10 entered · total ${preview.total.toLocaleString()}</b></div>
+    <div class="ag-mecha-score-grid">${scoreCards}</div>
+    <p class="ag-mecha-score-note">Each round shares 10 Hider points by Missed Spot. Position and points are derived from the raw scores, not typed.</p>
+    <div class="ag-mecha-actions"><button type="button" class="ag-button" data-mecha-save-round ${preview.valid ? '' : 'disabled'}>Save round ${round}</button><button type="button" class="ag-button secondary" data-mecha-clear-round>Clear</button><button type="button" class="ag-button secondary" data-mecha-reset-cup>Reset Mecha scores</button><span data-mecha-validation>${esc(mechaRoundValidation(preview))}</span></div>
+  </div>`;
+}
 function renderStumbleEditor(game) { return `<div class="ag-form-section"><h3>Player points</h3><div class="ag-grid">${game.teams.map(team => `<div class="ag-form-section"><h3>${esc(team.name)}</h3><div class="ag-form-grid">${team.players.map(player => `<label class="ag-label">${esc(player.name)}<input class="ag-input" data-stumble-name="${player.id}" value="${esc(player.name)}"><input class="ag-input" type="number" min="0" data-stumble-points="${player.id}" value="${num(player.points)}"></label>`).join('')}</div></div>`).join('')}</div></div>`; }
 function renderPubgEditor(game) { return `${inputTeamNames(game)}<div class="ag-grid">${game.teams.map(team => `<div class="ag-form-section"><h3>${esc(team.name)}</h3><div class="ag-form-grid three">${team.maps.map((map, index) => `<div><label class="ag-label">${MAP_NAMES[index]} · Place<select class="ag-select" data-pubg="${team.id}" data-map="${index}" data-field="placement"><option value="">—</option>${[1,2,3,4,5,6].map(place => `<option value="${place}" ${String(place) === String(map.placement) ? 'selected' : ''}>${place}</option>`).join('')}</select></label><label class="ag-label" style="margin-top:8px">Kills<input class="ag-input" type="number" min="0" data-pubg="${team.id}" data-map="${index}" data-field="kills" value="${esc(map.kills)}"></label></div>`).join('')}</div></div>`).join('')}</div>`; }
 function tetrisRosterEditor(game) { return `<div class="ag-tetris-admin-roster">${TETRIS_GROUPS.map(group => `<div class="ag-form-section"><h3>GROUP ${group} · ${group < 'E' ? 'MEN' : 'WOMEN'} · 6 PLAYERS</h3><div class="ag-form-grid three">${(game.players || []).filter(player => player.group === group).map(player => `<label class="ag-label">${esc(player.gender)} · ${esc(player.teamId)}<input class="ag-input" data-tetris-player="${player.id}" value="${esc(player.name)}"></label>`).join('')}</div></div>`).join('')}</div>`; }
@@ -513,7 +673,11 @@ function adminQueue(game) {
     items = game.groupResults.map((match, index) => { const round = game.groupResults.slice(0, index + 1).filter(item => item.group === match.group).length; return adminQueueItem(`${match.group} · R${round}`, teamName(game, match.a), teamName(game, match.b), match.series ? 'SAVED' : 'READY', `BO2 · ${match.series || 'score pending'}`); });
     items.push(...[['SF1', 'Semifinal 1'], ['SF2', 'Semifinal 2'], ['GF', 'Grand Final'], ['3RD', '3rd Place Final']].map(([code, label], index) => adminQueueItem(code, label, 'Waiting', game.playoff[['sf1', 'sf2', 'final', 'third'][index]] ? 'SAVED' : 'READY', 'BO3 playoff')));
   } else if (activeGame === 'mecha') {
-    items = game.teams.map((team, index) => adminQueueItem(`L${index < 3 ? 'A' : 'B'} · R${index % 3 + 1}`, team.name, index < 3 ? 'HIDER / SEEKER' : 'HIDER / SEEKER', mechaStats(team).points ? 'SAVED' : 'READY', 'Missed Spot · catch · bonus'));
+    items = MECHA_LOBBIES.flatMap(lobby => MECHA_ROUNDS.map(round => {
+      const seeker = mechaSeekerTeam(game, round);
+      const saved = mechaRoundSaved(game, lobby, round);
+      return adminQueueItem(`L${lobby} · R${round}`, seeker?.name || 'Seeker team', '10 HIDERS', saved ? 'SAVED' : 'READY', `${lobby === 'A' ? 'Women' : 'Men'} · ${saved ? 'round complete' : 'Missed Spot · catch'}`);
+    }));
   } else if (activeGame === 'stumble') {
     items = game.teams.map((team, index) => adminQueueItem(`TEAM ${index + 1}`, team.name, 'Grand Prix', team.players.some(player => num(player.points)) ? 'SAVED' : 'READY', '5 player points'));
   } else if (activeGame === 'pubg') {
@@ -527,7 +691,7 @@ function adminQueue(game) {
 function adminGuide() {
   const guides = {
     mlbb: [['GROUP BO2', 'Winner 3 points, loser 0. Group ranking uses points, game differential and the official tie-break.'], ['PLAYOFF BO3', 'A1 vs B2 and B1 vs A2. Record semifinal, grand final and 3rd place series separately.']],
-    mecha: [['HIDER', 'Missed Spot ranking-ээс авсан оноог 0.1 нарийвчлалтай оруулна.'], ['SEEKER', 'Caught Hider × 0.33; 10/10 clean sweep бүр +2.0 bonus.']],
+    mecha: [['ROUND INPUT', 'Lobby болон round сонгоод 10 Hider-ийн raw Missed Spot оноо, seeker-ийн caught count-ыг оруулна.'], ['AUTO SCORE', 'Hider-ийн 10 онооны хувь, байр, Seeker 0.33 × catch, clean-sweep +2.0 болон team total автоматаар бодогдоно.']],
     stumble: [['GRAND PRIX', 'Тоглогч бүрийн round оноог тусад нь оруулна. Багийн нийт = 5 тоглогчийн нийлбэр.'], ['LEADERBOARD', 'Нийт оноо өндөр баг түрүүлнэ. Tie-break-ийг зохион байгуулагч шийднэ.']],
     pubg: [['MAP SCORE', 'Placement points + kills × 2. Sanhok, Livik, Erangel map тус бүрийн үр дүнг тусад нь хадгална.'], ['TIE-BREAK', 'WWCD → нийт kill → Erangel placement → Erangel kill.']],
     tetris: [['GROUP BO5', '6 group, 1v1 round-robin. Хожсон тоглогч 3 point, хожигдсон тоглогч BO5-д авсан game-ийн тоогоор point авна.'], ['CUP POINT', 'Ангилал тус бүр 1-р байр 5, 2-р байр 3, 3-р байр 2, 4-р байр 1 point авна.']],
@@ -664,12 +828,79 @@ function adminWorkbench(game) {
   const body = activeAdminPanel === 'scoring' ? adminGuide() : activeAdminPanel === 'roster' ? adminRosterEditor(game) : activeAdminPanel === 'settings' ? adminSettings() : `<div class="ag-admin-scoreboard"><div class="ag-admin-work-head"><div><span>ON STAGE · RECORD RESULT</span><h3>${esc(GAME_DEFS[activeGame].label)} · LIVE CONTROL</h3></div><b>${esc(GAME_DEFS[activeGame].format)}</b></div>${renderEditor(game)}</div>`;
   return `<section class="ag-admin-workbench">${body}</section>`;
 }
+function readMechaEditorDraft(game) {
+  const next = clone(game);
+  ensureMechaScorebook(next);
+  document.querySelectorAll('#adminEditor [data-team-name]').forEach(input => {
+    const team = next.teams.find(item => item.id === input.dataset.teamName);
+    if (team) team.name = input.value.trim() || team.name;
+  });
+  const record = captureMechaDraft(game) || mechaEditorRecord(game);
+  applyMechaNames(next);
+  const preview = mechaRoundPreview(next, mechaAdminLobby, mechaAdminRound, record);
+  return { next, record: clone(record), preview };
+}
+async function saveMechaRound() {
+  const game = state.games.mecha;
+  const { next, record, preview } = readMechaEditorDraft(game);
+  const message = mechaRoundValidation(preview);
+  if (message) { showToast(message); return; }
+  next.lobbies[mechaAdminLobby].rounds[String(mechaAdminRound)] = record;
+  const result = await publish('mecha', next);
+  if (!result.ok) { showToast(result.error || 'Could not save this round'); return; }
+  delete mechaDrafts[mechaDraftKey()];
+  if (client && authSession?.user) {
+    try { await syncSharedIdentity(next); } catch (error) { console.error('[shared-profiles] name sync failed:', error); }
+  }
+  showToast(`✓ Lobby ${mechaAdminLobby} round ${mechaAdminRound} saved`);
+}
+function updateMechaLivePreview() {
+  if (activeGame !== 'mecha' || !document.querySelector('#adminEditor [data-mecha-score]')) return;
+  const game = state.games.mecha;
+  const record = captureMechaDraft(game) || mechaEditorRecord(game);
+  const preview = mechaRoundPreview(game, mechaAdminLobby, mechaAdminRound, record);
+  preview.rows.forEach(row => {
+    const points = document.querySelector(`#adminEditor [data-mecha-points="${CSS.escape(row.player.id)}"]`);
+    const rank = document.querySelector(`#adminEditor [data-mecha-rank="${CSS.escape(row.player.id)}"]`);
+    if (points) points.textContent = row.score === null ? '—' : `${row.points.toFixed(1)} pts`;
+    if (rank) rank.textContent = row.rank ? `#${row.rank}` : '—';
+  });
+  const count = document.querySelector('#adminEditor [data-mecha-count]');
+  const seekerPoints = document.querySelector('#adminEditor [data-mecha-seeker-points]');
+  const hint = document.querySelector('#adminEditor [data-mecha-seeker-hint]');
+  const status = document.querySelector('#adminEditor [data-mecha-round-status]');
+  const validation = document.querySelector('#adminEditor [data-mecha-validation]');
+  const save = document.querySelector('#adminEditor [data-mecha-save-round]');
+  if (count) count.textContent = `${preview.entered}/10 entered · total ${preview.total.toLocaleString()}`;
+  if (seekerPoints) seekerPoints.textContent = preview.catches === null ? '—' : `${preview.seekerPoints.toFixed(1)} PTS`;
+  if (hint) hint.textContent = mechaSeekerHint(preview);
+  if (status) status.textContent = preview.valid ? 'READY TO SAVE' : 'INPUT REQUIRED';
+  if (validation) validation.textContent = mechaRoundValidation(preview);
+  if (save) save.disabled = !preview.valid;
+}
+async function resetMechaScores() {
+  if (!confirm('Reset every Meccha Chameleon round? Team names and player names will be kept.')) return;
+  const next = clone(state.games.mecha);
+  next.lobbies = makeMechaLobbies();
+  next.teams.forEach(team => { team.hider = 0; team.topMissedSpot = 0; team.seekersCaught = 0; team.cleanSweeps = 0; });
+  const result = await publish('mecha', next);
+  if (result.ok) { Object.keys(mechaDrafts).forEach(key => delete mechaDrafts[key]); showToast('✓ Meccha scores reset'); }
+}
 function renderAdminConsole(game) {
   if (activeGame === 'tekken') return `<div class="ag-admin-callout"><b>TEKKEN 7 SEPARATE BOARD</b><span>Tekken-ийн roster, зураг болон admin систем тусдаа хуудсанд ажиллана. Энэ shared board дээр Tekken media өөрчлөгдөхгүй.</span></div>`;
   return `<div class="ag-admin-console"><div class="ag-admin-console-head"><div><span>ORGANISER CONTROL</span><h2>ADMIN</h2></div><div class="ag-admin-current"><img src="${GAME_DEFS[activeGame].logo}" alt=""><b>${esc(GAME_DEFS[activeGame].label)}</b><small>${esc(GAME_DEFS[activeGame].format)}</small></div></div><nav class="ag-admin-nav" aria-label="Admin sections">${[['matches', 'Matches'], ['scoring', 'Scoring'], ['roster', 'Roster'], ['settings', 'Settings']].map(([key, label]) => `<button class="${key === activeAdminPanel ? 'is-active' : ''}" type="button" data-admin-panel="${key}">${label}</button>`).join('')}</nav><div class="ag-admin-layout">${adminQueue(game)}${adminWorkbench(game)}</div></div>`;
 }
 function bindAdminConsole() {
   document.querySelectorAll('#adminEditor [data-admin-panel]').forEach(button => { button.onclick = () => { activeAdminPanel = button.dataset.adminPanel || 'matches'; renderAdmin(); }; });
+  if (activeGame === 'mecha' && activeAdminPanel === 'matches') {
+    document.querySelectorAll('#adminEditor [data-mecha-lobby]').forEach(button => { button.onclick = () => { captureMechaDraft(state.games.mecha); mechaAdminLobby = button.dataset.mechaLobby; mechaAdminRound = 1; renderAdmin(); }; });
+    document.querySelectorAll('#adminEditor [data-mecha-round]').forEach(button => { button.onclick = () => { captureMechaDraft(state.games.mecha); mechaAdminRound = Number(button.dataset.mechaRound) || 1; renderAdmin(); }; });
+    document.querySelectorAll('#adminEditor [data-mecha-score], #adminEditor [data-mecha-catches]').forEach(input => { input.addEventListener('input', updateMechaLivePreview); });
+    document.querySelectorAll('#adminEditor [data-mecha-player]').forEach(input => { input.addEventListener('input', () => { mechaNameDrafts[input.dataset.mechaPlayer] = input.value; }); });
+    document.querySelectorAll('#adminEditor [data-mecha-save-round]').forEach(button => { button.onclick = saveMechaRound; });
+    document.querySelectorAll('#adminEditor [data-mecha-clear-round]').forEach(button => { button.onclick = () => { mechaDrafts[mechaDraftKey()] = { scores: {}, catches: '' }; renderAdmin(); }; });
+    document.querySelectorAll('#adminEditor [data-mecha-reset-cup]').forEach(button => { button.onclick = resetMechaScores; });
+  }
   document.querySelectorAll('#adminEditor .ag-media-logo-upload').forEach(button => { button.onclick = () => uploadGameTeamLogo(button.dataset.mediaTeam); });
   document.querySelectorAll('#adminEditor .ag-media-logo-remove').forEach(button => { button.onclick = () => removeGameTeamLogo(button.dataset.mediaTeam); });
   document.querySelectorAll('#adminEditor .ag-media-photo-upload').forEach(button => { button.onclick = () => uploadGamePlayerPhoto(button.dataset.mediaPlayer); });
@@ -699,7 +930,12 @@ function saveFromEditor() {
   const game = clone(state.games[activeGame]);
   document.querySelectorAll('[data-team-name]').forEach(input => { const team = game.teams.find(item => item.id === input.dataset.teamName); if (team) team.name = input.value.trim() || team.name; });
   if (activeGame === 'mlbb') { game.groupResults.forEach(match => { const input = document.querySelector(`[data-ml-group="${match.id}"]`); if (input) match.series = input.value; }); Object.keys(game.playoff).forEach(id => { const input = document.querySelector(`[data-ml-playoff="${id}"]`); if (input) game.playoff[id] = input.value; }); }
-  if (activeGame === 'mecha') document.querySelectorAll('[data-mecha]').forEach(input => { const team = game.teams.find(item => item.id === input.dataset.mecha); if (team) team[input.dataset.field] = num(input.value); });
+  if (activeGame === 'mecha') {
+    const draft = readMechaEditorDraft(game);
+    game.teams = draft.next.teams;
+    game.lobbies = draft.next.lobbies;
+    if (draft.preview.valid) game.lobbies[mechaAdminLobby].rounds[String(mechaAdminRound)] = draft.record;
+  }
   if (activeGame === 'stumble') game.teams.forEach(team => team.players.forEach(player => { const name = document.querySelector(`[data-stumble-name="${player.id}"]`); const points = document.querySelector(`[data-stumble-points="${player.id}"]`); if (name) player.name = name.value.trim() || player.name; if (points) player.points = num(points.value); }));
   if (activeGame === 'pubg') document.querySelectorAll('[data-pubg]').forEach(input => { const team = game.teams.find(item => item.id === input.dataset.pubg); const map = team?.maps[Number(input.dataset.map)]; if (map) map[input.dataset.field] = input.value; });
   if (activeGame === 'tetris') { game.players?.forEach(player => { const input = document.querySelector(`[data-tetris-player="${player.id}"]`); if (input) player.name = input.value.trim() || player.name; }); game.matches?.forEach(match => { const input = document.querySelector(`[data-tetris-match="${match.id}"]`); if (input) match.score = input.value; }); }
