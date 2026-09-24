@@ -1,5 +1,6 @@
 import './additional-games.css';
 import { supabase as client, isConfigured } from './shared/supabase-client.ts';
+import { saveRow } from './shared/save-row.ts';
 
 const TOURNAMENT_ID = 'ddam-cup-additional-games-v1';
 const CACHE_KEY = `ddam-cup-cache:${TOURNAMENT_ID}`;
@@ -161,11 +162,26 @@ function startRealtime() {
 
 async function signIn(email, password) { if (!client) throw new Error('Supabase is not configured'); const { data, error } = await client.auth.signInWithPassword({ email, password }); if (error) throw error; authSession = data.session; }
 async function signOut() { if (client) { const { error } = await client.auth.signOut(); if (error) throw error; } authSession = null; }
-async function publish(next) {
-  state = { ...next, updated: new Date().toISOString() }; writeCache(state); render();
+/* Saves one game. The board row holds every game, so the change is merged into
+   the freshest row instead of replacing it: saving PUBG can never wipe an MLBB
+   edit somebody made a second earlier. */
+async function publish(gameId, game) {
+  state = { ...state, games: { ...state.games, [gameId]: game }, updated: new Date().toISOString() };
+  writeCache(state); render();
   if (!client) return { ok: true, local: true };
-  const { error } = await client.from('tournaments').upsert({ id: TOURNAMENT_ID, state, updated: state.updated }, { onConflict: 'id' });
-  if (error) { console.error('[additional-games] publish failed', error); return { ok: false, local: false, error }; }
+  const result = await saveRow(client, 'tournaments', TOURNAMENT_ID, current => {
+    const board = normalizeState(current) || defaultState();
+    board.games[gameId] = game;
+    board.updated = new Date().toISOString();
+    return board;
+  });
+  if (!result.ok) {
+    console.error('[additional-games] publish failed', result.error);
+    await loadRemote().catch(() => {});   // drop the unsaved edit from the screen
+    return { ok: false, local: false, error: result.error };
+  }
+  const saved = normalizeState(result.state);
+  if (saved) { state = saved; writeCache(state); render(); }
   return { ok: true, local: false };
 }
 
@@ -489,20 +505,21 @@ function render() {
   if (activeGame !== 'tekken') focusBoardView();
 }
 
+/* Reads the admin form and returns just the game being edited. */
 function saveFromEditor() {
-  const next = clone(state); const game = next.games[activeGame];
+  const game = clone(state.games[activeGame]);
   document.querySelectorAll('[data-team-name]').forEach(input => { const team = game.teams.find(item => item.id === input.dataset.teamName); if (team) team.name = input.value.trim() || team.name; });
   if (activeGame === 'mlbb') { game.groupResults.forEach(match => { const input = document.querySelector(`[data-ml-group="${match.id}"]`); if (input) match.series = input.value; }); Object.keys(game.playoff).forEach(id => { const input = document.querySelector(`[data-ml-playoff="${id}"]`); if (input) game.playoff[id] = input.value; }); }
   if (activeGame === 'mecha') document.querySelectorAll('[data-mecha]').forEach(input => { const team = game.teams.find(item => item.id === input.dataset.mecha); if (team) team[input.dataset.field] = num(input.value); });
   if (activeGame === 'stumble') game.teams.forEach(team => team.players.forEach(player => { const name = document.querySelector(`[data-stumble-name="${player.id}"]`); const points = document.querySelector(`[data-stumble-points="${player.id}"]`); if (name) player.name = name.value.trim() || player.name; if (points) player.points = num(points.value); }));
   if (activeGame === 'pubg') document.querySelectorAll('[data-pubg]').forEach(input => { const team = game.teams.find(item => item.id === input.dataset.pubg); const map = team?.maps[Number(input.dataset.map)]; if (map) map[input.dataset.field] = input.value; });
   if (activeGame === 'tetris') { game.players?.forEach(player => { const input = document.querySelector(`[data-tetris-player="${player.id}"]`); if (input) player.name = input.value.trim() || player.name; }); game.matches?.forEach(match => { const input = document.querySelector(`[data-tetris-match="${match.id}"]`); if (input) match.score = input.value; }); }
-  return next;
+  return game;
 }
 
 $('loginForm').addEventListener('submit', async event => { event.preventDefault(); if (!client) { $('authNote').textContent = 'Supabase environment тохируулагдаагүй байна.'; return; } const button = $('loginBtn'); button.disabled = true; button.textContent = 'Signing in…'; $('authNote').textContent = ''; try { await signIn($('email').value.trim(), $('password').value); $('password').value = ''; showToast('✓ Admin access granted'); renderAdmin(); } catch (error) { $('authNote').textContent = error.message || 'Sign in failed'; } finally { button.disabled = false; button.textContent = 'Sign in'; } });
 $('logoutBtn').onclick = async () => { try { await signOut(); showToast('✓ Signed out'); renderAdmin(); } catch (error) { showToast(error.message || 'Sign out failed'); } };
-$('saveBtn').onclick = async () => { if (!authSession?.user) return; const button = $('saveBtn'); button.disabled = true; button.textContent = 'Publishing…'; $('saveNote').textContent = ''; const result = await publish(saveFromEditor()); button.disabled = false; button.textContent = 'Save current game'; if (result.ok && !result.local) { showToast(`✓ ${GAME_DEFS[activeGame].label} published live`); $('saveNote').textContent = 'Saved to Supabase — every public viewer will update.'; } else if (result.ok) { showToast('Saved on this device only'); } else { $('saveNote').textContent = result.error?.message || 'Publish failed'; } };
+$('saveBtn').onclick = async () => { if (!authSession?.user) return; const button = $('saveBtn'); button.disabled = true; button.textContent = 'Publishing…'; $('saveNote').textContent = ''; const result = await publish(activeGame, saveFromEditor()); button.disabled = false; button.textContent = 'Save current game'; if (result.ok && !result.local) { showToast(`✓ ${GAME_DEFS[activeGame].label} published live`); $('saveNote').textContent = 'Saved to Supabase — every public viewer will update.'; } else if (result.ok) { showToast('Saved on this device only'); } else { $('saveNote').textContent = result.error || 'Publish failed'; } };
 
 render();
 window.addEventListener('hashchange', () => { activeBoardView = boardViewFromHash(); render(); });

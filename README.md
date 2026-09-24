@@ -16,6 +16,8 @@ Mobile Legends rules at `/mobile-legends.html`.
 - **Additional live boards:** one public realtime page with tabs for Mobile
   Legends, Meccha Chameleon, Stumble Guys, PUBG Mobile, Tekken 7 and Tetris. Admins can
   edit team names, series results, player points and map scores from the page.
+  Saving one game merges into the live board instead of replacing it, so two
+  admins editing different games can no longer overwrite each other.
 - **Tekken 7:** a full tournament app inside the Tekken tab — see
   [Tekken 7 board](#tekken-7-board) below.
 - **Mobile Legends:** six teams split into two BO2 groups, then A1 vs B2 and
