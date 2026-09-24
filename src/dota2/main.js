@@ -267,7 +267,7 @@ function renderRosters() {
     : null;
   $('leaderCards').innerHTML = state.teams.map((team, index) => {
     const leaderAvatar = LEADER_AVATARS[team.tag] || `/leader-avatars/leader-${index + 1}.png`;
-    const teamLogo = mediaSrc(team.logo);
+    const teamLogo = mediaSrc(team.logo) || mediaSrc(sharedProfiles[team.tag]?.logo);
     return `
     <article class="leader-card leader-card-${index + 1}">
       <div class="leader-card-head">
