@@ -18,9 +18,12 @@ const GAME_DEFS = {
 const GAME_IDS = Object.keys(GAME_DEFS);
 // Tekken keeps its own Supabase row and full app (src/tekken); it is not part of this shared state.
 const REQUIRED_GAME_IDS = GAME_IDS.filter(id => id !== 'tetris' && id !== 'tekken');
-const TEAM_NAMES = ['Team Gegeenee', 'Team Ganaa', 'Team Garidaa', 'Team Amaraa', 'Team Bery', 'Team Bagaa'];
+const TEAM_NAMES = ['Ээжийн найзын хүүхдүүд', 'ЮМ Өгцөн2', 'GG FUCKING EZ', 'HANGALZ', 'AMAR', 'FRESH BERRIES'];
 const TAGS = ['ALP', 'BRV', 'CHR', 'DLT', 'ECH', 'FOX'];
-const TEAM_NAME_VERSION = 'ganaa-team-names-v1';
+const TEAM_NAME_VERSION = 'canonical-team-names-v2';
+const TEAM_NAME_BY_TAG = Object.fromEntries(TAGS.map((tag, index) => [tag, TEAM_NAMES[index]]));
+const MLBB_ZONE_TAGS = { A: ['CHR', 'BRV', 'DLT'], B: ['FOX', 'ECH', 'ALP'] };
+const MLBB_TEAM_ORDER = [...MLBB_ZONE_TAGS.A, ...MLBB_ZONE_TAGS.B];
 const ROSTER_SIZES = { mlbb: 5, mecha: 4, stumble: 5, pubg: 4, tetris: 6 };
 const MECHA_LOBBIES = ['A', 'B'];
 const MECHA_ROUNDS = [1, 2, 3, 4, 5, 6];
@@ -82,9 +85,11 @@ function groupMatches() {
 }
 
 function defaultState() {
-  const mlTeams = [
-    ['a1', 'A', 0], ['a2', 'A', 1], ['a3', 'A', 2], ['b1', 'B', 3], ['b2', 'B', 4], ['b3', 'B', 5],
-  ].map(([id, group, index]) => ({ id, group, name: TEAM_NAMES[index], tag: TAGS[index], logo: null, players: makePlayers(id, TAGS[index], ROSTER_SIZES.mlbb) }));
+  const mlTeams = MLBB_TEAM_ORDER.map((tag, index) => {
+    const group = index < MLBB_ZONE_TAGS.A.length ? 'A' : 'B';
+    const id = `${group.toLowerCase()}${(index % 3) + 1}`;
+    return { id, group, name: TEAM_NAME_BY_TAG[tag], tag, logo: null, players: makePlayers(id, tag, ROSTER_SIZES.mlbb) };
+  });
   const makeTeams = (gameId = null) => TEAM_NAMES.map((name, index) => ({ id: `t${index + 1}`, name, tag: TAGS[index], logo: null, ...(gameId ? { players: makePlayers(`t${index + 1}`, TAGS[index], ROSTER_SIZES[gameId]) } : {}) }));
   const tetrisTeams = makeTeams();
   const tetrisGames = Array.from({ length: 3 }, (_, index) => ({
@@ -144,8 +149,65 @@ function ensureMechaScorebook(game) {
   });
 }
 
+function ensureMlbbTeamSetup(game) {
+  if (!game?.teams?.length) return;
+
+  const teamsByTag = new Map(game.teams.map(team => [String(team.tag || '').toUpperCase(), team]));
+  TAGS.forEach((tag, index) => {
+    if (!teamsByTag.has(tag) && game.teams[index]) teamsByTag.set(tag, game.teams[index]);
+  });
+
+  const teamsById = new Map(game.teams.map(team => [team.id, team]));
+  const previousResults = new Map();
+  (game.groupResults || []).forEach(match => {
+    const a = teamsById.get(match.a)?.tag?.toUpperCase();
+    const b = teamsById.get(match.b)?.tag?.toUpperCase();
+    if (a && b) previousResults.set([a, b].sort().join('|'), match);
+  });
+
+  const nextTeams = MLBB_TEAM_ORDER.map((tag, index) => {
+    const team = teamsByTag.get(tag) || { id: `${index < 3 ? 'a' : 'b'}${(index % 3) + 1}`, tag, logo: null, players: [] };
+    return {
+      ...team,
+      tag,
+      name: TEAM_NAME_BY_TAG[tag],
+      group: index < MLBB_ZONE_TAGS.A.length ? 'A' : 'B',
+    };
+  });
+  const nextTeamByTag = new Map(nextTeams.map(team => [team.tag, team]));
+  const nextResults = Object.entries(MLBB_ZONE_TAGS).flatMap(([group, tags]) => {
+    let matchNumber = 0;
+    return tags.flatMap((a, index) => tags.slice(index + 1).map(b => {
+      const previous = previousResults.get([a, b].sort().join('|'));
+      return {
+        ...(previous || {}),
+        id: `${group}-${++matchNumber}`,
+        group,
+        a: nextTeamByTag.get(a).id,
+        b: nextTeamByTag.get(b).id,
+        series: previous?.series || '',
+      };
+    }));
+  });
+
+  game.teams = nextTeams;
+  game.groupResults = nextResults;
+}
+
+function applyCanonicalTeamNames(value) {
+  if (!value?.games) return value;
+  ['mlbb', 'mecha', 'stumble', 'pubg', 'tetris'].forEach(gameId => {
+    value.games[gameId]?.teams?.forEach(team => {
+      const name = TEAM_NAME_BY_TAG[String(team.tag || '').toUpperCase()];
+      if (name) team.name = name;
+    });
+  });
+  return value;
+}
+
 function normalizeState(value) {
   if (!usable(value)) return null;
+  ensureMlbbTeamSetup(value.games.mlbb);
   ensureMediaState(value);
   ensureMechaScorebook(value.games.mecha);
   if (!value.games.tetris?.teams || !Array.isArray(value.games.tetris.games) || value.games.tetris.games.length !== 3) {
@@ -164,10 +226,7 @@ function normalizeState(value) {
     if (team.cleanSweeps == null) team.cleanSweeps = Math.round(num(team.bonus) / 2);
   });
   if (value.teamNameVersion !== TEAM_NAME_VERSION) {
-    ['mecha', 'stumble', 'pubg', 'tetris'].forEach(id => {
-      value.games[id]?.teams?.forEach((team, index) => { team.name = TEAM_NAMES[index] || team.name; });
-    });
-    value.games.mlbb?.teams?.forEach((team, index) => { team.name = TEAM_NAMES[index] || team.name; });
+    applyCanonicalTeamNames(value);
     value.teamNameVersion = TEAM_NAME_VERSION;
   }
   return value;
@@ -196,7 +255,7 @@ function applySharedIdentity(value) {
   ['mlbb', 'mecha', 'stumble', 'pubg', 'tetris'].forEach(gameId => {
     if (value.games[gameId]?.teams) value.games[gameId].teams = applySharedProfiles(value.games[gameId].teams, sharedProfiles);
   });
-  return value;
+  return applyCanonicalTeamNames(value);
 }
 
 async function syncSharedIdentity(game) {
