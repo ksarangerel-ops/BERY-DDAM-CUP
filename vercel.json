@@ -7,6 +7,7 @@
     { "source": "/dota2", "destination": "/dota2.html" },
     { "source": "/cs2", "destination": "/cs2.html" },
     { "source": "/mobile-legends", "destination": "/mobile-legends.html" },
+    { "source": "/mobile-legends-rules", "destination": "/mobile-legends-rules.html" },
     { "source": "/additional-games", "destination": "/additional-games.html" },
     { "source": "/games", "destination": "/games.html" },
     { "source": "/(.*)", "destination": "/" }
