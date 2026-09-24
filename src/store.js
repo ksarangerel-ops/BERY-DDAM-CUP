@@ -18,15 +18,20 @@ import * as realtime from './supabase.js';
 const TEAM_NAME_VERSION = 'ganaa-team-names-v2';
 
 function migrateTeamNames(state) {
-  if (!state || state.teamNameVersion === TEAM_NAME_VERSION) return state;
+  if (!state?.teams) return state;
+  const teams = state.teams.map((team, index) => ({
+    ...team,
+    name: TEAM_SEED[index]?.[0] || team.name,
+    tag: TEAM_SEED[index]?.[1] || team.tag,
+  }));
+  const namesAreCanonical = teams.every((team, index) => (
+    team.name === state.teams[index]?.name && team.tag === state.teams[index]?.tag
+  ));
+  if (state.teamNameVersion === TEAM_NAME_VERSION && namesAreCanonical) return state;
   return {
     ...state,
     teamNameVersion: TEAM_NAME_VERSION,
-    teams: state.teams.map((team, index) => ({
-      ...team,
-      name: TEAM_SEED[index]?.[0] || team.name,
-      tag: TEAM_SEED[index]?.[1] || team.tag,
-    })),
+    teams,
   };
 }
 
