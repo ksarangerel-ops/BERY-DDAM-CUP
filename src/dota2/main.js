@@ -49,7 +49,8 @@ const num = n => (n || 0).toLocaleString('en-US');
 const teamOf = pid => state.teams.find(team => team.players.some(player => player.id === pid));
 const mediaSrc = value => assetUrl(value);
 const initials = value => String(value || '?').trim().split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase() || '?';
-const applySharedIdentity = value => ({ ...value, teams: applySharedProfiles(value?.teams, sharedProfiles) });
+// Dota 2 keeps its own team names and logos. Do not let another game overwrite them.
+const applySharedIdentity = value => value;
 const matchConfig = matchNo => MATCHES.find(match => match.id === Number(matchNo));
 const firstUnplayedMatch = () => MATCHES.find(match => !matchComplete(state, match))?.id || 1;
 const activeTeamsForMatch = (matchNo = currentMatch) => matchTeams(state, matchNo);
@@ -462,7 +463,6 @@ async function saveRoster(mutate, okMsg) {
   let result;
   try { result = await store.publish(next); } finally { rosterSaving = false; }
   lastSelfPublish = result.updated || null;
-  if (result.ok) await syncSharedIdentity(next.teams);
   renderTeamEditorValues();
   if (!result.ok) toast('⚠ Saved on this device only — Supabase write failed', true);
   else if (result.local) toast(`${okMsg} — saved on this device only`);
