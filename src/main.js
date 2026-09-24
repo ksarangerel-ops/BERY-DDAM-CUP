@@ -262,9 +262,11 @@ function renderRosters() {
     : null;
   $('leaderCards').innerHTML = state.teams.map((team, index) => {
     const leaderAvatar = LEADER_AVATARS[team.tag] || mediaSrc(team.players?.[0]?.photo) || `/leader-avatars/leader-${index + 1}.png`;
+    const teamLogo = mediaSrc(team.logo);
     return `
     <article class="leader-card leader-card-${index + 1}">
       <div class="leader-card-head">
+        <span class="leader-team-logo">${teamLogo ? `<img src="${esc(teamLogo)}" alt="${esc(team.name)} logo">` : esc(initials(team.name))}</span>
         <span>TEAM ${esc(team.name.replace(/^Team\s+/i, ''))}</span>
         <b>${esc(team.tag)}</b>
       </div>

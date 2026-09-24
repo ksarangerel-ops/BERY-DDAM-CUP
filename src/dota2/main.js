@@ -271,7 +271,7 @@ function renderRosters() {
     return `
     <article class="leader-card leader-card-${index + 1}">
       <div class="leader-card-head">
-        ${teamLogo ? `<img class="leader-team-logo" src="${esc(teamLogo)}" alt="${esc(team.name)} logo">` : ''}
+        <span class="leader-team-logo">${teamLogo ? `<img src="${esc(teamLogo)}" alt="${esc(team.name)} logo">` : esc(initials(team.name))}</span>
         <span>TEAM ${esc(team.name.replace(/^Team\s+/i, ''))}</span>
         <b>${esc(team.tag)}</b>
       </div>
