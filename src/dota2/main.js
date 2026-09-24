@@ -29,6 +29,7 @@ let pendingRemote = false;
 let rosterSaving = false;
 let lastSelfPublish = null;
 let authSession = null;
+let currentAdminPanel = 'matches';
 
 const $ = id => document.getElementById(id);
 const LEADER_AVATARS = {
@@ -684,6 +685,19 @@ function renderAdminAuth() {
 function renderAdmin() { renderAdminAuth(); renderMatchTabs(); renderTeamCards(); renderRemoteNotice(); }
 function renderAll() { renderSectionIcons(); renderBoard(); renderAdmin(); renderTeamEditor(); renderMediaEditor(); renderRulesLegend(); renderSyncBadge(); }
 
+function setAdminPanel(panel = 'matches') {
+  currentAdminPanel = panel === 'media' ? 'media' : 'matches';
+  document.querySelectorAll('.admin-panel-tab').forEach(button => {
+    const active = button.dataset.adminPanel === currentAdminPanel;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', String(active));
+  });
+  $('adminPanelMatches')?.classList.toggle('hidden', currentAdminPanel !== 'matches');
+  $('adminPanelMedia')?.classList.toggle('hidden', currentAdminPanel !== 'media');
+  if (currentAdminPanel === 'media') renderMediaEditor();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 /* ---------- actions ---------- */
 $('adminLoginForm').addEventListener('submit', async event => {
   event.preventDefault();
@@ -806,6 +820,10 @@ document.querySelectorAll('.tabbtn').forEach(button => {
     if (view === 'board') renderBoard();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+});
+
+document.querySelectorAll('.admin-panel-tab').forEach(button => {
+  button.addEventListener('click', () => setAdminPanel(button.dataset.adminPanel));
 });
 
 $('btnPng').onclick = async () => {
