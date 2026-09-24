@@ -2,6 +2,7 @@ import './additional-games.css';
 import { supabase as client, isConfigured } from './shared/supabase-client.ts';
 import { saveRow } from './shared/save-row.ts';
 import { assetUrl, pickImage, prepareImage, uploadMedia, removeMedia } from './shared/media.js';
+import { applySharedProfiles, saveSharedProfile, saveSharedProfiles, subscribeSharedProfiles } from './shared/team-profiles.js';
 
 const TOURNAMENT_ID = 'ddam-cup-additional-games-v1';
 const CACHE_KEY = `ddam-cup-cache:${TOURNAMENT_ID}`;
@@ -160,6 +161,22 @@ let authSession = null;
 let connection = false;
 let channel = null;
 let toastTimer = null;
+let sharedProfiles = {};
+
+function applySharedIdentity(value) {
+  if (!value?.games) return value;
+  ['mlbb', 'mecha', 'stumble', 'pubg', 'tetris'].forEach(gameId => {
+    if (value.games[gameId]?.teams) value.games[gameId].teams = applySharedProfiles(value.games[gameId].teams, sharedProfiles);
+  });
+  return value;
+}
+
+async function syncSharedIdentity(game) {
+  if (activeGame === 'tekken' || !client || !authSession?.user || !game?.teams?.length) return;
+  const changes = {};
+  game.teams.forEach(team => { changes[team.tag] = { tag: team.tag, name: team.name, logo: team.logo || null }; });
+  sharedProfiles = await saveSharedProfiles(changes);
+}
 
 function setMode(mode) {
   const badge = $('syncBadge');
@@ -173,7 +190,7 @@ async function loadRemote() {
   const { data, error } = await client.from('tournaments').select('state').eq('id', TOURNAMENT_ID).maybeSingle();
   if (error) throw error;
   const remoteState = normalizeState(data?.state);
-  if (remoteState) { state = remoteState; writeCache(state); render(); }
+  if (remoteState) { state = applySharedIdentity(remoteState); writeCache(state); render(); }
 }
 
 function startRealtime() {
@@ -182,7 +199,7 @@ function startRealtime() {
   client.auth.getSession().then(({ data }) => { authSession = data.session; renderAdmin(); }).catch(() => {});
   client.auth.onAuthStateChange((_event, session) => { authSession = session; renderAdmin(); });
   channel = client.channel(`tournament:${TOURNAMENT_ID}`).on('postgres_changes', { event: '*', schema: 'public', table: 'tournaments', filter: `id=eq.${TOURNAMENT_ID}` }, payload => {
-    if (payload.eventType !== 'DELETE' && usable(payload.new?.state)) { state = payload.new.state; writeCache(state); render(); }
+    if (payload.eventType !== 'DELETE' && usable(payload.new?.state)) { state = applySharedIdentity(normalizeState(payload.new.state)); writeCache(state); render(); }
   }).subscribe(status => { if (status === 'SUBSCRIBED') { connection = true; setMode('live'); } if (['CHANNEL_ERROR', 'TIMED_OUT', 'CLOSED'].includes(status)) { connection = false; setMode('syncing'); } });
   loadRemote().catch(error => { console.error('[additional-games] read failed', error); setMode('syncing'); });
 }
@@ -618,6 +635,10 @@ async function uploadGameTeamLogo(teamId) {
   if (!target) return;
   target.logo = value;
   const result = await publish(activeGame, next);
+  if (result.ok && storedOnline) {
+    try { sharedProfiles = await saveSharedProfile({ tag: target.tag, name: target.name, logo: value }); }
+    catch (error) { console.error('[shared-profiles] team logo sync failed:', error); showToast(`Logo saved here, but shared sync failed — ${error.message || 'run the shared SQL setup'}`); }
+  }
   if (storedOnline) { if (result.ok) void removeMedia(previous); else void removeMedia(value); }
 }
 async function removeGameTeamLogo(teamId) {
@@ -630,7 +651,13 @@ async function removeGameTeamLogo(teamId) {
   if (!target) return;
   target.logo = null;
   const result = await publish(activeGame, next);
-  if (result.ok) void removeMedia(previous);
+  if (result.ok) {
+    void removeMedia(previous);
+    if (client && authSession?.user) {
+      try { sharedProfiles = await saveSharedProfile({ tag: team.tag, name: team.name, logo: null }); }
+      catch (error) { console.error('[shared-profiles] team logo remove sync failed:', error); showToast(`Removed here, but shared sync failed — ${error.message || 'run the shared SQL setup'}`); }
+    }
+  }
 }
 function adminSettings() { return `<div class="ag-admin-system"><div class="ag-admin-work-head"><div><span>BOARD SETTINGS</span><h3>${esc(GAME_DEFS[activeGame].label)} · SETTINGS</h3></div><b>PUBLIC BOARD</b></div><div class="ag-admin-setting-grid"><article><b>LIVE SOURCE</b><span>Supabase realtime publish</span></article><article><b>ACTIVE FORMAT</b><span>${esc(GAME_DEFS[activeGame].format)}</span></article><article><b>EDIT SCOPE</b><span>Only signed-in organiser can save</span></article><article><b>PUBLIC RESULT</b><span>Every saved update appears on the live board</span></article></div></div>`; }
 function adminWorkbench(game) {
@@ -681,8 +708,14 @@ function saveFromEditor() {
 
 $('loginForm').addEventListener('submit', async event => { event.preventDefault(); if (!client) { $('authNote').textContent = 'Supabase environment тохируулагдаагүй байна.'; return; } const button = $('loginBtn'); button.disabled = true; button.textContent = 'Signing in…'; $('authNote').textContent = ''; try { await signIn($('email').value.trim(), $('password').value); $('password').value = ''; showToast('✓ Admin access granted'); renderAdmin(); } catch (error) { $('authNote').textContent = error.message || 'Sign in failed'; } finally { button.disabled = false; button.textContent = 'Sign in'; } });
 $('logoutBtn').onclick = async () => { try { await signOut(); showToast('✓ Signed out'); renderAdmin(); } catch (error) { showToast(error.message || 'Sign out failed'); } };
-$('saveBtn').onclick = async () => { if (!authSession?.user) return; const button = $('saveBtn'); button.disabled = true; button.textContent = 'Publishing…'; $('saveNote').textContent = ''; const result = await publish(activeGame, saveFromEditor()); button.disabled = false; button.textContent = 'Save current game'; if (result.ok && !result.local) { showToast(`✓ ${GAME_DEFS[activeGame].label} published live`); $('saveNote').textContent = 'Saved to Supabase — every public viewer will update.'; } else if (result.ok) { showToast('Saved on this device only'); } else { $('saveNote').textContent = result.error || 'Publish failed'; } };
+$('saveBtn').onclick = async () => { if (!authSession?.user) return; const button = $('saveBtn'); button.disabled = true; button.textContent = 'Publishing…'; $('saveNote').textContent = ''; const editedGame = saveFromEditor(); const result = await publish(activeGame, editedGame); if (result.ok && client && activeGame !== 'tekken') { try { await syncSharedIdentity(editedGame); } catch (error) { console.error('[shared-profiles] name sync failed:', error); $('saveNote').textContent = `Game saved, but shared team identity sync failed — ${error.message || 'run the shared SQL setup'}`; } } button.disabled = false; button.textContent = 'Save current game'; if (result.ok && !result.local) { showToast(`✓ ${GAME_DEFS[activeGame].label} published live`); if (!$('saveNote').textContent) $('saveNote').textContent = 'Saved to Supabase — every public viewer will update.'; } else if (result.ok) { showToast('Saved on this device only'); } else { $('saveNote').textContent = result.error || 'Publish failed'; } };
 
 render();
 window.addEventListener('hashchange', () => { activeBoardView = boardViewFromHash(); render(); });
+subscribeSharedProfiles(profiles => {
+  sharedProfiles = profiles;
+  state = applySharedIdentity(normalizeState(state) || state);
+  writeCache(state);
+  render();
+});
 startRealtime();

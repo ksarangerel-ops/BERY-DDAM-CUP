@@ -7,7 +7,7 @@ import {
   ZONES, MATCHES, NUM_MATCHES, TEAMS_PER_ZONE,
   SERIES_RESULTS, pointsForSeries, TOURNAMENT_ID,
 } from './config.js';
-import { createStore, blankState, MODE } from './store.js';
+import { createStore, blankState, MODE, writeCache } from './store.js';
 import {
   computeStandings, computePlayers, computeZoneStandings, completedZone,
   qualifiedTeams, seriesStats, matchTeams, matchComplete,
@@ -20,6 +20,7 @@ import {
   getSession, subscribeAuth, signIn, signOut,
   uploadMedia, removeMedia,
 } from './supabase.js';
+import { applySharedProfiles, saveSharedProfiles, subscribeSharedProfiles } from '../shared/team-profiles.js';
 
 let state = blankState();
 let currentMatch = 1;
@@ -30,6 +31,7 @@ let rosterSaving = false;
 let lastSelfPublish = null;
 let authSession = null;
 let currentAdminPanel = 'matches';
+let sharedProfiles = {};
 
 const $ = id => document.getElementById(id);
 const LEADER_AVATARS = {
@@ -47,6 +49,7 @@ const num = n => (n || 0).toLocaleString('en-US');
 const teamOf = pid => state.teams.find(team => team.players.some(player => player.id === pid));
 const mediaSrc = value => assetUrl(value);
 const initials = value => String(value || '?').trim().split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase() || '?';
+const applySharedIdentity = value => ({ ...value, teams: applySharedProfiles(value?.teams, sharedProfiles) });
 const matchConfig = matchNo => MATCHES.find(match => match.id === Number(matchNo));
 const firstUnplayedMatch = () => MATCHES.find(match => !matchComplete(state, match))?.id || 1;
 const activeTeamsForMatch = (matchNo = currentMatch) => matchTeams(state, matchNo);
@@ -87,6 +90,7 @@ function oppositeSeries(match, series) {
 /* ---------- store wiring ---------- */
 const store = createStore({
   onState(next, { fromRemote }) {
+    next = applySharedIdentity(next);
     if (rosterSaving || (fromRemote && next.updated && next.updated === lastSelfPublish)) {
       state = next;
       renderBoard();
@@ -444,6 +448,13 @@ function syncTeamCardHeaders() {
 }
 
 /* ---------- roster saves ---------- */
+async function syncSharedIdentity(teams) {
+  if (!isLive() || !authSession?.user || !teams?.length) return;
+  const changes = {};
+  teams.forEach(team => { changes[team.tag] = { tag: team.tag, name: team.name, logo: team.logo || null }; });
+  try { sharedProfiles = await saveSharedProfiles(changes); }
+  catch (error) { console.warn('[shared-profiles] DOTA 2 sync failed:', error); }
+}
 async function saveRoster(mutate, okMsg) {
   const next = structuredClone(state);
   if (mutate(next) === false) return null;
@@ -451,6 +462,7 @@ async function saveRoster(mutate, okMsg) {
   let result;
   try { result = await store.publish(next); } finally { rosterSaving = false; }
   lastSelfPublish = result.updated || null;
+  if (result.ok) await syncSharedIdentity(next.teams);
   renderTeamEditorValues();
   if (!result.ok) toast('⚠ Saved on this device only — Supabase write failed', true);
   else if (result.local) toast(`${okMsg} — saved on this device only`);
@@ -883,5 +895,12 @@ getSession().then(session => {
 
 currentMatch = firstUnplayedMatch();
 store.start();
+subscribeSharedProfiles(profiles => {
+  sharedProfiles = profiles;
+  state = applySharedIdentity(state);
+  writeCache(state);
+  if (formDirty) renderBoard();
+  else renderAll();
+});
 if (!isConfigured) console.warn('[ddam-cup] Supabase not configured — running local-only. Missing:', missingKeys.join(', '));
 else if (!isLive()) console.warn('[ddam-cup] Supabase failed to initialise — running local-only.');
