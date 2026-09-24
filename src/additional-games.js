@@ -247,10 +247,12 @@ function readCache() { try { const value = JSON.parse(localStorage.getItem(CACHE
 function writeCache(value) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(value)); } catch { /* private mode */ } }
 
 let state = readCache() || defaultState();
-let activeGame = new URLSearchParams(location.search).get('game') || 'mlbb';
+const requestedGame = new URLSearchParams(location.search).get('game');
+let activeGame = requestedGame || 'mlbb';
 let activeBoardView = 'arena';
 let activeAdminPanel = 'matches';
 if (!GAME_DEFS[activeGame]) activeGame = 'mlbb';
+if (requestedGame === 'mlbb' && location.pathname.endsWith('additional-games.html')) location.replace('./mobile-legends.html');
 let authSession = null;
 let connection = false;
 let channel = null;
