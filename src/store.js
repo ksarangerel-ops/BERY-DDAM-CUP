@@ -15,7 +15,7 @@
 import { TEAM_SEED, SQUAD_SIZE, NUM_TEAMS, CACHE_KEY } from './config.js';
 import * as realtime from './supabase.js';
 
-const TEAM_NAME_VERSION = 'ganaa-team-names-v2';
+const TEAM_NAME_VERSION = 'ddam-team-order-v3';
 
 function migrateTeamNames(state) {
   if (!state?.teams) return state;

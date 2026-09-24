@@ -50,11 +50,11 @@ export const NUM_TEAMS = 6;
 
 export const TEAM_SEED = [
   ['Team Gegeenee', 'ALP', null],
-  ['Team Ganaa',    'BRV', null],
-  ['Team Garidaa',  'CHR', null],
-  ['Team Amaraa',   'DLT', null],
-  ['Team Bery',     'ECH', null],
-  ['Team Bagaa',    'FOX', null],
+  ['Team Babi',     'BRV', null],
+  ['Team Ganaa',    'CHR', null],
+  ['Team Hangai',   'DLT', null],
+  ['Team Amara',    'ECH', null],
+  ['Team Bery',     'FOX', null],
 ];
 
 export const matchById = id => MATCHES.find(match => match.id === Number(id));

@@ -15,7 +15,7 @@
 import { TEAM_SEED, SQUAD_SIZE, NUM_TEAMS, ZONES, CACHE_KEY } from './config.js';
 import * as realtime from './supabase.js';
 
-const TEAM_NAME_VERSION = 'ganaa-team-names-v2';
+const TEAM_NAME_VERSION = 'ddam-team-order-v3';
 
 function migrateTeamNames(state) {
   if (!state?.teams) return state;
@@ -23,9 +23,12 @@ function migrateTeamNames(state) {
     ...team,
     name: TEAM_SEED[index]?.[0] || team.name,
     tag: TEAM_SEED[index]?.[1] || team.tag,
+    zoneId: TEAM_SEED[index]?.[2] || team.zoneId || null,
   }));
   const namesAreCanonical = teams.every((team, index) => (
-    team.name === state.teams[index]?.name && team.tag === state.teams[index]?.tag
+    team.name === state.teams[index]?.name
+      && team.tag === state.teams[index]?.tag
+      && team.zoneId === (state.teams[index]?.zoneId || null)
   ));
   if (state.teamNameVersion === TEAM_NAME_VERSION && namesAreCanonical) return state;
   return {
