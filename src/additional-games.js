@@ -29,6 +29,7 @@ const MECHA_LOBBIES = ['A', 'B'];
 const MECHA_ROUNDS = [1, 2, 3, 4, 5, 6];
 const ML_SERIES = ['', '2-0', '1-1', '0-2'];
 const BO3_SERIES = ['', '2-0', '2-1', '1-2', '0-2'];
+const BO5_SERIES = ['', '3-0', '3-1', '3-2', '2-3', '1-3', '0-3'];
 const TETRIS_GROUPS = ['A', 'B', 'C', 'D', 'E', 'F'];
 const TETRIS_SERIES = ['', '3-0', '3-1', '3-2', '2-3', '1-3', '0-3'];
 const MAP_NAMES = ['Sanhok', 'Livik', 'Erangel'];
@@ -103,7 +104,7 @@ function defaultState() {
     teamNameVersion: TEAM_NAME_VERSION,
     updated: null,
     games: {
-      mlbb: { teams: mlTeams, groupResults: groupMatches().map(match => ({ ...match, series: '' })), playoff: { sf1: '', sf2: '', final: '', third: '' } },
+      mlbb: { teams: mlTeams, groupResults: groupMatches().map(match => ({ ...match, series: '' })), playoff: { sf1: '', sf2: '', wf: '', lr1: '', lf: '', gf: '', reset: '', final: '', third: '' } },
       mecha: { teams: makeTeams('mecha').map(team => ({ ...team, hider: 0, topMissedSpot: 0, seekersCaught: 0, cleanSweeps: 0 })), lobbies: makeMechaLobbies() },
       stumble: { teams: makeTeams('stumble').map(team => ({ ...team, players: team.players.map(player => ({ ...player, points: 0 })) })) },
       pubg: { teams: makeTeams('pubg').map(team => ({ ...team, maps: MAP_NAMES.map(() => ({ placement: '', kills: '' })) })) },
@@ -194,6 +195,15 @@ function ensureMlbbTeamSetup(game) {
   game.groupResults = nextResults;
 }
 
+function ensureMlbbPlayoffState(game) {
+  if (!game) return;
+  if (!game.playoff || typeof game.playoff !== 'object') game.playoff = {};
+  ['sf1', 'sf2', 'wf', 'lr1', 'lf', 'gf', 'reset', 'final', 'third'].forEach(id => {
+    if (game.playoff[id] == null) game.playoff[id] = '';
+  });
+  if (!game.playoff.gf && game.playoff.final) game.playoff.gf = game.playoff.final;
+}
+
 function applyCanonicalTeamNames(value) {
   if (!value?.games) return value;
   ['mlbb', 'mecha', 'stumble', 'pubg', 'tetris'].forEach(gameId => {
@@ -208,6 +218,7 @@ function applyCanonicalTeamNames(value) {
 function normalizeState(value) {
   if (!usable(value)) return null;
   ensureMlbbTeamSetup(value.games.mlbb);
+  ensureMlbbPlayoffState(value.games.mlbb);
   ensureMediaState(value);
   ensureMechaScorebook(value.games.mecha);
   if (!value.games.tetris?.teams || !Array.isArray(value.games.tetris.games) || value.games.tetris.games.length !== 3) {
@@ -461,11 +472,17 @@ function mlRows(game, group) {
 }
 function mlPlayoff(game) {
   const a = mlRows(game, 'A'); const b = mlRows(game, 'B');
-  const sf1 = { a: a[0]?.team, b: b[1]?.team, series: game.playoff.sf1, label: 'Semifinal 1 · A1 vs B2' };
-  const sf2 = { a: b[0]?.team, b: a[1]?.team, series: game.playoff.sf2, label: 'Semifinal 2 · B1 vs A2' };
+  const playoff = game.playoff || {};
+  const sf1 = { a: a[0]?.team, b: b[0]?.team, series: playoff.sf1, label: 'Winners Semis 1 · A1 vs B1' };
+  const sf2 = { a: a[1]?.team, b: b[1]?.team, series: playoff.sf2, label: 'Winners Semis 2 · A2 vs B2' };
   const winner = match => { const result = parts(match.series); return !match.series || result.wins === result.losses ? null : result.wins > result.losses ? match.a : match.b; };
   const loser = match => { const win = winner(match); return !win ? null : win.id === match.a?.id ? match.b : match.a; };
-  return { sf1, sf2, final: { a: winner(sf1), b: winner(sf2), series: game.playoff.final, label: 'Grand Final · 1st / 2nd' }, third: { a: loser(sf1), b: loser(sf2), series: game.playoff.third, label: '3rd Place Final · 3rd / 4th' } };
+  const wf = { a: winner(sf1), b: winner(sf2), series: playoff.wf, label: 'Winners Final' };
+  const lr1 = { a: loser(sf1), b: loser(sf2), series: playoff.lr1, label: 'Losers R1' };
+  const lf = { a: loser(wf), b: winner(lr1), series: playoff.lf, label: 'Losers Final' };
+  const gf = { a: winner(wf), b: winner(lf), series: playoff.gf || playoff.final, label: 'Grand Final' };
+  const reset = { a: gf.a, b: gf.b, series: playoff.reset, label: 'Grand Final Reset' };
+  return { sf1, sf2, wf, lr1, lf, gf, reset, final: gf, third: { a: loser(sf1), b: loser(sf2), series: playoff.third, label: 'Losers R1' } };
 }
 
 function rankingTable(rows, columns) {
@@ -531,6 +548,28 @@ function classicMiniRank(rows, value, meta) { return `<div class="ag-classic-min
 function classicGroupCard(title, subtitle, rows, value, meta) { return `<article class="ag-classic-group"><div class="ag-classic-group-head"><span class="ag-classic-group-mark">${esc(title.replace(/[^A-Z0-9]/gi, '').slice(-1) || '#')}</span><div><b>${esc(title)}</b><small>${esc(subtitle)}</small></div><span>LIVE</span></div>${classicMiniRank(rows, value, meta)}</article>`; }
 function classicTable(rows, columns) { return `<div class="ag-classic-table-wrap"><table class="ag-classic-table"><thead><tr><th>#</th><th>Team / Player</th>${columns.map(column => `<th>${esc(column.label)}</th>`).join('')}</tr></thead><tbody>${rows.map((row, index) => `<tr><td><span class="ag-classic-rank ${index < 3 ? 'top' : ''}">${index + 1}</span></td><td><b class="ag-team-with-media">${rowMediaMark(row)}<span>${esc(row.name)}</span></b><small>${esc(row.sub || '')}</small></td>${columns.map(column => `<td>${esc(column.value ? column.value(row) : row[column.key] ?? '—')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`; }
 function classicMatch(title, meta, rows) { return `<article class="ag-classic-match"><div class="ag-classic-match-head"><b>${esc(title)}</b><span>${esc(meta)}</span></div>${rows.map(row => `<div class="ag-classic-match-row"><span>${esc(row.left)}</span><strong>${esc(row.score || '—')}</strong><span>${esc(row.right)}</span></div>`).join('')}</article>`; }
+function mlbbBracketMatch(code, format, match, firstSlot, secondSlot, extraClass = '') {
+  const rows = [[firstSlot, match.a?.name || 'Waiting'], [secondSlot, match.b?.name || 'Waiting']];
+  return `<article class="ag-mlbb-match ${extraClass}"><div class="ag-mlbb-match-head"><b>${esc(code)}</b><span>${esc(format)}</span></div>${rows.map(([slot, name], index) => `<div class="ag-mlbb-team"><span class="ag-mlbb-slot">${esc(slot)}</span><strong>${esc(name)}</strong><em>${index === 0 && match.series ? esc(match.series.split('-')[0]) : index === 1 && match.series ? esc(match.series.split('-')[1]) : ''}</em></div>`).join('')}</article>`;
+}
+function mlbbDoubleElimBracket(playoff) {
+  return `<div class="ag-mlbb-bracket-shell">
+    <div class="ag-mlbb-bracket-label upper">↑ UPPER BRACKET</div>
+    <div class="ag-mlbb-bracket-grid ag-mlbb-upper-grid">
+      <div class="ag-mlbb-bracket-column ag-mlbb-column-split"><div class="ag-mlbb-round-head"><b>WINNERS SEMIS</b><span>BO3</span></div>${mlbbBracketMatch('WSF1', 'BO3', playoff.sf1, 'A1', 'B1')}${mlbbBracketMatch('WSF2', 'BO3', playoff.sf2, 'A2', 'B2')}</div>
+      <div class="ag-mlbb-bracket-column ag-mlbb-column-wf"><div class="ag-mlbb-round-head"><b>WINNERS FINAL</b><span>BO3</span></div>${mlbbBracketMatch('WF', 'BO3', playoff.wf, 'Winner WSF1', 'Winner WSF2')}</div>
+      <div class="ag-mlbb-bracket-column ag-mlbb-column-spacer" aria-hidden="true"></div>
+      <div class="ag-mlbb-bracket-column ag-mlbb-column-gf"><div class="ag-mlbb-round-head"><b>GRAND FINAL</b><span>BO5</span></div>${mlbbBracketMatch('GF', 'BO5', playoff.gf, 'Winner WF', 'Winner LF', 'is-final')}${mlbbBracketMatch('RESET', 'BO5', playoff.reset, 'Winner WF', 'Winner LF', 'is-reset')}</div>
+    </div>
+    <div class="ag-mlbb-bracket-label lower">↓ LOWER BRACKET</div>
+    <div class="ag-mlbb-bracket-grid ag-mlbb-lower-grid">
+      <div class="ag-mlbb-bracket-column"><div class="ag-mlbb-round-head"><b>LOSERS R1</b><span>BO3</span></div>${mlbbBracketMatch('LR1', 'BO3', playoff.lr1, 'Loser WSF1', 'Loser WSF2')}</div>
+      <div class="ag-mlbb-bracket-column ag-mlbb-column-lf"><div class="ag-mlbb-round-head"><b>LOSERS FINAL</b><span>BO3</span></div>${mlbbBracketMatch('LF', 'BO3', playoff.lf, 'Loser WF', 'Winner LR1')}</div>
+      <div class="ag-mlbb-bracket-column ag-mlbb-column-spacer" aria-hidden="true"></div>
+      <div class="ag-mlbb-bracket-column ag-mlbb-reset-note"><span>↩ Reset only if the lower-bracket player wins</span></div>
+    </div>
+  </div>`;
+}
 function classicBoard(def, subtitle, facts, formatCards, stage, standings, roster, breakdown, note) {
   return `<div id="board-arena" class="ag-classic-board"><section class="ag-classic-banner"><div class="ag-classic-banner-lockup"><div class="ag-classic-logo ${def.logoClass || ''}"><img src="${def.logo}" alt="${esc(def.label)} logo"></div><div><span>DDAM CUP · OFFICIAL TOURNAMENT FORMAT</span><h1>DDAM ESPORT CUP <b>${esc(def.label)}</b></h1><p>${esc(subtitle)}</p></div></div><span class="ag-classic-live">LIVE BOARD</span></section>${classicFacts(facts)}${classicSection('TOURNAMENT FORMAT', 'FORMAT & RULES', `<div class="ag-classic-format-grid">${formatCards.map(card => `<article><b>${esc(card.title)}</b><p>${esc(card.body)}</p></article>`).join('')}</div>`)}${stage}${standings}${roster}${breakdown}<p class="ag-classic-note">${note}</p></div>`;
 }
@@ -540,15 +579,15 @@ function renderMlbbClassic(game) {
   const a = mlRows(game, 'A'); const b = mlRows(game, 'B'); const playoff = mlPlayoff(game);
   const row = item => ({ name: item.team.name, sub: `${item.team.tag} · ${item.played}/2 series`, played: item.played, points: item.points, wins: item.gamesWon, losses: item.gamesLost });
   const overall = [...a, ...b].map(row).sort((x, y) => y.points - x.points || y.wins - x.wins);
-  const brackets = [['SF1 · A1 vs B2', playoff.sf1], ['SF2 · B1 vs A2', playoff.sf2], ['GRAND FINAL', playoff.final], ['3RD PLACE FINAL', playoff.third]];
+  const brackets = [['WSF1 · A1 vs B1', playoff.sf1], ['WSF2 · A2 vs B2', playoff.sf2], ['WINNERS FINAL', playoff.wf], ['LOSERS R1', playoff.lr1], ['LOSERS FINAL', playoff.lf], ['GRAND FINAL', playoff.gf], ['RESET', playoff.reset]];
   const zoneStage = classicSection('ZONE ROUND-ROBIN', 'ZONE QUALIFICATION', `<div class="ag-classic-group-grid">${classicGroupCard('ZONE A', 'BO2 · TOP 2 ADVANCE', a.map(row), item => `${item.points}P`, item => `${item.wins}-${item.losses} games`)}${classicGroupCard('ZONE B', 'BO2 · TOP 2 ADVANCE', b.map(row), item => `${item.points}P`, item => `${item.wins}-${item.losses} games`)}</div>`);
-  const bracketStage = classicSection('FINAL BO3 ELIMINATION', 'PLAYOFF BRACKET', `<div class="ag-classic-bracket-grid">${brackets.map(([title, item]) => classicMatch(title, item.series ? `SAVED · ${item.series}` : 'WAITING', [{ left: item.a?.name || 'Qualified team', right: item.b?.name || 'Waiting', score: item.series || '—' }])).join('')}</div>`);
+  const bracketStage = classicSection('↑ UPPER BRACKET · ↓ LOWER BRACKET', 'PLAYOFF BRACKET', mlbbDoubleElimBracket(playoff));
   const stage = zoneStage + bracketStage;
   const standings = classicSection('LEADERBOARD', 'TEAM STANDINGS', classicTable(overall, [{ label: 'Series', value: item => `${item.played || 0}` }, { label: 'Game W-L', value: item => `${item.wins}-${item.losses}` }, { label: 'Zone Pts', key: 'points' }, { label: 'Total', key: 'points' }]));
   const roster = classicSection('TEAM ROSTERS', 'ROSTER', classicTable(game.teams.map(team => ({ name: team.name, sub: `${team.tag} · Group ${team.group}`, players: '6-player roster' })), [{ label: 'Group', value: item => item.sub.split('·').pop().trim() }, { label: 'Status', key: 'players' }]));
   const matches = [...game.groupResults.filter(item => item.series).slice(-6).map((item, index) => classicMatch(`${item.group} · MATCH ${index + 1}`, 'BO2', [{ left: teamName(game, item.a), right: teamName(game, item.b), score: item.series }])), ...brackets.slice(0, 2).map(([title, item]) => classicMatch(title, 'BO3', [{ left: item.a?.name || 'Qualified team', right: item.b?.name || 'Waiting', score: item.series || '—' }]))];
   const breakdown = classicSection('SERIES LOG', 'MATCH BREAKDOWN', `<div class="ag-classic-breakdown-grid">${matches.length ? matches.join('') : classicMatch('GROUP ROUND 1', 'BO2', [{ left: 'Waiting', right: 'Waiting', score: '—' }])}</div>`);
-  return classicBoard(GAME_DEFS.mlbb, '6 баг · A/B хэсэг · BO2 round-robin · 4 баг playoff', [{ value: '6', label: 'Teams' }, { value: '2', label: 'Groups' }, { value: 'BO2', label: 'Group stage' }, { value: 'BO3', label: 'Playoff' }], [{ title: '1. Group stage', body: '6 багийг A/B хоёр хэсэгт 3-аар хувааж BO2 round-robin тоглоно.' }, { title: '2. Qualification', body: 'Хэсэг бүрийн top 2 баг Final BO3 bracket-д шалгарна.' }, { title: '3. Tie-break', body: 'Head-to-head → game differential → нэмэлт BO1.' }], stage, standings, roster, breakdown, 'Official rules · A1 vs B2, B1 vs A2 semifinals · Grand Final + 3rd Place Final.');
+  return classicBoard(GAME_DEFS.mlbb, '6 баг · A/B хэсэг · BO2 round-robin · 4 баг double-elimination playoff', [{ value: '6', label: 'Teams' }, { value: '2', label: 'Groups' }, { value: 'BO2', label: 'Group stage' }, { value: 'BO3 / BO5', label: 'Playoff' }], [{ title: '1. Group stage', body: '6 багийг A/B хоёр хэсэгт 3-аар хувааж BO2 round-robin тоглоно.' }, { title: '2. Qualification', body: 'Хэсэг бүрийн top 2 баг Upper Bracket-д шалгарна.' }, { title: '3. Double elimination', body: 'Upper-д ялагдсан баг Lower руу орно. Lower Final-ийн ялагч Grand Final-д орно.' }], stage, standings, roster, breakdown, 'Official rules · WSF: A1 vs B1, A2 vs B2 · Upper/Lower double elimination · Grand Final BO5 + bracket reset.');
 }
 
 function renderMechaClassic(game) {
@@ -678,7 +717,11 @@ function renderBoardNav() {
 function renderTabs() { $('gameTabs').innerHTML = GAME_IDS.map(id => `<button class="ag-tab ${id === activeGame ? 'active' : ''}" data-game="${id}" type="button"><img src="${GAME_DEFS[id].logo}" alt="">${GAME_DEFS[id].short}</button>`).join(''); document.querySelectorAll('.ag-tab').forEach(button => { button.onclick = () => { activeGame = button.dataset.game; activeAdminPanel = 'matches'; const url = new URL(location.href); url.searchParams.set('game', activeGame); history.replaceState({}, '', url); render(); }; }); }
 
 function inputTeamNames(game) { return `<div class="ag-form-section"><h3>Team setup</h3><div class="ag-form-grid">${game.teams.map(team => `<label class="ag-label">${esc(team.tag || team.id)}<input class="ag-input" data-team-name="${team.id}" value="${esc(team.name)}"></label>`).join('')}</div></div>`; }
-function renderMlEditor(game) { const name = id => teamName(game, id); return `${inputTeamNames(game)}<div class="ag-form-section"><h3>Group BO2 results</h3><div class="ag-form-grid">${game.groupResults.map(match => `<label class="ag-label">${match.group} · ${esc(name(match.a))} vs ${esc(name(match.b))}<select class="ag-select" data-ml-group="${match.id}">${seriesOptions(ML_SERIES, match.series)}</select></label>`).join('')}</div></div><div class="ag-form-section"><h3>Playoff BO3 results</h3><div class="ag-form-grid">${[['sf1','Semifinal 1'],['sf2','Semifinal 2'],['final','Grand Final'],['third','3rd Place Final']].map(([id, label]) => `<label class="ag-label">${label}<select class="ag-select" data-ml-playoff="${id}">${seriesOptions(BO3_SERIES, game.playoff[id])}</select></label>`).join('')}</div></div>`; }
+function renderMlEditor(game) {
+  const name = id => teamName(game, id);
+  const playoffFields = [['sf1', 'Winners Semis 1', BO3_SERIES], ['sf2', 'Winners Semis 2', BO3_SERIES], ['wf', 'Winners Final', BO3_SERIES], ['lr1', 'Losers R1', BO3_SERIES], ['lf', 'Losers Final', BO3_SERIES], ['gf', 'Grand Final', BO5_SERIES], ['reset', 'Grand Final Reset', BO5_SERIES]];
+  return `${inputTeamNames(game)}<div class="ag-form-section"><h3>Group BO2 results</h3><div class="ag-form-grid">${game.groupResults.map(match => `<label class="ag-label">${match.group} · ${esc(name(match.a))} vs ${esc(name(match.b))}<select class="ag-select" data-ml-group="${match.id}">${seriesOptions(ML_SERIES, match.series)}</select></label>`).join('')}</div></div><div class="ag-form-section"><h3>Double-elimination playoff results</h3><div class="ag-form-grid">${playoffFields.map(([id, label, options]) => `<label class="ag-label">${label}<select class="ag-select" data-ml-playoff="${id}">${seriesOptions(options, game.playoff[id])}</select></label>`).join('')}</div></div>`;
+}
 function mechaSeekerHint(preview) {
   if (preview.catches === null) return 'Enter the catch count to calculate Seeker points.';
   if (preview.catches === 10) return 'Clean sweep — the +2.0 bonus is in.';
