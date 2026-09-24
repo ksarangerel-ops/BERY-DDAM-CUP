@@ -451,13 +451,13 @@ function rowMediaMark(row) {
 }
 
 function mlRows(game, group) {
-  const rows = game.teams.filter(team => team.group === group).map(team => ({ team, points: 0, gamesWon: 0, gamesLost: 0, played: 0 }));
+  const rows = game.teams.filter(team => team.group === group).map((team, seededOrder) => ({ team, seededOrder, points: 0, gamesWon: 0, gamesLost: 0, played: 0 }));
   game.groupResults.filter(match => match.group === group).forEach(match => {
     const result = parts(match.series); if (!match.series) return;
     const a = rows.find(row => row.team.id === match.a); const b = rows.find(row => row.team.id === match.b); if (!a || !b) return;
     const points = scoreForBo2(match.series); a.points += points[0]; b.points += points[1]; a.gamesWon += result.wins; a.gamesLost += result.losses; b.gamesWon += result.losses; b.gamesLost += result.wins; a.played += 1; b.played += 1;
   });
-  return rows.sort((a, b) => b.points - a.points || b.gamesWon - a.gamesWon || a.gamesLost - b.gamesLost || a.team.name.localeCompare(b.team.name));
+  return rows.sort((a, b) => b.points - a.points || b.gamesWon - a.gamesWon || a.gamesLost - b.gamesLost || a.seededOrder - b.seededOrder);
 }
 function mlPlayoff(game) {
   const a = mlRows(game, 'A'); const b = mlRows(game, 'B');
