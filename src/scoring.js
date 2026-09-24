@@ -142,6 +142,7 @@ function sortRows(rows, state, matches) {
     }
     return (b.roundsWon - b.roundsLost) - (a.roundsWon - a.roundsLost)
       || b.gamesWon - a.gamesWon
+      || state.teams.indexOf(a.team) - state.teams.indexOf(b.team)
       || a.team.name.localeCompare(b.team.name);
   });
   rows.forEach((row, index) => { row.rank = index + 1; });

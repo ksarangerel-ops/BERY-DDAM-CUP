@@ -130,6 +130,7 @@ function sortRows(rows, state, matches) {
     }
     return recordRatio(b.wins, b.losses) - recordRatio(a.wins, a.losses)
       || recordRatio(b.gamesWon, b.gamesPlayed - b.gamesWon) - recordRatio(a.gamesWon, a.gamesPlayed - a.gamesWon)
+      || state.teams.indexOf(a.team) - state.teams.indexOf(b.team)
       || a.team.name.localeCompare(b.team.name);
   });
   rows.forEach((row, index) => { row.rank = index + 1; });
