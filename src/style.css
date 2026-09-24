@@ -561,3 +561,10 @@
 .cs-media-btn:hover{border-color:#ffad3d;color:#ffd7ad;background:rgba(255,173,61,.12)}
 .cs-media-btn--muted{border-color:rgba(255,74,74,.28);background:rgba(255,74,74,.07);color:#ffaaa4}
 @media(max-width:560px){.admin-panel-tab{flex:1 1 100%}.cs-media-team-head{align-items:flex-start;flex-wrap:wrap}.cs-media-team-head .ml-auto{width:100%;margin-left:5.8rem}.cs-media-player-row{flex-wrap:wrap}.cs-media-name{min-width:calc(100% - 3.75rem);flex-basis:calc(100% - 3.75rem)}.cs-media-btn{margin-left:3.75rem}}
+.cs-inline-logo {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 2.5rem;
+  object-fit: contain;
+  border-radius: .4rem;
+}
